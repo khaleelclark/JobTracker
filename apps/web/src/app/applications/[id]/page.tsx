@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { ApplicationDetailActivityPanel } from "@/components/ApplicationDetailActivityPanel";
+import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
 
 interface ApplicationDetailPageProps {
   params: Promise<{ id: string }>;
@@ -49,6 +50,20 @@ export default async function ApplicationDetailPage({ params }: ApplicationDetai
         </p>
         {application.notes ? <p>{application.notes}</p> : <p className="muted">No notes.</p>}
       </div>
+
+      <ApplicationEditDeleteForm
+        application={{
+          id: application.id,
+          companyName: application.companyName,
+          roleTitle: application.roleTitle,
+          genericStatus: application.genericStatus,
+          preciseStatus: application.preciseStatus,
+          roleFamily: application.roleFamily,
+          roleLevel: application.roleLevel,
+          appliedAtIso: application.appliedAt.toISOString(),
+          notes: application.notes,
+        }}
+      />
 
       <ApplicationDetailActivityPanel
         application={{

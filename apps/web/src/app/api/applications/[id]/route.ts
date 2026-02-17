@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { updateApplicationSchema } from "@/lib/validation";
+import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -24,4 +26,49 @@ export async function GET(_: Request, context: RouteContext) {
   }
 
   return NextResponse.json({ application });
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  const { id } = await context.params;
+  const payload = await request.json();
+  const parsed = updateApplicationSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  const existing = await prisma.application.findUnique({ where: { id }, select: { id: true } });
+  if (!existing) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  const application = await prisma.application.update({
+    where: { id },
+    data: {
+      companyName: parsed.data.companyName,
+      roleTitle: parsed.data.roleTitle,
+      genericStatus: parsed.data.genericStatus,
+      preciseStatus: parsed.data.preciseStatus,
+      roleFamily: parsed.data.roleFamily,
+      roleLevel: parsed.data.roleLevel,
+      appliedAt: parsed.data.appliedAt,
+      notes: parsed.data.notes,
+    },
+  });
+
+  await triggerWorkerFromWrite();
+  return NextResponse.json({ application });
+}
+
+export async function DELETE(_: Request, context: RouteContext) {
+  const { id } = await context.params;
+  const existing = await prisma.application.findUnique({ where: { id }, select: { id: true } });
+
+  if (!existing) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  await prisma.application.delete({ where: { id } });
+  await triggerWorkerFromWrite();
+  return NextResponse.json({ ok: true });
 }

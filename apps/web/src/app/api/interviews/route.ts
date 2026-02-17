@@ -25,8 +25,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const interview = await prisma.interview.create({
-    data: parsed.data,
+  const interview = await prisma.$transaction(async (tx) => {
+    const createdInterview = await tx.interview.create({
+      data: parsed.data,
+    });
+
+    await tx.application.update({
+      where: { id: parsed.data.applicationId },
+      data: {
+        genericStatus: "interviewing",
+      },
+    });
+
+    return createdInterview;
   });
 
   await triggerWorkerFromWrite();

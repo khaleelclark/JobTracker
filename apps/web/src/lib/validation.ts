@@ -19,6 +19,8 @@ export const createApplicationSchema = z.object({
   notes: z.string().max(4000).optional().nullable(),
 });
 
+export const updateApplicationSchema = createApplicationSchema;
+
 export const createInterviewSchema = z.object({
   applicationId: z.string().uuid(),
   roundIndex: z.number().int().min(1).max(20),
