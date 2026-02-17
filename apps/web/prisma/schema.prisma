@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum GenericStatus {
+  interested
+  applied
+  interviewing
+  offered
+  rejected
+  withdrawn
+  archived
+}
+
+enum InterviewStatus {
+  scheduled
+  completed
+  cancelled
+}
+
+enum ReflectionOutcome {
+  pending
+  advanced
+  rejected
+}
+
+enum EmailDirection {
+  inbound
+  outbound
+}
+
+enum FollowupChannel {
+  email
+  linkedin
+  portal
+  other
+}
+
+enum FollowupResultStatus {
+  pending
+  resolved
+  expired_no_response
+}
+
+enum FollowupResponseType {
+  human_reply
+  rejection_reply
+  screen_scheduled
+  interview_scheduled
+}
+
+enum EngagementEventType {
+  recruiter_reply
+  phone_screen
+  interview_round
+  offer
+  rejection
+}
+
+enum CardPriority {
+  low
+  medium
+  high
+}
+
+enum CardState {
+  active
+  dismissed
+  archived
+}
+
+model Application {
+  id             String              @id @default(uuid())
+  companyName    String              @map("company_name")
+  roleTitle      String              @map("role_title")
+  genericStatus  GenericStatus       @map("generic_status")
+  preciseStatus  String?             @map("precise_status")
+  roleFamily     String?             @map("role_family")
+  roleLevel      String?             @map("role_level")
+  appliedAt      DateTime            @map("applied_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  notes          String?
+  resumes        ApplicationResume[]
+  interviews     Interview[]
+  emailLogs      EmailLog[]
+  followups      FollowupAttempt[]
+  events         EngagementEvent[]
+  uiCards        UiCard[]
+
+  @@index([genericStatus])
+  @@index([appliedAt])
+  @@map("applications")
+}
+
+model Resume {
+  id            String              @id @default(uuid())
+  name          String
+  filePath      String              @map("file_path")
+  extractedText String?             @map("extracted_text")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  applications  ApplicationResume[]
+
+  @@map("resumes")
+}
+
+model ApplicationResume {
+  applicationId String      @map("application_id")
+  resumeId      String      @map("resume_id")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  resume        Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@id([applicationId, resumeId])
+  @@map("application_resumes")
+}
+
+model Interview {
+  id          String                @id @default(uuid())
+  applicationId String              @map("application_id")
+  application Application           @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  roundIndex  Int                   @map("round_index")
+  roundLabel  String                @map("round_label")
+  scheduledAt DateTime              @map("scheduled_at")
+  status      InterviewStatus
+  createdAt   DateTime              @default(now()) @map("created_at")
+  reflection  InterviewReflection?
+  uiCards     UiCard[]
+
+  @@index([applicationId, scheduledAt])
+  @@map("interviews")
+}
+
+model InterviewReflection {
+  id          String            @id @default(uuid())
+  interviewId String            @unique @map("interview_id")
+  interview   Interview         @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  summary     String
+  outcome     ReflectionOutcome
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  @@map("interview_reflections")
+}
+
+model EmailLog {
+  id            String        @id @default(uuid())
+  applicationId String        @map("application_id")
+  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  direction     EmailDirection
+  isHuman       Boolean       @map("is_human")
+  subject       String
+  body          String
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@index([applicationId, createdAt])
+  @@map("email_logs")
+}
+
+model FollowupAttempt {
+  id            String           @id @default(uuid())
+  applicationId String           @map("application_id")
+  application   Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  attemptIndex  Int              @map("attempt_index")
+  channel       FollowupChannel
+  sentAt        DateTime         @map("sent_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  result        FollowupResult?
+
+  @@index([applicationId, sentAt])
+  @@map("followup_attempts")
+}
+
+model FollowupResult {
+  id                String                @id @default(uuid())
+  followupAttemptId String                @unique @map("followup_attempt_id")
+  followupAttempt   FollowupAttempt       @relation(fields: [followupAttemptId], references: [id], onDelete: Cascade)
+  resultStatus      FollowupResultStatus  @map("result_status")
+  responseType      FollowupResponseType? @map("response_type")
+  resolvedAt        DateTime?             @map("resolved_at")
+
+  @@map("followup_results")
+}
+
+model EngagementEvent {
+  id            String              @id @default(uuid())
+  applicationId String              @map("application_id")
+  application   Application         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  eventType     EngagementEventType @map("event_type")
+  occurredAt    DateTime            @map("occurred_at")
+
+  @@index([applicationId, occurredAt])
+  @@map("engagement_events")
+}
+
+model UiCard {
+  id                   String       @id @default(uuid())
+  createdAt            DateTime     @default(now()) @map("created_at")
+  cardType             String       @map("card_type")
+  priority             CardPriority
+  title                String
+  body                 String
+  evidenceJson         String       @map("evidence_json")
+  suggestedGptPrompt   String?      @map("suggested_gpt_prompt")
+  relatedApplicationId String?      @map("related_application_id")
+  relatedInterviewId   String?      @map("related_interview_id")
+  relatedApplication   Application? @relation(fields: [relatedApplicationId], references: [id], onDelete: SetNull)
+  relatedInterview     Interview?   @relation(fields: [relatedInterviewId], references: [id], onDelete: SetNull)
+  state                CardState    @default(active)
+  snoozedUntil         DateTime?    @map("snoozed_until")
+  expiresAt            DateTime?    @map("expires_at")
+  dedupeKey            String       @map("dedupe_key")
+
+  @@index([state, priority])
+  @@index([dedupeKey, state])
+  @@map("ui_cards")
+}
+
+model LlmRunQueue {
+  id               Int       @id
+  pending          Boolean   @default(false)
+  lastRunStartedAt DateTime? @map("last_run_started_at")
+  lastRunFinishedAt DateTime? @map("last_run_finished_at")
+  cooldownUntil    DateTime? @map("cooldown_until")
+
+  @@map("llm_run_queue")
+}
+
+model LlmRun {
+  id               String    @id @default(uuid())
+  startedAt        DateTime  @map("started_at")
+  finishedAt       DateTime? @map("finished_at")
+  cardsCreatedCount Int      @default(0) @map("cards_created_count")
+  error            String?
+
+  @@map("llm_runs")
+}

@@ -1,0 +1,8 @@
+version: "2"
+authtoken: ${NGROK_AUTHTOKEN}
+
+tunnels:
+  mcp:
+    addr: 7331
+    proto: http
+    inspect: true

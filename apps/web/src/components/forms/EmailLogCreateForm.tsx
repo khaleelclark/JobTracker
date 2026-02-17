@@ -1,0 +1,130 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
+
+interface ApplicationOption {
+  id: string;
+  companyName: string;
+  roleTitle: string;
+}
+
+interface EmailLogCreateFormProps {
+  applications: ApplicationOption[];
+  defaultApplicationId?: string;
+}
+
+function boolFromCheckbox(value: FormDataEntryValue | null): boolean {
+  return value === "on";
+}
+
+export function EmailLogCreateForm({ applications, defaultApplicationId }: EmailLogCreateFormProps) {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    setSuccess(null);
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    const payload = {
+      applicationId: String(data.get("applicationId") ?? ""),
+      direction: String(data.get("direction") ?? "inbound"),
+      isHuman: boolFromCheckbox(data.get("isHuman")),
+      subject: String(data.get("subject") ?? "").trim(),
+      body: String(data.get("body") ?? "").trim(),
+    };
+
+    try {
+      const response = await fetch("/api/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
+        throw new Error(typeof body.error === "string" ? body.error : "Unable to save email log");
+      }
+
+      if (!defaultApplicationId) {
+        form.reset();
+      } else {
+        const appField = form.elements.namedItem("applicationId") as HTMLSelectElement | null;
+        if (appField) {
+          appField.value = defaultApplicationId;
+        }
+      }
+      setSuccess("Email log saved.");
+      router.refresh();
+    } catch (submitError) {
+      const message = submitError instanceof Error ? submitError.message : "Unknown error";
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form className="form-card" onSubmit={handleSubmit}>
+      <div className="form-header">
+        <h2>Log Email</h2>
+        <p className="muted">Store inbound or outbound communication records.</p>
+      </div>
+
+      <div className="form-grid form-grid-2">
+        <label>
+          Application
+          <select name="applicationId" required defaultValue={defaultApplicationId ?? ""}>
+            <option value="" disabled>
+              Select application
+            </option>
+            {applications.map((application) => (
+              <option key={application.id} value={application.id}>
+                {application.companyName} - {application.roleTitle}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Direction
+          <select name="direction" defaultValue="inbound">
+            <option value="inbound">inbound</option>
+            <option value="outbound">outbound</option>
+          </select>
+        </label>
+      </div>
+
+      <label className="checkbox-row">
+        <input name="isHuman" type="checkbox" defaultChecked />
+        Human sender/recipient
+      </label>
+
+      <label>
+        Subject
+        <input name="subject" required maxLength={300} placeholder="Interview invitation" />
+      </label>
+
+      <label>
+        Body
+        <textarea name="body" rows={6} required maxLength={12000} placeholder="Paste the email body" />
+      </label>
+
+      <div className="form-actions">
+        <button type="submit" disabled={submitting || applications.length === 0}>
+          {submitting ? "Saving..." : "Save Email Log"}
+        </button>
+        {applications.length === 0 ? <span className="error-text">Create an application first.</span> : null}
+        {success ? <span className="success-text">{success}</span> : null}
+        {error ? <span className="error-text">{error}</span> : null}
+      </div>
+    </form>
+  );
+}

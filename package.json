@@ -1,0 +1,23 @@
+{
+  "name": "job-tracker",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "concurrently \"pnpm dev:web\" \"pnpm dev:mcp\"",
+    "dev:web": "pnpm --filter @job-tracker/web dev",
+    "dev:mcp": "pnpm --filter @job-tracker/mcp-server dev",
+    "ollama:serve:cpu": "powershell -ExecutionPolicy Bypass -File scripts/ollamaServeCpu.ps1",
+    "ollama:serve:cpu:sh": "bash scripts/ollamaServeCpu.sh",
+    "db:migrate": "tsx scripts/dbMigrate.ts",
+    "db:studio": "tsx scripts/dbStudio.ts",
+    "worker:run": "pnpm --filter @job-tracker/web worker:run",
+    "backup:run": "tsx scripts/backup.ts",
+    "init:data-dir": "tsx scripts/initDataDir.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
