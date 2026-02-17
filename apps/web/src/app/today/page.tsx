@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db";
 export default async function TodayPage() {
   const now = new Date();
 
-  const [cards, interviews, engagementEvents, followups, emails] = await Promise.all([
+  const [cards, interviews, engagementEvents, followups, emails, recentApplications] = await Promise.all([
     prisma.uiCard.findMany({
       where: {
         state: "active",
@@ -43,9 +43,25 @@ export default async function TodayPage() {
       take: 20,
       include: { application: true },
     }),
+    prisma.application.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        companyName: true,
+        roleTitle: true,
+        genericStatus: true,
+        updatedAt: true,
+      },
+    }),
   ]);
 
   const timeline = [
+    ...recentApplications.map((application) => ({
+      id: `application_${application.id}_${application.updatedAt.toISOString()}`,
+      label: `${application.companyName}: application updated (${application.roleTitle}, ${application.genericStatus})`,
+      occurredAt: application.updatedAt,
+    })),
     ...engagementEvents.map((event) => ({
       id: `event_${event.id}`,
       label: `${event.application.companyName}: ${event.eventType}`,
