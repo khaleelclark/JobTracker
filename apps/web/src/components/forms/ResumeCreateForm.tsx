@@ -9,8 +9,15 @@ interface ApplicationOption {
   roleTitle: string;
 }
 
+interface SkillOption {
+  id: string;
+  name: string;
+  category: string | null;
+}
+
 interface ResumeCreateFormProps {
   applications: ApplicationOption[];
+  skills: SkillOption[];
 }
 
 function readFileAsBase64(file: File): Promise<string> {
@@ -30,7 +37,7 @@ function readFileAsBase64(file: File): Promise<string> {
   });
 }
 
-export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
+export function ResumeCreateForm({ applications, skills }: ResumeCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +59,7 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
     const data = new FormData(form);
 
     const selectedIds = data.getAll("linkedApplicationIds").map((value) => String(value));
+    const selectedSkillIds = data.getAll("linkedSkillIds").map((value) => String(value));
 
     const payload: {
       name: string;
@@ -60,10 +68,12 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
       fileBase64?: string;
       extractedText: string | null;
       linkedApplicationIds: string[];
+      linkedSkillIds: string[];
     } = {
       name: String(data.get("name") ?? "").trim(),
       extractedText: String(data.get("extractedText") ?? "").trim() || null,
       linkedApplicationIds: selectedIds,
+      linkedSkillIds: selectedSkillIds,
     };
 
     const filePath = String(data.get("filePath") ?? "").trim();
@@ -130,6 +140,18 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
           {applications.map((application) => (
             <option key={application.id} value={application.id}>
               {application.companyName} - {application.roleTitle}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        Link to Master Skills
+        <select name="linkedSkillIds" multiple size={Math.min(8, Math.max(3, skills.length))}>
+          {skills.map((skill) => (
+            <option key={skill.id} value={skill.id}>
+              {skill.name}
+              {skill.category ? ` (${skill.category})` : ""}
             </option>
           ))}
         </select>

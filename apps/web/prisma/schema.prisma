@@ -105,8 +105,33 @@ model Resume {
   extractedText String?             @map("extracted_text")
   createdAt     DateTime            @default(now()) @map("created_at")
   applications  ApplicationResume[]
+  masterSkills  ResumeMasterSkill[]
 
   @@map("resumes")
+}
+
+model MasterSkill {
+  id           String            @id @default(uuid())
+  name         String
+  category     String?
+  notes        String?
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  resumeLinks  ResumeMasterSkill[]
+
+  @@index([category])
+  @@unique([name])
+  @@map("master_skills")
+}
+
+model ResumeMasterSkill {
+  resumeId      String      @map("resume_id")
+  masterSkillId String      @map("master_skill_id")
+  resume        Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  masterSkill   MasterSkill @relation(fields: [masterSkillId], references: [id], onDelete: Cascade)
+
+  @@id([resumeId, masterSkillId])
+  @@map("resume_master_skills")
 }
 
 model ApplicationResume {

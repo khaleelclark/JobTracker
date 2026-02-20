@@ -552,6 +552,25 @@ button:disabled {
   margin: 0;
 }
 
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(8, 16, 28, 0.5);
+  z-index: 200;
+}
+
+.modal-card {
+  width: min(460px, 100%);
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
 @keyframes riseIn {
   from {
     transform: translateY(8px);
