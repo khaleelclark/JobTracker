@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { CopyPromptButton } from "./CopyPromptButton";
 
@@ -29,18 +30,22 @@ export function UiCard({ id, title, body, priority, cardType, prompt }: UiCardPr
     <article className="card interactive reveal">
       <div className="card-head">
         <div>
-          <h3>{title}</h3>
-          <div className="muted">{cardType}</div>
+          <Typography variant="h6" component="h3">
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {cardType}
+          </Typography>
         </div>
         <span className={`pill priority-${priority}`}>{priority}</span>
       </div>
-      <p>{body}</p>
+      <Typography variant="body2">{body}</Typography>
       <div className="button-row">
-        <button type="button" onClick={() => submit("dismiss")}>Dismiss</button>
-        <button type="button" onClick={() => submit("archive")}>Archive</button>
-        <button type="button" onClick={() => submit("snooze", 1)}>Snooze 1d</button>
-        <button type="button" onClick={() => submit("snooze", 3)}>Snooze 3d</button>
-        <button type="button" onClick={() => submit("snooze", 7)}>Snooze 7d</button>
+        <Button type="button" onClick={() => submit("dismiss")}>Dismiss</Button>
+        <Button type="button" onClick={() => submit("archive")}>Archive</Button>
+        <Button type="button" onClick={() => submit("snooze", 1)}>Snooze 1d</Button>
+        <Button type="button" onClick={() => submit("snooze", 3)}>Snooze 3d</Button>
+        <Button type="button" onClick={() => submit("snooze", 7)}>Snooze 7d</Button>
         <CopyPromptButton prompt={prompt} />
       </div>
     </article>

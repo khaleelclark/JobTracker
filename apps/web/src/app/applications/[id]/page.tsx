@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { ApplicationDetailActivityPanel } from "@/components/ApplicationDetailActivityPanel";
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface ApplicationDetailPageProps {
   params: Promise<{ id: string }>;
@@ -46,7 +47,7 @@ export default async function ApplicationDetailPage({ params }: ApplicationDetai
       <div className="card">
         <h1 className="no-margin">{application.companyName}</h1>
         <p>
-          {application.roleTitle} - <span className="pill">{application.genericStatus}</span>
+          {application.roleTitle} - <span className={`pill status-${application.genericStatus}`}>{toTitleCaseLabel(application.genericStatus)}</span>
         </p>
         {application.notes ? <p>{application.notes}</p> : <p className="muted">No notes.</p>}
       </div>

@@ -10,6 +10,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
 const migrationsDir = path.join(repoRoot, "apps/web/prisma/migrations");
+const GENERIC_STATUSES = [
+  "interested",
+  "applied",
+  "under_review",
+  "interviewing",
+  "offered",
+  "rejected",
+  "withdrawn",
+  "archived",
+];
 
 function sqliteFileUrl(filePath) {
   return `file:${filePath.replace(/\\/g, "/")}`;
@@ -62,13 +72,14 @@ test("core CRUD across job tracker entities", async () => {
       data: {
         companyName: "Acme Corp",
         roleTitle: "Software Engineer",
-        genericStatus: "applied",
+        genericStatus: "under_review",
         appliedAt: new Date("2026-02-20T10:00:00.000Z"),
         notes: "Initial application submitted",
       },
     });
     const applicationRead = await prisma.application.findUnique({ where: { id: application.id } });
     assert.equal(applicationRead?.companyName, "Acme Corp");
+    assert.equal(applicationRead?.genericStatus, "under_review");
     const applicationUpdated = await prisma.application.update({
       where: { id: application.id },
       data: { notes: "Updated notes", genericStatus: "interviewing" },
@@ -250,6 +261,65 @@ test("core CRUD across job tracker entities", async () => {
     await prisma.application.delete({ where: { id: application.id } });
     const applicationDeleted = await prisma.application.findUnique({ where: { id: application.id } });
     assert.equal(applicationDeleted, null);
+  } finally {
+    await prisma.$disconnect();
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("application CRUD supports every generic status", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "job-tracker-crud-statuses-"));
+  const dbPath = path.join(tempDir, "crud-statuses-test.sqlite");
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: sqliteFileUrl(dbPath),
+      },
+    },
+  });
+
+  try {
+    await prisma.$connect();
+    await applyMigrations(prisma);
+
+    // C + R for every status
+    const createdIds = [];
+    for (let index = 0; index < GENERIC_STATUSES.length; index += 1) {
+      const status = GENERIC_STATUSES[index];
+      // eslint-disable-next-line no-await-in-loop
+      const created = await prisma.application.create({
+        data: {
+          companyName: `Status Co ${index + 1}`,
+          roleTitle: "Status Validation Role",
+          genericStatus: status,
+          appliedAt: new Date(`2026-03-${String(index + 1).padStart(2, "0")}T12:00:00.000Z`),
+        },
+      });
+      createdIds.push(created.id);
+      // eslint-disable-next-line no-await-in-loop
+      const readBack = await prisma.application.findUnique({ where: { id: created.id } });
+      assert.equal(readBack?.genericStatus, status);
+    }
+
+    // U over every status on one row
+    const targetId = createdIds[0];
+    for (const status of GENERIC_STATUSES) {
+      // eslint-disable-next-line no-await-in-loop
+      const updated = await prisma.application.update({
+        where: { id: targetId },
+        data: { genericStatus: status },
+      });
+      assert.equal(updated.genericStatus, status);
+    }
+
+    // D for all rows
+    for (const id of createdIds) {
+      // eslint-disable-next-line no-await-in-loop
+      await prisma.application.delete({ where: { id } });
+      // eslint-disable-next-line no-await-in-loop
+      const deleted = await prisma.application.findUnique({ where: { id } });
+      assert.equal(deleted, null);
+    }
   } finally {
     await prisma.$disconnect();
     await fs.rm(tempDir, { recursive: true, force: true });

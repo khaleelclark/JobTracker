@@ -40,7 +40,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
         query: { type: "string" },
         generic_status: {
           type: "string",
-          enum: ["interested", "applied", "interviewing", "offered", "rejected", "withdrawn", "archived"],
+          enum: ["interested", "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived"],
         },
         limit: { type: "integer", minimum: 1, maximum: 100 },
       },

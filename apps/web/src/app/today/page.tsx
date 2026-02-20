@@ -5,6 +5,7 @@ import { RefreshInsightsButton } from "@/components/RefreshInsightsButton";
 import { Timeline } from "@/components/Timeline";
 import { UiCardList } from "@/components/UiCardList";
 import { prisma } from "@/lib/db";
+import { toTitleCaseLabel } from "@/lib/format";
 
 export default async function TodayPage() {
   const now = new Date();
@@ -59,7 +60,7 @@ export default async function TodayPage() {
   const timeline = [
     ...recentApplications.map((application) => ({
       id: `application_${application.id}_${application.updatedAt.toISOString()}`,
-      label: `${application.companyName}: application updated (${application.roleTitle}, ${application.genericStatus})`,
+      label: `${application.companyName}: application updated (${application.roleTitle}, ${toTitleCaseLabel(application.genericStatus)})`,
       occurredAt: application.updatedAt,
     })),
     ...engagementEvents.map((event) => ({

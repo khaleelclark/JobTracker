@@ -313,6 +313,7 @@ td a:hover {
 
 .status-interested,
 .status-applied,
+.status-under_review,
 .status-interviewing,
 .status-offered,
 .status-rejected,
@@ -329,6 +330,11 @@ td a:hover {
 .status-applied {
   background: rgba(15, 118, 110, 0.14);
   color: #0f766e;
+}
+
+.status-under_review {
+  background: rgba(217, 119, 6, 0.16);
+  color: #92400e;
 }
 
 .status-interviewing {

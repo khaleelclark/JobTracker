@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { toTitleCaseLabel } from "@/lib/format";
 
 const STATUS_OPTIONS = [
   "interested",
   "applied",
+  "under_review",
   "interviewing",
   "offered",
   "rejected",
@@ -93,7 +95,7 @@ export function ApplicationCreateForm() {
           <select name="genericStatus" defaultValue="applied">
             {STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {toTitleCaseLabel(status)}
               </option>
             ))}
           </select>

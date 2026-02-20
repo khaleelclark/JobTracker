@@ -6,6 +6,7 @@ export const createApplicationSchema = z.object({
   genericStatus: z.enum([
     "interested",
     "applied",
+    "under_review",
     "interviewing",
     "offered",
     "rejected",
@@ -120,7 +121,7 @@ export const updateCardStateSchema = z.object({
 export const listApplicationsQuerySchema = z.object({
   query: z.string().max(200).optional(),
   genericStatus: z
-    .enum(["interested", "applied", "interviewing", "offered", "rejected", "withdrawn", "archived"])
+    .enum(["interested", "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived"])
     .optional(),
   limit: z.number().int().min(1).max(100).default(50),
 });

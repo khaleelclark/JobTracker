@@ -40,3 +40,31 @@ test("llm worker mutates only card/run tables", () => {
     assert.ok(allowedModels.has(model), `unexpected prisma mutation target in worker: ${model}`);
   }
 });
+
+test("generic status includes under_review across schema/constants/validation/mcp", () => {
+  const prismaSchema = read("apps/web/prisma/schema.prisma");
+  const sharedConstants = read("packages/shared/src/constants.ts");
+  const webValidation = read("apps/web/src/lib/validation.ts");
+  const mcpSearch = read("apps/mcp-server/src/tools/searchApplications.ts");
+
+  assert.match(prismaSchema, /enum GenericStatus[\s\S]*under_review/);
+  assert.match(sharedConstants, /GENERIC_APPLICATION_STATUSES[\s\S]*"under_review"/);
+  assert.match(webValidation, /genericStatus[\s\S]*"under_review"/);
+  assert.match(mcpSearch, /generic_status[\s\S]*"under_review"/);
+});
+
+test("application status displays use title-case formatter", () => {
+  const appTable = read("apps/web/src/components/ApplicationTable.tsx");
+  const appCreate = read("apps/web/src/components/forms/ApplicationCreateForm.tsx");
+  const appEdit = read("apps/web/src/components/forms/ApplicationEditDeleteForm.tsx");
+  const appDetail = read("apps/web/src/app/applications/[id]/page.tsx");
+  const today = read("apps/web/src/app/today/page.tsx");
+  const globals = read("apps/web/src/app/globals.css");
+
+  assert.match(appTable, /toTitleCaseLabel\(application\.genericStatus\)/);
+  assert.match(appCreate, /toTitleCaseLabel\(status\)/);
+  assert.match(appEdit, /toTitleCaseLabel\(status\)/);
+  assert.match(appDetail, /toTitleCaseLabel\(application\.genericStatus\)/);
+  assert.match(today, /toTitleCaseLabel\(application\.genericStatus\)/);
+  assert.match(globals, /\.status-under_review/);
+});

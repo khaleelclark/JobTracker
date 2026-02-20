@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface ApplicationRow {
   id: string;
@@ -41,7 +42,7 @@ export function ApplicationTable({ applications }: ApplicationTableProps) {
               </td>
               <td>{application.roleTitle}</td>
               <td>
-                <span className={`pill status-${application.genericStatus}`}>{application.genericStatus}</span>
+                <span className={`pill status-${application.genericStatus}`}>{toTitleCaseLabel(application.genericStatus)}</span>
               </td>
               <td>{application.appliedAt.toLocaleDateString()}</td>
             </tr>
