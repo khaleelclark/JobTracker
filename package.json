@@ -13,7 +13,10 @@
     "db:studio": "tsx scripts/dbStudio.ts",
     "worker:run": "pnpm --filter @job-tracker/web worker:run",
     "backup:run": "tsx scripts/backup.ts",
-    "init:data-dir": "tsx scripts/initDataDir.ts"
+    "init:data-dir": "tsx scripts/initDataDir.ts",
+    "test:invariants": "node --test tests/invariants.test.mjs",
+    "test:crud": "node --test tests/crud.test.mjs",
+    "test": "pnpm test:invariants && pnpm test:crud"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

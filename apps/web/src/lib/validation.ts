@@ -79,3 +79,16 @@ export const updateCardStateSchema = z.object({
   action: z.enum(["dismiss", "archive", "snooze"]),
   snoozeDays: z.number().int().min(1).max(30).optional(),
 });
+
+export const listApplicationsQuerySchema = z.object({
+  query: z.string().max(200).optional(),
+  genericStatus: z
+    .enum(["interested", "applied", "interviewing", "offered", "rejected", "withdrawn", "archived"])
+    .optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+});
+
+export const listUiCardsQuerySchema = z.object({
+  state: z.enum(["active", "dismissed", "archived"]).optional(),
+  limit: z.number().int().min(1).max(100).default(100),
+});

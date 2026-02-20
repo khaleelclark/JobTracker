@@ -1,17 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { createApplicationSchema } from "@/lib/validation";
+import { createApplicationSchema, listApplicationsQuerySchema } from "@/lib/validation";
 import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("query")?.trim();
-  const status = searchParams.get("genericStatus")?.trim();
-  const limit = Number(searchParams.get("limit") ?? 50);
+  const parsed = listApplicationsQuerySchema.safeParse({
+    query: searchParams.get("query")?.trim() || undefined,
+    genericStatus: searchParams.get("genericStatus")?.trim() || undefined,
+    limit: Number(searchParams.get("limit") ?? 50),
+  });
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  const { query, genericStatus, limit } = parsed.data;
 
   const applications = await prisma.application.findMany({
     where: {
-      ...(status ? { genericStatus: status as never } : {}),
+      ...(genericStatus ? { genericStatus } : {}),
       ...(query
         ? {
             OR: [
@@ -22,7 +30,7 @@ export async function GET(request: Request) {
         : {}),
     },
     orderBy: { updatedAt: "desc" },
-    take: Number.isNaN(limit) ? 50 : Math.min(Math.max(limit, 1), 100),
+    take: limit,
   });
 
   return NextResponse.json({ applications });

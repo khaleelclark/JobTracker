@@ -51,3 +51,10 @@ export async function saveResumeFile(fileName: string, buffer: Buffer): Promise<
   await fs.writeFile(fullPath, buffer);
   return fullPath;
 }
+
+export function isPathWithinResumeDir(filePath: string): boolean {
+  const resolvedPath = path.resolve(filePath);
+  const resumeDir = resolveResumeDir();
+  const relative = path.relative(resumeDir, resolvedPath);
+  return relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
+}

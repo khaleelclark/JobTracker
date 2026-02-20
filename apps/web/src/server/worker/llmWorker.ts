@@ -50,23 +50,33 @@ export async function runWorkerOnce(options: RunOptions = {}): Promise<{ created
     const validation = await validateWorkerOutput(raw);
 
     let created = 0;
+    let duplicateSkipped = 0;
     for (const card of validation.accepted) {
-      await prisma.uiCard.create({
-        data: {
-          cardType: card.card_type,
-          priority: card.priority,
-          title: card.title,
-          body: card.body,
-          evidenceJson: JSON.stringify(card.evidence),
-          suggestedGptPrompt: card.suggested_gpt_prompt,
-          relatedApplicationId: card.related_application_id,
-          relatedInterviewId: card.related_interview_id,
-          dedupeKey: card.dedupe_key,
-          expiresAt: addHours(new Date(), card.expires_in_hours),
-          state: "active",
-        },
-      });
-      created += 1;
+      try {
+        await prisma.uiCard.create({
+          data: {
+            cardType: card.card_type,
+            priority: card.priority,
+            title: card.title,
+            body: card.body,
+            evidenceJson: JSON.stringify(card.evidence),
+            suggestedGptPrompt: card.suggested_gpt_prompt,
+            relatedApplicationId: card.related_application_id,
+            relatedInterviewId: card.related_interview_id,
+            dedupeKey: card.dedupe_key,
+            expiresAt: addHours(new Date(), card.expires_in_hours),
+            state: "active",
+          },
+        });
+        created += 1;
+      } catch (error) {
+        if (isUniqueConstraintError(error)) {
+          duplicateSkipped += 1;
+          continue;
+        }
+
+        throw error;
+      }
     }
 
     await prisma.llmRun.update({
@@ -75,8 +85,11 @@ export async function runWorkerOnce(options: RunOptions = {}): Promise<{ created
         finishedAt: new Date(),
         cardsCreatedCount: created,
         error:
-          validation.rejected.length > 0
-            ? JSON.stringify({ rejected_count: validation.rejected.length })
+          validation.rejected.length > 0 || duplicateSkipped > 0
+            ? JSON.stringify({
+                rejected_count: validation.rejected.length,
+                duplicate_skipped_count: duplicateSkipped,
+              })
             : null,
       },
     });
@@ -97,6 +110,15 @@ export async function runWorkerOnce(options: RunOptions = {}): Promise<{ created
     await finishRun(new Date());
     return { created: 0, skippedReason: message };
   }
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const candidate = error as { code?: unknown };
+  return candidate.code === "P2002";
 }
 
 async function enforcePromptOnlyCardPolicy(): Promise<void> {

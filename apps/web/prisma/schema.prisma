@@ -132,6 +132,7 @@ model Interview {
   uiCards     UiCard[]
 
   @@index([applicationId, scheduledAt])
+  @@unique([applicationId, roundIndex])
   @@map("interviews")
 }
 
@@ -171,6 +172,7 @@ model FollowupAttempt {
   result        FollowupResult?
 
   @@index([applicationId, sentAt])
+  @@unique([applicationId, attemptIndex])
   @@map("followup_attempts")
 }
 
@@ -215,7 +217,7 @@ model UiCard {
   dedupeKey            String       @map("dedupe_key")
 
   @@index([state, priority])
-  @@index([dedupeKey, state])
+  @@unique([dedupeKey, state])
   @@map("ui_cards")
 }
 

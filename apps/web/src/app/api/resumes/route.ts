@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { saveResumeFile } from "@/lib/fileStore";
+import { isPathWithinResumeDir, saveResumeFile } from "@/lib/fileStore";
 import { createResumeSchema } from "@/lib/validation";
 import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
@@ -26,6 +26,13 @@ export async function POST(request: Request) {
   }
 
   let filePath = parsed.data.filePath;
+
+  if (filePath && !isPathWithinResumeDir(filePath)) {
+    return NextResponse.json(
+      { error: "filePath must be inside the managed resume directory" },
+      { status: 400 },
+    );
+  }
 
   if (!filePath && parsed.data.fileBase64 && parsed.data.fileName) {
     const bytes = Buffer.from(parsed.data.fileBase64, "base64");
