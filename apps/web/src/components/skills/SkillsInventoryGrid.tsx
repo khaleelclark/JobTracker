@@ -3,14 +3,17 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataGrid, GridColDef, GridRenderCellParams, GridRowId } from "@mui/x-data-grid";
+import NumberSpinner from "@/components/NumberSpinner";
 import {
   Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
@@ -30,6 +33,7 @@ interface SkillRow {
   id: string;
   name: string;
   category: string | null;
+  experienceYears: number | null;
   notes: string | null;
   linkedResumeIds: string[];
   linkedResumeCount: number;
@@ -73,22 +77,28 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [addName, setAddName] = useState("");
   const [addCategory, setAddCategory] = useState("");
+  const [addExperienceYears, setAddExperienceYears] = useState<number | null>(0);
   const [addNotes, setAddNotes] = useState("");
   const [addLinkedResumeIds, setAddLinkedResumeIds] = useState<string[]>([]);
   const [editingSkill, setEditingSkill] = useState<SkillRow | null>(null);
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("");
+  const [editExperienceYears, setEditExperienceYears] = useState<number | null>(null);
   const [editNotes, setEditNotes] = useState("");
   const [editLinkedResumeIds, setEditLinkedResumeIds] = useState<string[]>([]);
   const [deleteSkill, setDeleteSkill] = useState<SkillRow | null>(null);
+  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
+  const [deleteAllAcknowledge, setDeleteAllAcknowledge] = useState(false);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
 
   function openEditDialog(row: SkillRow) {
     setEditingSkill(row);
     setEditName(row.name);
     setEditCategory(row.category ?? "");
+    setEditExperienceYears(row.experienceYears ?? null);
     setEditNotes(row.notes ?? "");
     setEditLinkedResumeIds(row.linkedResumeIds);
   }
@@ -113,7 +123,7 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
     setIsAddDialogOpen(false);
   }
 
-  function handleDeleteDialogClose(
+function handleDeleteDialogClose(
     _event: object,
     reason: "backdropClick" | "escapeKeyDown",
   ) {
@@ -121,6 +131,24 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
       return;
     }
     setDeleteSkill(null);
+  }
+
+  function handleDeleteAllDialogClose(
+    _event: object,
+    reason: "backdropClick" | "escapeKeyDown",
+  ) {
+    if (reason === "backdropClick" || deletingAll) {
+      return;
+    }
+    setIsDeleteAllDialogOpen(false);
+    setDeleteAllAcknowledge(false);
+  }
+
+  function parseExperienceYearsInput(value: number | null): number | null {
+    if (value === null || !Number.isFinite(value)) {
+      return null;
+    }
+    return Number((Math.round(value * 2) / 2).toFixed(1));
   }
 
   const columns = useMemo<GridColDef<SkillRow>[]>(
@@ -132,6 +160,13 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
         flex: 0.9,
         minWidth: 160,
         valueGetter: (_value, row) => row.category ?? "Uncategorized",
+      },
+      {
+        field: "experienceYears",
+        headerName: "Experience (Years)",
+        width: 180,
+        valueGetter: (_value, row) =>
+          row.experienceYears === null ? "Not set" : `${row.experienceYears.toFixed(1)} years`,
       },
       {
         field: "notes",
@@ -180,6 +215,7 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
     const payload = {
       name: editName.trim(),
       category: editCategory.trim() || null,
+      experienceYears: parseExperienceYearsInput(editExperienceYears),
       notes: editNotes.trim() || null,
       linkedResumeIds: editLinkedResumeIds,
     };
@@ -212,6 +248,7 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
     const payload = {
       name: addName.trim(),
       category: addCategory.trim() || null,
+      experienceYears: parseExperienceYearsInput(addExperienceYears),
       notes: addNotes.trim() || null,
       linkedResumeIds: addLinkedResumeIds,
     };
@@ -231,6 +268,7 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
       setIsAddDialogOpen(false);
       setAddName("");
       setAddCategory("");
+      setAddExperienceYears(0);
       setAddNotes("");
       setAddLinkedResumeIds([]);
       router.refresh();
@@ -266,6 +304,32 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
     }
   }
 
+  async function handleDeleteAllSkills() {
+    setDeletingAll(true);
+
+    try {
+      const response = await fetch("/api/master-skills", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmDeleteAll: true }),
+      });
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
+        throw new Error(typeof body.error === "string" ? body.error : "Unable to delete all skills");
+      }
+
+      setIsDeleteAllDialogOpen(false);
+      setDeleteAllAcknowledge(false);
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      window.alert(message);
+    } finally {
+      setDeletingAll(false);
+    }
+  }
+
   return (
     <>
       <div className="section-head">
@@ -284,6 +348,11 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
           initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }}
           sx={{ backgroundColor: "#fff" }}
         />
+      </Box>
+      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button onClick={() => setIsDeleteAllDialogOpen(true)} disabled={skills.length === 0} sx={APP_BUTTON_LG_SX}>
+          Delete All Skills
+        </Button>
       </Box>
 
       <Dialog
@@ -328,6 +397,15 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
               onChange={(event) => setAddCategory(event.target.value)}
               inputProps={{ maxLength: 120 }}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
+            />
+            <NumberSpinner
+              label="Experience (Years)"
+              value={addExperienceYears}
+              onValueChange={setAddExperienceYears}
+              min={0}
+              max={60}
+              step={0.5}
+              size="small"
             />
             <FormControl>
               <InputLabel id="add-skill-linked-resumes-label">Linked Resumes</InputLabel>
@@ -422,6 +500,15 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
                   inputProps={{ maxLength: 120 }}
                   sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
                 />
+                <NumberSpinner
+                  label="Experience (Years)"
+                  value={editExperienceYears}
+                  onValueChange={setEditExperienceYears}
+                  min={0}
+                  max={60}
+                  step={0.5}
+                  size="small"
+                />
                 <FormControl>
                   <InputLabel id="edit-skill-linked-resumes-label">Linked Resumes</InputLabel>
                   <Select<string[]>
@@ -505,6 +592,78 @@ export function SkillsInventoryGrid({ title, skills, resumeOptions }: SkillsInve
           </Button>
           <Button onClick={() => void handleDeleteConfirmed()} disabled={deleting} sx={APP_BUTTON_SX}>
             {deleting ? "Deleting..." : "Confirm Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={isDeleteAllDialogOpen}
+        onClose={handleDeleteAllDialogClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ pr: 7 }}>
+          Delete All Skills
+          <IconButton
+            aria-label="Close delete-all dialog"
+            onClick={() => {
+              if (deletingAll) {
+                return;
+              }
+              setIsDeleteAllDialogOpen(false);
+              setDeleteAllAcknowledge(false);
+            }}
+            disabled={deletingAll}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              borderRadius: 0,
+              backgroundColor: "transparent",
+              "&:hover": { backgroundColor: "transparent" },
+            }}
+          >
+            x
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <Paper variant="outlined" sx={{ p: 2, display: "grid", gap: 1.5 }}>
+            <p>
+              This will permanently delete all master skills and all corresponding resume links.
+              This cannot be undone.
+            </p>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={deleteAllAcknowledge}
+                  onChange={(event) => setDeleteAllAcknowledge(event.target.checked)}
+                  disabled={deletingAll}
+                />
+              }
+              label="I understand this will delete all my skills and corresponding links."
+            />
+          </Paper>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              if (deletingAll) {
+                return;
+              }
+              setIsDeleteAllDialogOpen(false);
+              setDeleteAllAcknowledge(false);
+            }}
+            disabled={deletingAll}
+            sx={APP_BUTTON_SX}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => void handleDeleteAllSkills()}
+            disabled={deletingAll || !deleteAllAcknowledge}
+            sx={APP_BUTTON_SX}
+          >
+            {deletingAll ? "Deleting..." : "Confirm Delete All"}
           </Button>
         </DialogActions>
       </Dialog>

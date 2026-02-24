@@ -82,7 +82,132 @@ function parseSkillsArray(value: unknown): string[] {
     .slice(0, 80);
 }
 
-async function extractSkillsWithLlm(text: string): Promise<string[]> {
+interface ParsedSkillCandidate {
+  name: string;
+  experienceYears: number | null;
+}
+
+function normalizeHalfYear(value: number): number {
+  return Number((Math.round(value * 2) / 2).toFixed(1));
+}
+
+function parseExperienceYears(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    if (value < 0 || value > 60) {
+      return null;
+    }
+    return normalizeHalfYear(value);
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const match = value.match(/\d+(\.\d+)?/);
+  if (!match) {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(match[0]);
+  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 60) {
+    return null;
+  }
+
+  return normalizeHalfYear(parsed);
+}
+
+function inferDefaultExperienceYears(resumeText: string): number {
+  const text = resumeText.toLowerCase();
+
+  // Use role seniority cues when present.
+  if (/\b(principal|staff|lead|senior)\b/.test(text)) {
+    return 8.0;
+  }
+  if (/\b(mid|intermediate)\b/.test(text)) {
+    return 4.0;
+  }
+  if (/\b(junior|entry[-\s]?level|intern(ship)?)\b/.test(text)) {
+    return 1.0;
+  }
+
+  // Otherwise infer from explicitly stated "X years" claims and clamp to a sane range.
+  const matches = [...text.matchAll(/(\d+(?:\.\d+)?)\+?\s+years?/g)];
+  if (matches.length > 0) {
+    const maxYears = matches.reduce((max, match) => {
+      const value = Number.parseFloat(match[1] ?? "0");
+      return Number.isFinite(value) ? Math.max(max, value) : max;
+    }, 0);
+
+    if (maxYears > 0) {
+      return normalizeHalfYear(Math.min(20, Math.max(0.5, maxYears)));
+    }
+  }
+
+  // Deterministic fallback when resume does not provide enough explicit tenure clues.
+  return 2.0;
+}
+
+function parseSkillsWithExperience(value: unknown): ParsedSkillCandidate[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const deduped = new Map<string, ParsedSkillCandidate>();
+
+  for (const item of value) {
+    if (typeof item === "string") {
+      const name = item.trim();
+      if (!name) {
+        continue;
+      }
+
+      const key = name.toLowerCase();
+      if (!deduped.has(key)) {
+        deduped.set(key, { name, experienceYears: null });
+      }
+      continue;
+    }
+
+    if (!item || typeof item !== "object") {
+      continue;
+    }
+
+    const candidate = item as {
+      name?: unknown;
+      skill?: unknown;
+      experience_years?: unknown;
+      experienceYears?: unknown;
+      years?: unknown;
+    };
+
+    const nameRaw = typeof candidate.name === "string" ? candidate.name : candidate.skill;
+    const name = typeof nameRaw === "string" ? nameRaw.trim() : "";
+    if (!name) {
+      continue;
+    }
+
+    const experienceYears =
+      parseExperienceYears(candidate.experience_years) ??
+      parseExperienceYears(candidate.experienceYears) ??
+      parseExperienceYears(candidate.years);
+
+    const key = name.toLowerCase();
+    const existing = deduped.get(key);
+
+    if (!existing) {
+      deduped.set(key, { name, experienceYears });
+      continue;
+    }
+
+    if (existing.experienceYears === null && experienceYears !== null) {
+      deduped.set(key, { ...existing, experienceYears });
+    }
+  }
+
+  return Array.from(deduped.values()).slice(0, 80);
+}
+
+async function extractSkillsWithLlm(text: string): Promise<ParsedSkillCandidate[]> {
   const openAiApiKey = process.env.OPENAI_API_KEY;
   const openAiBase = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
   const openAiModel = process.env.OPENAI_MODEL ?? process.env.LLM_MODEL ?? "gpt-4o-mini";
@@ -107,7 +232,7 @@ async function extractSkillsWithLlm(text: string): Promise<string[]> {
         {
           role: "system",
           content:
-            "Extract only explicit professional/technical skills from resume text. Return JSON: {\"skills\":[...]} with short skill names. No commentary.",
+            "Extract only explicit professional/technical skills from resume text. Return JSON: {\"skills\":[{\"name\":\"...\",\"experience_years\":number}]}. experience_years must be an estimated number in 0.5-year increments (no nulls). No commentary.",
         },
         {
           role: "user",
@@ -132,7 +257,12 @@ async function extractSkillsWithLlm(text: string): Promise<string[]> {
 
   try {
     const parsed = JSON.parse(content) as { skills?: unknown };
-    return parseSkillsArray(parsed.skills);
+    const withExperience = parseSkillsWithExperience(parsed.skills);
+    if (withExperience.length > 0) {
+      return withExperience;
+    }
+
+    return parseSkillsArray(parsed.skills).map((name) => ({ name, experienceYears: null }));
   } catch {
     return [];
   }
@@ -203,47 +333,77 @@ export async function POST(request: Request) {
     }
   }
 
-  const ruleBasedCandidates = extractSkillCandidatesFromResumeText(resumeText);
+  const ruleBasedCandidates = extractSkillCandidatesFromResumeText(resumeText).map((name) => ({
+    name,
+    experienceYears: null,
+  }));
   const llmCandidates = await extractSkillsWithLlm(resumeText);
-  const mergedCandidates = Array.from(new Set([...ruleBasedCandidates, ...llmCandidates])).slice(0, 80);
+  const mergedCandidateMap = new Map<string, ParsedSkillCandidate>();
 
-  if (mergedCandidates.length === 0) {
+  for (const candidate of [...ruleBasedCandidates, ...llmCandidates]) {
+    const key = candidate.name.toLowerCase();
+    const existing = mergedCandidateMap.get(key);
+
+    if (!existing) {
+      mergedCandidateMap.set(key, candidate);
+      continue;
+    }
+
+    if (existing.experienceYears === null && candidate.experienceYears !== null) {
+      mergedCandidateMap.set(key, candidate);
+    }
+  }
+
+  const mergedCandidates = Array.from(mergedCandidateMap.values()).slice(0, 80);
+  const fallbackExperienceYears = inferDefaultExperienceYears(resumeText);
+  const normalizedCandidates = mergedCandidates.map((candidate) => ({
+    ...candidate,
+    experienceYears: candidate.experienceYears ?? fallbackExperienceYears,
+  }));
+
+  if (normalizedCandidates.length === 0) {
     return NextResponse.json({
       generated: 0,
       linked: 0,
       matchedExisting: 0,
-      candidates: [],
+      candidates: [] as ParsedSkillCandidate[],
       message: "No known skills detected from the provided resume text.",
     });
   }
 
   const existingSkills = await prisma.masterSkill.findMany({
-    where: { name: { in: mergedCandidates } },
-    select: { id: true, name: true },
+    where: { name: { in: normalizedCandidates.map((candidate) => candidate.name) } },
+    select: { id: true, name: true, experienceYears: true },
   });
 
-  const existingByName = new Map(existingSkills.map((row) => [row.name.toLowerCase(), row.id]));
+  const existingByName = new Map(existingSkills.map((row) => [row.name.toLowerCase(), row]));
 
   const createdNames: string[] = [];
   const linkedPairs: Array<{ resumeId: string; masterSkillId: string }> = [];
 
   await prisma.$transaction(async (tx) => {
-    for (const candidate of mergedCandidates) {
-      const existingId = existingByName.get(candidate.toLowerCase());
-      let skillId = existingId;
+    for (const candidate of normalizedCandidates) {
+      const existingSkill = existingByName.get(candidate.name.toLowerCase());
+      let skillId = existingSkill?.id;
 
       if (!skillId) {
         const created = await tx.masterSkill.create({
           data: {
-            name: candidate,
+            name: candidate.name,
             category: "resume_import",
+            experienceYears: candidate.experienceYears,
             notes: "Imported from resume content (rule + LLM parse attempted).",
           },
           select: { id: true },
         });
 
         skillId = created.id;
-        createdNames.push(candidate);
+        createdNames.push(candidate.name);
+      } else if (existingSkill?.experienceYears === null && candidate.experienceYears !== null) {
+        await tx.masterSkill.update({
+          where: { id: skillId },
+          data: { experienceYears: candidate.experienceYears },
+        });
       }
 
       if (linkResumeId) {
@@ -270,8 +430,8 @@ export async function POST(request: Request) {
   return NextResponse.json({
     generated: createdNames.length,
     linked: linkedPairs.length,
-    matchedExisting: mergedCandidates.length - createdNames.length,
-    candidates: mergedCandidates,
+    matchedExisting: normalizedCandidates.length - createdNames.length,
+    candidates: normalizedCandidates,
     createdNames,
     usedLlm: true,
   });

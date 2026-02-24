@@ -44,6 +44,7 @@ function readFileAsBase64(file: File): Promise<string> {
 export function MasterSkillGenerateFromResumeForm({ resumes }: MasterSkillGenerateFromResumeFormProps) {
   const router = useRouter();
   const messageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -70,6 +71,13 @@ export function MasterSkillGenerateFromResumeForm({ resumes }: MasterSkillGenera
 
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     setSelectedFile(event.target.files?.[0] ?? null);
+  }
+
+  function clearSelectedFile() {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -144,7 +152,7 @@ export function MasterSkillGenerateFromResumeForm({ resumes }: MasterSkillGenera
       startMessageTimeout();
       form.reset();
       setSelectedResumeId("");
-      setSelectedFile(null);
+      clearSelectedFile();
       router.refresh();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
@@ -184,8 +192,22 @@ export function MasterSkillGenerateFromResumeForm({ resumes }: MasterSkillGenera
 
       <label>
         Upload Resume File (optional)
-        <input name="resumeFile" type="file" accept=".txt,.md,.text,.pdf,.doc,.docx" onChange={onFileChange} />
+        <input
+          ref={fileInputRef}
+          name="resumeFile"
+          type="file"
+          accept=".txt,.md,.text,.pdf,.doc,.docx"
+          onChange={onFileChange}
+        />
       </label>
+      {selectedFile ? (
+        <div className="form-actions">
+          <span className="muted">Selected file: {selectedFile.name}</span>
+          <button type="button" onClick={clearSelectedFile} disabled={submitting}>
+            Remove File
+          </button>
+        </div>
+      ) : null}
 
       <label>
         Or Paste Resume Text (optional)

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { createMasterSkillSchema, listMasterSkillsQuerySchema } from "@/lib/validation";
+import {
+  createMasterSkillSchema,
+  deleteAllMasterSkillsSchema,
+  listMasterSkillsQuerySchema,
+} from "@/lib/validation";
 import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 export async function GET(request: Request) {
@@ -58,6 +62,7 @@ export async function POST(request: Request) {
       data: {
         name: parsed.data.name,
         category: parsed.data.category,
+        experienceYears: parsed.data.experienceYears ?? null,
         notes: parsed.data.notes,
         resumeLinks: {
           create: parsed.data.linkedResumeIds.map((resumeId) => ({
@@ -75,4 +80,18 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "skill_name_must_be_unique" }, { status: 409 });
   }
+}
+
+export async function DELETE(request: Request) {
+  const payload = await request.json().catch(() => ({}));
+  const parsed = deleteAllMasterSkillsSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  const result = await prisma.masterSkill.deleteMany({});
+  await triggerWorkerFromWrite();
+
+  return NextResponse.json({ deleted: result.count });
 }

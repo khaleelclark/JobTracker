@@ -50,6 +50,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       data: {
         name: parsed.data.name,
         category: parsed.data.category,
+        experienceYears: parsed.data.experienceYears ?? null,
         notes: parsed.data.notes,
         resumeLinks: {
           deleteMany: {},

@@ -130,6 +130,7 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     id: skill.id,
     name: skill.name,
     category: skill.category,
+    experience_years: skill.experienceYears,
     notes_excerpt: skill.notes ? truncateText(skill.notes, 260) : null,
     linked_resumes: skill.resumeLinks.map((link) => ({
       resume_id: link.resume.id,

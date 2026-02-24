@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+const experienceYearsSchema = z
+  .number()
+  .min(0)
+  .max(60)
+  .refine((value) => Number.isFinite(value), "must be a finite number")
+  .refine((value) => Number((value * 2).toFixed(0)) === value * 2, "must be in 0.5 year increments");
+
 export const createApplicationSchema = z.object({
   companyName: z.string().min(1).max(200),
   roleTitle: z.string().min(1).max(200),
@@ -80,11 +87,15 @@ export const createResumeSchema = z.object({
 export const createMasterSkillSchema = z.object({
   name: z.string().min(1).max(120),
   category: z.string().max(120).optional().nullable(),
+  experienceYears: experienceYearsSchema.optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
   linkedResumeIds: z.array(z.string().uuid()).default([]),
 });
 
 export const updateMasterSkillSchema = createMasterSkillSchema;
+export const deleteAllMasterSkillsSchema = z.object({
+  confirmDeleteAll: z.literal(true),
+});
 
 export const listMasterSkillsQuerySchema = z.object({
   query: z.string().max(120).optional(),

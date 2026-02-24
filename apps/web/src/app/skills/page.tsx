@@ -38,6 +38,7 @@ export default async function SkillsPage() {
             id: skill.id,
             name: skill.name,
             category: skill.category,
+            experienceYears: skill.experienceYears,
             notes: skill.notes,
             linkedResumeCount: skill.resumeLinks.length,
             linkedResumeIds: skill.resumeLinks.map((link) => link.resumeId),
