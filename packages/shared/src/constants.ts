@@ -1,6 +1,7 @@
 export const GENERIC_APPLICATION_STATUSES = [
   "interested",
   "applied",
+  "under_review",
   "interviewing",
   "offered",
   "rejected",

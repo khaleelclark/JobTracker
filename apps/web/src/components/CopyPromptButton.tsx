@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@mui/material";
 
 interface CopyPromptButtonProps {
   prompt?: string | null;
@@ -14,7 +15,7 @@ export function CopyPromptButton({ prompt }: CopyPromptButtonProps) {
   }
 
   return (
-    <button
+    <Button
       type="button"
       onClick={async () => {
         await navigator.clipboard.writeText(prompt);
@@ -23,6 +24,6 @@ export function CopyPromptButton({ prompt }: CopyPromptButtonProps) {
       }}
     >
       {copied ? "Copied" : "Copy GPT Prompt"}
-    </button>
+    </Button>
   );
 }

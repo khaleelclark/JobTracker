@@ -131,6 +131,47 @@ p {
   margin: 0;
 }
 
+.markdown-content {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.markdown-content p,
+.markdown-content ul,
+.markdown-content ol,
+.markdown-content pre {
+  margin: 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  padding-left: 1.25rem;
+}
+
+.markdown-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+  background: rgba(15, 74, 134, 0.08);
+  border: 1px solid rgba(15, 74, 134, 0.16);
+  border-radius: 6px;
+  padding: 0.06rem 0.3rem;
+}
+
+.markdown-content pre {
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: rgba(15, 74, 134, 0.08);
+  border: 1px solid rgba(15, 74, 134, 0.16);
+  overflow-x: auto;
+}
+
+.markdown-content pre code {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
 .page-header {
   display: flex;
   flex-direction: column;
@@ -313,6 +354,7 @@ td a:hover {
 
 .status-interested,
 .status-applied,
+.status-under_review,
 .status-interviewing,
 .status-offered,
 .status-rejected,
@@ -329,6 +371,11 @@ td a:hover {
 .status-applied {
   background: rgba(15, 118, 110, 0.14);
   color: #0f766e;
+}
+
+.status-under_review {
+  background: rgba(217, 119, 6, 0.16);
+  color: #92400e;
 }
 
 .status-interviewing {
@@ -550,6 +597,25 @@ button:disabled {
   border-radius: 10px;
   padding: 0.9rem;
   margin: 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(8, 16, 28, 0.5);
+  z-index: 200;
+}
+
+.modal-card {
+  width: min(460px, 100%);
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
 }
 
 @keyframes riseIn {

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface ApplicationOption {
   id: string;
@@ -9,8 +10,15 @@ interface ApplicationOption {
   roleTitle: string;
 }
 
+interface SkillOption {
+  id: string;
+  name: string;
+  category: string | null;
+}
+
 interface ResumeCreateFormProps {
   applications: ApplicationOption[];
+  skills: SkillOption[];
 }
 
 function readFileAsBase64(file: File): Promise<string> {
@@ -30,7 +38,7 @@ function readFileAsBase64(file: File): Promise<string> {
   });
 }
 
-export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
+export function ResumeCreateForm({ applications, skills }: ResumeCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +60,7 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
     const data = new FormData(form);
 
     const selectedIds = data.getAll("linkedApplicationIds").map((value) => String(value));
+    const selectedSkillIds = data.getAll("linkedSkillIds").map((value) => String(value));
 
     const payload: {
       name: string;
@@ -60,10 +69,12 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
       fileBase64?: string;
       extractedText: string | null;
       linkedApplicationIds: string[];
+      linkedSkillIds: string[];
     } = {
       name: String(data.get("name") ?? "").trim(),
       extractedText: String(data.get("extractedText") ?? "").trim() || null,
       linkedApplicationIds: selectedIds,
+      linkedSkillIds: selectedSkillIds,
     };
 
     const filePath = String(data.get("filePath") ?? "").trim();
@@ -136,13 +147,30 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
       </label>
 
       <label>
+        Link to Master Skills
+        <select name="linkedSkillIds" multiple size={Math.min(8, Math.max(3, skills.length))}>
+          {skills.map((skill) => (
+            <option key={skill.id} value={skill.id}>
+              {skill.name}
+              {skill.category ? ` (${skill.category})` : ""}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
         Extracted Text (optional)
         <textarea name="extractedText" rows={5} maxLength={50000} placeholder="Optional extracted text for search context" />
       </label>
 
       <div className="form-actions">
         <button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : "Save Resume"}
+          {submitting ? "Saving..." : (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              Save Resume
+              <SaveIcon sx={{ fontSize: "1rem" }} />
+            </span>
+          )}
         </button>
         {success ? <span className="success-text">{success}</span> : null}
         {error ? <span className="error-text">{error}</span> : null}

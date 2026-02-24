@@ -13,6 +13,11 @@ Local-first monorepo for passive job-search record keeping.
 - `apps/mcp-server`: read-only MCP-style tool server (OAuth + SSE)
 - `packages/shared`: shared constants, types, and Zod validation
 
+## Key Data Areas
+- Applications, interviews, follow-ups, emails, events, reflections
+- Resumes and linked applications
+- Master skills inventory (canonical skills list) and resume-skill links
+
 ## Ports
 - Web app: `127.0.0.1:3000`
 - MCP server: `127.0.0.1:7331`
@@ -56,6 +61,7 @@ Local-first monorepo for passive job-search record keeping.
 - `POST /mcp/tools/list_followup_attempts`
 - `POST /mcp/tools/list_engagement_events`
 - `POST /mcp/tools/get_resume`
+- `POST /mcp/tools/list_master_skills`
 - `POST /mcp/tools/get_control_file`
 
 All MCP endpoints are bearer-protected and read-only.

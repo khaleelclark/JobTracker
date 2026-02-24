@@ -4,18 +4,25 @@ import { prisma } from "@/lib/db";
 import { ResumeCreateForm } from "@/components/forms/ResumeCreateForm";
 
 export default async function ResumesPage() {
-  const [resumes, applications] = await Promise.all([
+  const [resumes, applications, masterSkills] = await Promise.all([
     prisma.resume.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         applications: {
           include: { application: true },
         },
+        masterSkills: {
+          include: { masterSkill: true },
+        },
       },
     }),
     prisma.application.findMany({
       orderBy: { updatedAt: "desc" },
       select: { id: true, companyName: true, roleTitle: true },
+    }),
+    prisma.masterSkill.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, category: true },
     }),
   ]);
 
@@ -27,7 +34,7 @@ export default async function ResumesPage() {
       </header>
 
       <div className="layout-split">
-        <ResumeCreateForm applications={applications} />
+        <ResumeCreateForm applications={applications} skills={masterSkills} />
         <div className="card stack-md">
           <h2 className="no-margin">Resume Library</h2>
         {resumes.length === 0 ? (
@@ -41,9 +48,9 @@ export default async function ResumesPage() {
                   <div className="muted">{resume.filePath}</div>
                 </div>
                 <div className="muted">
-                  {resume.applications.length > 0
-                    ? `${resume.applications.length} linked application${resume.applications.length === 1 ? "" : "s"}`
-                    : "unlinked"}
+                  {resume.applications.length} linked application{resume.applications.length === 1 ? "" : "s"}
+                  {" | "}
+                  {resume.masterSkills.length} linked skill{resume.masterSkills.length === 1 ? "" : "s"}
                 </div>
               </li>
             ))}

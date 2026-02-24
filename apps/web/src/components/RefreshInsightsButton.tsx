@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button, Typography } from "@mui/material";
 
 export function RefreshInsightsButton() {
   const router = useRouter();
@@ -42,10 +43,14 @@ export function RefreshInsightsButton() {
 
   return (
     <div className="stack-sm">
-      <button type="button" disabled={running} onClick={onRefresh}>
+      <Button type="button" disabled={running} onClick={onRefresh}>
         {running ? "Refreshing..." : "Refresh Insights"}
-      </button>
-      {statusMessage ? <p className="muted">{statusMessage}</p> : null}
+      </Button>
+      {statusMessage ? (
+        <Typography variant="body2" color="text.secondary">
+          {statusMessage}
+        </Typography>
+      ) : null}
     </div>
   );
 }

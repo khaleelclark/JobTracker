@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { ApplicationTable } from "@/components/ApplicationTable";
-import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
 import { prisma } from "@/lib/db";
+import { toTitleCaseLabel } from "@/lib/format";
 
 export default async function ApplicationsPage() {
   const applications = await prisma.application.findMany({
@@ -31,18 +31,20 @@ export default async function ApplicationsPage() {
         </div>
         {Object.entries(summary).map(([status, count]) => (
           <div key={status} className="metric-card">
-            <span className="metric-label">{status}</span>
+            <span className="metric-label">{toTitleCaseLabel(status)}</span>
             <strong>{count}</strong>
           </div>
         ))}
       </div>
 
-      <div className="layout-split">
-        <ApplicationCreateForm />
-        <section className="stack-md">
-          <h2>Application Records</h2>
-          <ApplicationTable applications={applications} />
-        </section>
+      <div className="card stack-md">
+        <ApplicationTable
+          title="Application Records"
+          applications={applications.map((application) => ({
+            ...application,
+            appliedAt: application.appliedAt.toISOString(),
+          }))}
+        />
       </div>
     </section>
   );

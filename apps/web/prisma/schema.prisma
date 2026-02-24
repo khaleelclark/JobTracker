@@ -10,6 +10,7 @@ datasource db {
 enum GenericStatus {
   interested
   applied
+  under_review
   interviewing
   offered
   rejected
@@ -105,8 +106,34 @@ model Resume {
   extractedText String?             @map("extracted_text")
   createdAt     DateTime            @default(now()) @map("created_at")
   applications  ApplicationResume[]
+  masterSkills  ResumeMasterSkill[]
 
   @@map("resumes")
+}
+
+model MasterSkill {
+  id           String            @id @default(uuid())
+  name         String
+  category     String?
+  experienceYears Float?         @map("experience_years")
+  notes        String?
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  resumeLinks  ResumeMasterSkill[]
+
+  @@index([category])
+  @@unique([name])
+  @@map("master_skills")
+}
+
+model ResumeMasterSkill {
+  resumeId      String      @map("resume_id")
+  masterSkillId String      @map("master_skill_id")
+  resume        Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  masterSkill   MasterSkill @relation(fields: [masterSkillId], references: [id], onDelete: Cascade)
+
+  @@id([resumeId, masterSkillId])
+  @@map("resume_master_skills")
 }
 
 model ApplicationResume {
@@ -132,6 +159,7 @@ model Interview {
   uiCards     UiCard[]
 
   @@index([applicationId, scheduledAt])
+  @@unique([applicationId, roundIndex])
   @@map("interviews")
 }
 
@@ -171,6 +199,7 @@ model FollowupAttempt {
   result        FollowupResult?
 
   @@index([applicationId, sentAt])
+  @@unique([applicationId, attemptIndex])
   @@map("followup_attempts")
 }
 
@@ -215,7 +244,7 @@ model UiCard {
   dedupeKey            String       @map("dedupe_key")
 
   @@index([state, priority])
-  @@index([dedupeKey, state])
+  @@unique([dedupeKey, state])
   @@map("ui_cards")
 }
 

@@ -6,6 +6,7 @@ import { listEmailLogs } from "./listEmailLogs";
 import { listEngagementEvents } from "./listEngagementEvents";
 import { listFollowupAttempts } from "./listFollowupAttempts";
 import { listInterviews } from "./listInterviews";
+import { listMasterSkills } from "./listMasterSkills";
 import { searchApplications } from "./searchApplications";
 
 export const toolHandlers: Record<string, (input: unknown) => Promise<unknown>> = {
@@ -17,6 +18,7 @@ export const toolHandlers: Record<string, (input: unknown) => Promise<unknown>> 
   list_followup_attempts: listFollowupAttempts,
   list_engagement_events: listEngagementEvents,
   get_resume: getResume,
+  list_master_skills: listMasterSkills,
   get_control_file: getControlFile,
 };
 
@@ -38,7 +40,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
         query: { type: "string" },
         generic_status: {
           type: "string",
-          enum: ["interested", "applied", "interviewing", "offered", "rejected", "withdrawn", "archived"],
+          enum: ["interested", "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived"],
         },
         limit: { type: "integer", minimum: 1, maximum: 100 },
       },
@@ -120,13 +122,26 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   },
   {
     name: "get_resume",
-    description: "Get one resume by id, including linked applications.",
+    description: "Get one resume by id, including linked applications and master skills.",
     inputSchema: {
       type: "object",
       properties: {
         resume_id: { type: "string", format: "uuid" },
       },
       required: ["resume_id"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "list_master_skills",
+    description: "List master skills (canonical skill inventory), optionally filtered by query/category.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string" },
+        category: { type: "string" },
+        limit: { type: "integer", minimum: 1, maximum: 300 },
+      },
       additionalProperties: false,
     },
   },

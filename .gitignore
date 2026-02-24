@@ -20,3 +20,4 @@ backups/
 
 # logs
 *.log
+.local/bin/ngrok

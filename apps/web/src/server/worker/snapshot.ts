@@ -10,6 +10,7 @@ import { truncateText } from "@/lib/truncate";
 export interface WorkerSnapshot {
   now: string;
   control_text: string;
+  master_skills: Array<Record<string, unknown>>;
   applications: Array<Record<string, unknown>>;
   interviews: Array<Record<string, unknown>>;
   followups: Array<Record<string, unknown>>;
@@ -20,6 +21,7 @@ export interface WorkerSnapshot {
 export async function buildSnapshot(): Promise<WorkerSnapshot> {
   const [
     applications,
+    masterSkills,
     interviews,
     followups,
     events,
@@ -36,6 +38,19 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
           orderBy: { sentAt: "desc" },
           take: 2,
           include: { result: true },
+        },
+      },
+    }),
+    prisma.masterSkill.findMany({
+      orderBy: [{ name: "asc" }, { createdAt: "asc" }],
+      take: 300,
+      include: {
+        resumeLinks: {
+          include: {
+            resume: {
+              select: { id: true, name: true },
+            },
+          },
         },
       },
     }),
@@ -111,6 +126,18 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     })),
   }));
 
+  const masterSkillFacts = masterSkills.map((skill) => ({
+    id: skill.id,
+    name: skill.name,
+    category: skill.category,
+    experience_years: skill.experienceYears,
+    notes_excerpt: skill.notes ? truncateText(skill.notes, 260) : null,
+    linked_resumes: skill.resumeLinks.map((link) => ({
+      resume_id: link.resume.id,
+      resume_name: link.resume.name,
+    })),
+  }));
+
   const interviewFacts = interviews.map((interview) => ({
     id: interview.id,
     application_id: interview.applicationId,
@@ -154,6 +181,7 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
   return {
     now: new Date().toISOString(),
     control_text: controlText,
+    master_skills: masterSkillFacts,
     applications: applicationFacts,
     interviews: interviewFacts,
     followups: followupFacts,

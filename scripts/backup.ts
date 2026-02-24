@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { PrismaClient } from "@prisma/client";
 
 function resolveDataDir(): string {
   if (process.env.JOBTRACKER_DATA_DIR) {
@@ -45,7 +46,21 @@ async function main() {
   await fs.mkdir(backupDir, { recursive: true });
   const backupPath = path.join(backupDir, `job-tracker-${stamp(new Date())}.sqlite`);
 
-  await fs.copyFile(sourceDbPath, backupPath);
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: `file:${sourceDbPath.replace(/\\/g, "/")}`,
+      },
+    },
+  });
+
+  try {
+    await prisma.$connect();
+    await prisma.$executeRawUnsafe("PRAGMA wal_checkpoint(FULL)");
+    await prisma.$executeRawUnsafe(`VACUUM INTO '${toSqliteStringLiteral(backupPath)}'`);
+  } finally {
+    await prisma.$disconnect();
+  }
 
   const entries = await fs.readdir(backupDir);
   const backupFiles = (
@@ -71,6 +86,10 @@ async function main() {
 
   // eslint-disable-next-line no-console
   console.log(JSON.stringify({ sourceDbPath, backupPath, retained: backupFiles.length }, null, 2));
+}
+
+function toSqliteStringLiteral(value: string): string {
+  return value.replace(/'/g, "''");
 }
 
 main().catch((error) => {

@@ -3,6 +3,7 @@ import { Sora, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { startWorkerScheduler } from "@/server/worker/llmWorker";
 import { AppNav } from "@/components/AppNav";
+import { MuiProvider } from "@/components/MuiProvider";
 
 startWorkerScheduler();
 
@@ -31,9 +32,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body>
-        <div className="bg-layer" aria-hidden />
-        <AppNav />
-        <main className="page-shell">{children}</main>
+        <MuiProvider>
+          <div className="bg-layer" aria-hidden />
+          <AppNav />
+          <main className="page-shell">{children}</main>
+        </MuiProvider>
       </body>
     </html>
   );

@@ -1,11 +1,19 @@
 import { z } from "zod";
 
+const experienceYearsSchema = z
+  .number()
+  .min(0)
+  .max(60)
+  .refine((value) => Number.isFinite(value), "must be a finite number")
+  .refine((value) => Number((value * 2).toFixed(0)) === value * 2, "must be in 0.5 year increments");
+
 export const createApplicationSchema = z.object({
   companyName: z.string().min(1).max(200),
   roleTitle: z.string().min(1).max(200),
   genericStatus: z.enum([
     "interested",
     "applied",
+    "under_review",
     "interviewing",
     "offered",
     "rejected",
@@ -73,9 +81,63 @@ export const createResumeSchema = z.object({
   fileName: z.string().max(200).optional(),
   extractedText: z.string().max(50000).optional().nullable(),
   linkedApplicationIds: z.array(z.string().uuid()).default([]),
+  linkedSkillIds: z.array(z.string().uuid()).default([]),
 });
+
+export const createMasterSkillSchema = z.object({
+  name: z.string().min(1).max(120),
+  category: z.string().max(120).optional().nullable(),
+  experienceYears: experienceYearsSchema.optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  linkedResumeIds: z.array(z.string().uuid()).default([]),
+});
+
+export const updateMasterSkillSchema = createMasterSkillSchema;
+export const deleteAllMasterSkillsSchema = z.object({
+  confirmDeleteAll: z.literal(true),
+});
+
+export const listMasterSkillsQuerySchema = z.object({
+  query: z.string().max(120).optional(),
+  category: z.string().max(120).optional(),
+  limit: z.number().int().min(1).max(300).default(200),
+});
+
+export const generateMasterSkillsFromResumeSchema = z
+  .object({
+    resumeId: z.string().uuid().optional(),
+    resumeText: z.string().max(100000).optional(),
+    linkResumeId: z.string().uuid().optional(),
+    uploadedFileName: z.string().max(255).optional(),
+    uploadedFileBase64: z.string().max(20_000_000).optional(),
+  })
+  .refine((data) => Boolean(data.resumeId || data.resumeText?.trim() || data.uploadedFileBase64), {
+    message: "resumeId, resumeText, or uploaded file is required",
+    path: ["resumeText"],
+  })
+  .refine(
+    (data) =>
+      Boolean((data.uploadedFileName && data.uploadedFileBase64) || (!data.uploadedFileName && !data.uploadedFileBase64)),
+    {
+      message: "uploadedFileName and uploadedFileBase64 must be provided together",
+      path: ["uploadedFileName"],
+    },
+  );
 
 export const updateCardStateSchema = z.object({
   action: z.enum(["dismiss", "archive", "snooze"]),
   snoozeDays: z.number().int().min(1).max(30).optional(),
+});
+
+export const listApplicationsQuerySchema = z.object({
+  query: z.string().max(200).optional(),
+  genericStatus: z
+    .enum(["interested", "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived"])
+    .optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+});
+
+export const listUiCardsQuerySchema = z.object({
+  state: z.enum(["active", "dismissed", "archived"]).optional(),
+  limit: z.number().int().min(1).max(100).default(100),
 });
