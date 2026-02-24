@@ -387,7 +387,7 @@ function handleDeleteDialogClose(
               value={addName}
               onChange={(event) => setAddName(event.target.value)}
               required
-              inputProps={{ maxLength: 120 }}
+              slotProps={{ htmlInput: { maxLength: 120 } }}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
             />
             <TextField
@@ -395,7 +395,7 @@ function handleDeleteDialogClose(
               label="Category"
               value={addCategory}
               onChange={(event) => setAddCategory(event.target.value)}
-              inputProps={{ maxLength: 120 }}
+              slotProps={{ htmlInput: { maxLength: 120 } }}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
             />
             <NumberSpinner
@@ -440,7 +440,7 @@ function handleDeleteDialogClose(
               onChange={(event) => setAddNotes(event.target.value)}
               multiline
               minRows={3}
-              inputProps={{ maxLength: 2000 }}
+              slotProps={{ htmlInput: { maxLength: 2000 } }}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
             />
           </Paper>
@@ -489,7 +489,7 @@ function handleDeleteDialogClose(
                   value={editName}
                   onChange={(event) => setEditName(event.target.value)}
                   required
-                  inputProps={{ maxLength: 120 }}
+                  slotProps={{ htmlInput: { maxLength: 120 } }}
                   sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
                 />
                 <TextField
@@ -497,7 +497,7 @@ function handleDeleteDialogClose(
                   label="Category"
                   value={editCategory}
                   onChange={(event) => setEditCategory(event.target.value)}
-                  inputProps={{ maxLength: 120 }}
+                  slotProps={{ htmlInput: { maxLength: 120 } }}
                   sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
                 />
                 <NumberSpinner
@@ -542,7 +542,7 @@ function handleDeleteDialogClose(
                   onChange={(event) => setEditNotes(event.target.value)}
                   multiline
                   minRows={3}
-                  inputProps={{ maxLength: 2000 }}
+                  slotProps={{ htmlInput: { maxLength: 2000 } }}
                   sx={{ "& .MuiOutlinedInput-root": { borderRadius: "14px" } }}
                 />
               </Paper>
