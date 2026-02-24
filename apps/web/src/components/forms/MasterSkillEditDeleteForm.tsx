@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface MasterSkillEditDeleteFormProps {
   skill: {
@@ -153,13 +155,19 @@ export function MasterSkillEditDeleteForm({ skill, resumeOptions }: MasterSkillE
 
           <div className="form-actions">
             <button type="submit" disabled={saving || deleting}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? "Saving..." : (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                  Save
+                  <SaveIcon sx={{ fontSize: "1rem" }} />
+                </span>
+              )}
             </button>
             <button type="button" onClick={handleCancelEdit} disabled={saving || deleting}>
               Cancel
             </button>
             <button type="button" onClick={() => setIsDeleteModalOpen(true)} disabled={saving || deleting}>
               {deleting ? "Deleting..." : "Delete"}
+              <DeleteIcon sx={{ fontSize: "1rem", ml: 0.5, verticalAlign: "middle" }} />
             </button>
           </div>
         </form>
@@ -180,6 +188,7 @@ export function MasterSkillEditDeleteForm({ skill, resumeOptions }: MasterSkillE
               </button>
               <button type="button" onClick={() => setIsDeleteModalOpen(true)} disabled={deleting}>
                 {deleting ? "Deleting..." : "Delete"}
+                <DeleteIcon sx={{ fontSize: "1rem", ml: 0.5, verticalAlign: "middle" }} />
               </button>
             </div>
           </div>
@@ -198,6 +207,7 @@ export function MasterSkillEditDeleteForm({ skill, resumeOptions }: MasterSkillE
             <div className="form-actions">
               <button type="button" onClick={handleConfirmDelete} disabled={deleting || saving}>
                 {deleting ? "Deleting..." : "Confirm Delete"}
+                <DeleteIcon sx={{ fontSize: "1rem", ml: 0.5, verticalAlign: "middle" }} />
               </button>
               <button
                 type="button"

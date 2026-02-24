@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import { ApplicationTable } from "@/components/ApplicationTable";
-import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
 import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -38,12 +37,14 @@ export default async function ApplicationsPage() {
         ))}
       </div>
 
-      <div className="layout-split">
-        <ApplicationCreateForm />
-        <section className="stack-md">
-          <h2>Application Records</h2>
-          <ApplicationTable applications={applications} />
-        </section>
+      <div className="card stack-md">
+        <ApplicationTable
+          title="Application Records"
+          applications={applications.map((application) => ({
+            ...application,
+            appliedAt: application.appliedAt.toISOString(),
+          }))}
+        />
       </div>
     </section>
   );

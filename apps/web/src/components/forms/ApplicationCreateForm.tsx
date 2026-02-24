@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel } from "@/lib/format";
 
 const STATUS_OPTIONS = [
@@ -25,6 +27,7 @@ function toIsoFromDateInput(raw: string): string {
 
 export function ApplicationCreateForm() {
   const router = useRouter();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -63,6 +66,7 @@ export function ApplicationCreateForm() {
 
       form.reset();
       setSuccess("Application saved.");
+      setIsDialogOpen(false);
       router.refresh();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
@@ -73,67 +77,131 @@ export function ApplicationCreateForm() {
   }
 
   return (
-    <form className="form-card" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h2>Log Application</h2>
-        <p className="muted">Create a factual record. No ranking or automation is applied.</p>
-      </div>
+    <>
+      <Button onClick={() => setIsDialogOpen(true)}>Add Application</Button>
 
-      <div className="form-grid form-grid-2">
-        <label>
-          Company
-          <input name="companyName" required maxLength={200} placeholder="Acme Corp" />
-        </label>
+      <Dialog
+        open={isDialogOpen}
+        onClose={(_event, reason) => {
+          if (reason === "backdropClick" || submitting) {
+            return;
+          }
+          setIsDialogOpen(false);
+          setError(null);
+          setSuccess(null);
+        }}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ pr: 7 }}>
+          Log Application
+          <IconButton
+            aria-label="Close add application dialog"
+            onClick={() => {
+              if (submitting) {
+                return;
+              }
+              setIsDialogOpen(false);
+              setError(null);
+              setSuccess(null);
+            }}
+            disabled={submitting}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              borderRadius: 0,
+              backgroundColor: "transparent",
+              "&:hover": { backgroundColor: "transparent" },
+            }}
+          >
+            x
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <form className="form-card" onSubmit={handleSubmit}>
+            <div className="form-header">
+              <p className="muted">Create a factual record. No ranking or automation is applied.</p>
+            </div>
 
-        <label>
-          Role Title
-          <input name="roleTitle" required maxLength={200} placeholder="Product Manager" />
-        </label>
+            <div className="form-grid form-grid-2">
+              <label>
+                Company
+                <input name="companyName" required maxLength={200} placeholder="Acme Corp" />
+              </label>
 
-        <label>
-          Status
-          <select name="genericStatus" defaultValue="applied">
-            {STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
-                {toTitleCaseLabel(status)}
-              </option>
-            ))}
-          </select>
-        </label>
+              <label>
+                Role Title
+                <input name="roleTitle" required maxLength={200} placeholder="Product Manager" />
+              </label>
 
-        <label>
-          Applied Date
-          <input name="appliedAt" type="date" />
-        </label>
+              <label>
+                Status
+                <select name="genericStatus" defaultValue="applied">
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>
+                      {toTitleCaseLabel(status)}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-        <label>
-          Role Family
-          <input name="roleFamily" maxLength={120} placeholder="Engineering" />
-        </label>
+              <label>
+                Applied Date
+                <input name="appliedAt" type="date" />
+              </label>
 
-        <label>
-          Role Level
-          <input name="roleLevel" maxLength={120} placeholder="Mid" />
-        </label>
-      </div>
+              <label>
+                Role Family
+                <input name="roleFamily" maxLength={120} placeholder="Engineering" />
+              </label>
 
-      <label>
-        Precise Status
-        <input name="preciseStatus" maxLength={200} placeholder="Recruiter screen completed" />
-      </label>
+              <label>
+                Role Level
+                <input name="roleLevel" maxLength={120} placeholder="Mid" />
+              </label>
+            </div>
 
-      <label>
-        Notes
-        <textarea name="notes" rows={4} maxLength={4000} placeholder="Any factual notes from the posting or application" />
-      </label>
+            <label>
+              Precise Status
+              <input name="preciseStatus" maxLength={200} placeholder="Recruiter screen completed" />
+            </label>
 
-      <div className="form-actions">
-        <button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : "Save Application"}
-        </button>
-        {success ? <span className="success-text">{success}</span> : null}
-        {error ? <span className="error-text">{error}</span> : null}
-      </div>
-    </form>
+            <label>
+              Notes
+              <textarea name="notes" rows={4} maxLength={4000} placeholder="Any factual notes from the posting or application" />
+            </label>
+
+            <div className="form-actions">
+              <button type="submit" disabled={submitting}>
+                {submitting ? "Saving..." : (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                    Save Application
+                    <SaveIcon sx={{ fontSize: "1rem" }} />
+                  </span>
+                )}
+              </button>
+              {success ? <span className="success-text">{success}</span> : null}
+              {error ? <span className="error-text">{error}</span> : null}
+            </div>
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              if (submitting) {
+                return;
+              }
+              setIsDialogOpen(false);
+              setError(null);
+              setSuccess(null);
+            }}
+            disabled={submitting}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }

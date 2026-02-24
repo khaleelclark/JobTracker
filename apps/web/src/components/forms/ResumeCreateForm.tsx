@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface ApplicationOption {
   id: string;
@@ -164,7 +165,12 @@ export function ResumeCreateForm({ applications, skills }: ResumeCreateFormProps
 
       <div className="form-actions">
         <button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : "Save Resume"}
+          {submitting ? "Saving..." : (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              Save Resume
+              <SaveIcon sx={{ fontSize: "1rem" }} />
+            </span>
+          )}
         </button>
         {success ? <span className="success-text">{success}</span> : null}
         {error ? <span className="error-text">{error}</span> : null}

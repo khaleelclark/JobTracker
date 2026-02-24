@@ -2,6 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel } from "@/lib/format";
 
 const STATUS_OPTIONS = [
@@ -49,6 +52,7 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -93,13 +97,9 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
     }
   }
 
-  async function handleDelete() {
-    const confirmed = window.confirm("Delete this application record and all linked activity?");
-    if (!confirmed) {
-      return;
-    }
-
+  async function handleDeleteConfirmed() {
     setDeleting(true);
+    setIsDeleteDialogOpen(false);
     setError(null);
     setSuccess(null);
 
@@ -176,14 +176,55 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
 
       <div className="form-actions">
         <button type="submit" disabled={saving || deleting}>
-          {saving ? "Saving..." : "Save Changes"}
+          {saving ? "Saving..." : (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              Save Changes
+              <SaveIcon sx={{ fontSize: "1rem" }} />
+            </span>
+          )}
         </button>
-        <button type="button" disabled={saving || deleting} onClick={handleDelete}>
+        <button
+          type="button"
+          disabled={saving || deleting}
+          onClick={() => setIsDeleteDialogOpen(true)}
+          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+        >
           {deleting ? "Deleting..." : "Delete Application"}
+          <DeleteIcon sx={{ fontSize: "1rem" }} />
         </button>
         {success ? <span className="success-text">{success}</span> : null}
         {error ? <span className="error-text">{error}</span> : null}
       </div>
+
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={(_event, reason) => {
+          if (reason === "backdropClick" || deleting) {
+            return;
+          }
+          setIsDeleteDialogOpen(false);
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete Application?</DialogTitle>
+        <DialogContent>
+          This will permanently delete this application and all linked activity records
+          (interviews, emails, follow-ups, events, and resume links).
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => void handleDeleteConfirmed()}
+            disabled={deleting}
+            endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}
+          >
+            {deleting ? "Deleting..." : "Confirm Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </form>
   );
 }

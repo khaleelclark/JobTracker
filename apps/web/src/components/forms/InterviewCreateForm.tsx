@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface ApplicationOption {
   id: string;
@@ -123,7 +124,12 @@ export function InterviewCreateForm({ applications, defaultApplicationId }: Inte
 
       <div className="form-actions">
         <button type="submit" disabled={submitting || applications.length === 0}>
-          {submitting ? "Saving..." : "Save Interview"}
+          {submitting ? "Saving..." : (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              Save Interview
+              <SaveIcon sx={{ fontSize: "1rem" }} />
+            </span>
+          )}
         </button>
         {applications.length === 0 ? <span className="error-text">Create an application first.</span> : null}
         {success ? <span className="success-text">{success}</span> : null}

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface FollowupOption {
   id: string;
@@ -115,7 +116,12 @@ export function FollowupResultCreateForm({ followups }: FollowupResultCreateForm
 
       <div className="form-actions">
         <button type="submit" disabled={submitting || followups.length === 0}>
-          {submitting ? "Saving..." : "Save"}
+          {submitting ? "Saving..." : (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              Save
+              <SaveIcon sx={{ fontSize: "1rem" }} />
+            </span>
+          )}
         </button>
         {followups.length === 0 ? <span className="error-text">No follow-up attempts available.</span> : null}
         {success ? <span className="success-text">{success}</span> : null}

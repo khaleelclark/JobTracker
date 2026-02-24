@@ -23,6 +23,8 @@ import {
   SelectChangeEvent,
   TextField,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface ResumeOption {
   id: string;
@@ -194,7 +196,7 @@ function handleDeleteDialogClose(
               <Button size="small" onClick={() => openEditDialog(row)} sx={APP_BUTTON_SX}>
                 Edit
               </Button>
-              <Button size="small" onClick={() => setDeleteSkill(row)} sx={APP_BUTTON_SX}>
+              <Button size="small" onClick={() => setDeleteSkill(row)} sx={APP_BUTTON_SX} endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}>
                 Delete
               </Button>
             </Box>
@@ -350,7 +352,12 @@ function handleDeleteDialogClose(
         />
       </Box>
       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-        <Button onClick={() => setIsDeleteAllDialogOpen(true)} disabled={skills.length === 0} sx={APP_BUTTON_LG_SX}>
+        <Button
+          onClick={() => setIsDeleteAllDialogOpen(true)}
+          disabled={skills.length === 0}
+          sx={APP_BUTTON_LG_SX}
+          endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}
+        >
           Delete All Skills
         </Button>
       </Box>
@@ -449,7 +456,12 @@ function handleDeleteDialogClose(
           <Button onClick={() => setIsAddDialogOpen(false)} disabled={creating} sx={APP_BUTTON_SX}>
             Cancel
           </Button>
-          <Button onClick={() => void handleCreateSkill()} disabled={creating} sx={APP_BUTTON_SX}>
+          <Button
+            onClick={() => void handleCreateSkill()}
+            disabled={creating}
+            sx={APP_BUTTON_SX}
+            endIcon={creating ? undefined : <SaveIcon sx={{ fontSize: "1rem" }} />}
+          >
             {creating ? "Saving..." : "Save"}
           </Button>
         </DialogActions>
@@ -551,7 +563,12 @@ function handleDeleteDialogClose(
               <Button onClick={() => setEditingSkill(null)} disabled={saving} sx={APP_BUTTON_SX}>
                 Cancel
               </Button>
-              <Button onClick={() => void handleSaveEdit()} disabled={saving} sx={APP_BUTTON_SX}>
+              <Button
+                onClick={() => void handleSaveEdit()}
+                disabled={saving}
+                sx={APP_BUTTON_SX}
+                endIcon={saving ? undefined : <SaveIcon sx={{ fontSize: "1rem" }} />}
+              >
                 {saving ? "Saving..." : "Save"}
               </Button>
             </DialogActions>
@@ -590,7 +607,12 @@ function handleDeleteDialogClose(
           <Button onClick={() => setDeleteSkill(null)} disabled={deleting} sx={APP_BUTTON_SX}>
             Cancel
           </Button>
-          <Button onClick={() => void handleDeleteConfirmed()} disabled={deleting} sx={APP_BUTTON_SX}>
+          <Button
+            onClick={() => void handleDeleteConfirmed()}
+            disabled={deleting}
+            sx={APP_BUTTON_SX}
+            endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}
+          >
             {deleting ? "Deleting..." : "Confirm Delete"}
           </Button>
         </DialogActions>
@@ -662,6 +684,7 @@ function handleDeleteDialogClose(
             onClick={() => void handleDeleteAllSkills()}
             disabled={deletingAll || !deleteAllAcknowledge}
             sx={APP_BUTTON_SX}
+            endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}
           >
             {deletingAll ? "Deleting..." : "Confirm Delete All"}
           </Button>

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormControl, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface ResumeOption {
   id: string;
@@ -134,7 +135,12 @@ export function MasterSkillCreateForm({ resumes }: MasterSkillCreateFormProps) {
 
       <div className="form-actions">
         <button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : "Save Skill"}
+          {submitting ? "Saving..." : (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              Save Skill
+              <SaveIcon sx={{ fontSize: "1rem" }} />
+            </span>
+          )}
         </button>
         {success ? <span className="success-text">{success}</span> : null}
         {error ? <span className="error-text">{error}</span> : null}
