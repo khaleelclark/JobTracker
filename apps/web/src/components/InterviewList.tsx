@@ -1,3 +1,5 @@
+import { toTitleCaseLabel } from "@/lib/format";
+
 interface InterviewItem {
   id: string;
   applicationCompany: string;
@@ -24,7 +26,7 @@ export function InterviewList({ interviews }: InterviewListProps) {
               <strong>{interview.applicationCompany}</strong> - {interview.roundLabel}
             </span>
             <span className="muted">
-              {interview.scheduledAt.toLocaleString()} ({interview.status})
+              {interview.scheduledAt.toLocaleString()} ({toTitleCaseLabel(interview.status)})
             </span>
           </li>
         ))}

@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import { InterviewCreateForm } from "@/components/forms/InterviewCreateForm";
+import { toTitleCaseLabel } from "@/lib/format";
 
 export default async function InterviewsPage() {
   const [interviews, applications] = await Promise.all([
@@ -44,7 +45,7 @@ export default async function InterviewsPage() {
                 <tr key={interview.id}>
                   <td>{interview.application.companyName}</td>
                   <td>{interview.roundLabel}</td>
-                  <td>{interview.status}</td>
+                  <td>{toTitleCaseLabel(interview.status)}</td>
                   <td>{interview.scheduledAt.toLocaleString()}</td>
                   <td>{interview.reflection?.outcome ?? "none"}</td>
                 </tr>

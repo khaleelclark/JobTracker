@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface ApplicationOption {
   id: string;
@@ -14,6 +15,8 @@ interface EmailLogCreateFormProps {
   applications: ApplicationOption[];
   defaultApplicationId?: string;
 }
+
+const EMAIL_DIRECTION_OPTIONS = ["inbound", "outbound"] as const;
 
 function boolFromCheckbox(value: FormDataEntryValue | null): boolean {
   return value === "on";
@@ -97,8 +100,11 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
         <label>
           Direction
           <select name="direction" defaultValue="inbound">
-            <option value="inbound">inbound</option>
-            <option value="outbound">outbound</option>
+            {EMAIL_DIRECTION_OPTIONS.map((direction) => (
+              <option key={direction} value={direction}>
+                {toTitleCaseLabel(direction)}
+              </option>
+            ))}
           </select>
         </label>
       </div>

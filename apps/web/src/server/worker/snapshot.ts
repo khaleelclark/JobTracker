@@ -112,6 +112,8 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     role_level: app.roleLevel,
     applied_at: app.appliedAt.toISOString(),
     updated_at: app.updatedAt.toISOString(),
+    posting_details_present: Boolean(app.postingDetails && app.postingDetails.trim()),
+    posting_details_excerpt: app.postingDetails ? truncateText(app.postingDetails, 260) : null,
     notes_present: Boolean(app.notes && app.notes.trim()),
     notes_excerpt: app.notes ? truncateText(app.notes, 260) : null,
     latest_email: recentEmailByApp.get(app.id) ?? null,

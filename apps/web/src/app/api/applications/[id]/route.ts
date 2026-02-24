@@ -42,22 +42,28 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const application = await prisma.application.update({
-    where: { id },
-    data: {
-      companyName: parsed.data.companyName,
-      roleTitle: parsed.data.roleTitle,
-      genericStatus: parsed.data.genericStatus,
-      preciseStatus: parsed.data.preciseStatus,
-      roleFamily: parsed.data.roleFamily,
-      roleLevel: parsed.data.roleLevel,
-      appliedAt: parsed.data.appliedAt,
-      notes: parsed.data.notes,
-    },
-  });
+  try {
+    const application = await prisma.application.update({
+      where: { id },
+      data: {
+        companyName: parsed.data.companyName,
+        roleTitle: parsed.data.roleTitle,
+        postingDetails: parsed.data.postingDetails,
+        genericStatus: parsed.data.genericStatus,
+        preciseStatus: parsed.data.preciseStatus,
+        roleFamily: parsed.data.roleFamily,
+        roleLevel: parsed.data.roleLevel,
+        appliedAt: parsed.data.appliedAt,
+        notes: parsed.data.notes,
+      },
+    });
 
-  await triggerWorkerFromWrite();
-  return NextResponse.json({ application });
+    await triggerWorkerFromWrite();
+    return NextResponse.json({ application });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "unknown_error";
+    return NextResponse.json({ error: "update_failed", detail }, { status: 500 });
+  }
 }
 
 export async function DELETE(_: Request, context: RouteContext) {

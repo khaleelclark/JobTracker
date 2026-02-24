@@ -79,6 +79,7 @@ model Application {
   id             String              @id @default(uuid())
   companyName    String              @map("company_name")
   roleTitle      String              @map("role_title")
+  postingDetails String?             @map("posting_details")
   genericStatus  GenericStatus       @map("generic_status")
   preciseStatus  String?             @map("precise_status")
   roleFamily     String?             @map("role_family")

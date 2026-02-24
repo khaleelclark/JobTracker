@@ -10,6 +10,7 @@ const experienceYearsSchema = z
 export const createApplicationSchema = z.object({
   companyName: z.string().min(1).max(200),
   roleTitle: z.string().min(1).max(200),
+  postingDetails: z.string().max(50000).optional().nullable(),
   genericStatus: z.enum([
     "interested",
     "applied",

@@ -3,11 +3,14 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface FollowupCreateFormProps {
   applicationId: string;
   defaultAttemptIndex: number;
 }
+
+const FOLLOWUP_CHANNEL_OPTIONS = ["email", "linkedin", "portal", "other"] as const;
 
 function toIsoFromDate(raw: string): string {
   if (!raw) {
@@ -80,10 +83,11 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex }: Follo
         <label>
           Channel
           <select name="channel" defaultValue="email">
-            <option value="email">email</option>
-            <option value="linkedin">linkedin</option>
-            <option value="portal">portal</option>
-            <option value="other">other</option>
+            {FOLLOWUP_CHANNEL_OPTIONS.map((channel) => (
+              <option key={channel} value={channel}>
+                {toTitleCaseLabel(channel)}
+              </option>
+            ))}
           </select>
         </label>
       </div>

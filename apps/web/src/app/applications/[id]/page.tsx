@@ -76,6 +76,13 @@ export default async function ApplicationDetailPage({
             {toTitleCaseLabel(application.genericStatus)}
           </span>
         </p>
+        <h3>Posting Details</h3>
+        {application.postingDetails ? (
+          <MarkdownContent markdown={application.postingDetails} />
+        ) : (
+          <p className="muted">No posting details.</p>
+        )}
+        <h3>Notes</h3>
         {application.notes ? (
           <MarkdownContent markdown={application.notes} />
         ) : (
@@ -88,6 +95,7 @@ export default async function ApplicationDetailPage({
           id: application.id,
           companyName: application.companyName,
           roleTitle: application.roleTitle,
+          postingDetails: application.postingDetails,
           genericStatus: application.genericStatus,
           preciseStatus: application.preciseStatus,
           roleFamily: application.roleFamily,
@@ -203,7 +211,7 @@ export default async function ApplicationDetailPage({
             {application.interviews.map(interview => (
               <li key={interview.id} className="list-row">
                 <span>
-                  {interview.roundLabel} ({interview.status})
+                  {interview.roundLabel} ({toTitleCaseLabel(interview.status)})
                 </span>
                 <span className="muted">
                   {interview.scheduledAt.toLocaleString()}

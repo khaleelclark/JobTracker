@@ -48,6 +48,7 @@ export async function POST(request: Request) {
     data: {
       companyName: parsed.data.companyName,
       roleTitle: parsed.data.roleTitle,
+      postingDetails: parsed.data.postingDetails,
       genericStatus: parsed.data.genericStatus,
       preciseStatus: parsed.data.preciseStatus,
       roleFamily: parsed.data.roleFamily,

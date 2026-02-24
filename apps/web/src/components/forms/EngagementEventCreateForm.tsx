@@ -3,10 +3,19 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface EngagementEventCreateFormProps {
   applicationId: string;
 }
+
+const EVENT_TYPE_OPTIONS = [
+  "recruiter_reply",
+  "phone_screen",
+  "interview_round",
+  "offer",
+  "rejection",
+] as const;
 
 function toIsoFromDateTime(raw: string): string {
   if (!raw) {
@@ -70,11 +79,11 @@ export function EngagementEventCreateForm({ applicationId }: EngagementEventCrea
         <label>
           Event Type
           <select name="eventType" defaultValue="recruiter_reply">
-            <option value="recruiter_reply">recruiter_reply</option>
-            <option value="phone_screen">phone_screen</option>
-            <option value="interview_round">interview_round</option>
-            <option value="offer">offer</option>
-            <option value="rejection">rejection</option>
+            {EVENT_TYPE_OPTIONS.map((eventType) => (
+              <option key={eventType} value={eventType}>
+                {toTitleCaseLabel(eventType)}
+              </option>
+            ))}
           </select>
         </label>
 

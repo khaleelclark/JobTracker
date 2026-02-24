@@ -44,6 +44,7 @@ export function ApplicationCreateForm() {
     const payload = {
       companyName: String(data.get("companyName") ?? "").trim(),
       roleTitle: String(data.get("roleTitle") ?? "").trim(),
+      postingDetails: String(data.get("postingDetails") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
       preciseStatus: String(data.get("preciseStatus") ?? "").trim() || null,
       roleFamily: String(data.get("roleFamily") ?? "").trim() || null,
@@ -165,6 +166,16 @@ export function ApplicationCreateForm() {
             <label>
               Precise Status
               <input name="preciseStatus" maxLength={200} placeholder="Recruiter screen completed" />
+            </label>
+
+            <label>
+              Posting Details (Markdown)
+              <textarea
+                name="postingDetails"
+                rows={6}
+                maxLength={50000}
+                placeholder="Paste factual role posting details (requirements, responsibilities, compensation, location, etc.)"
+              />
             </label>
 
             <label>

@@ -23,6 +23,7 @@ interface ApplicationEditDeleteFormProps {
     id: string;
     companyName: string;
     roleTitle: string;
+    postingDetails: string | null;
     genericStatus: string;
     preciseStatus: string | null;
     roleFamily: string | null;
@@ -67,6 +68,7 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
     const payload = {
       companyName: String(data.get("companyName") ?? "").trim(),
       roleTitle: String(data.get("roleTitle") ?? "").trim(),
+      postingDetails: String(data.get("postingDetails") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
       preciseStatus: String(data.get("preciseStatus") ?? "").trim() || null,
       roleFamily: String(data.get("roleFamily") ?? "").trim() || null,
@@ -83,8 +85,19 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        throw new Error(typeof body.error === "string" ? body.error : "Unable to update application");
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: unknown;
+          detail?: unknown;
+        };
+        const fieldErrors =
+          typeof body.error === "object" && body.error && "fieldErrors" in body.error
+            ? (body.error as { fieldErrors?: Record<string, string[] | undefined> }).fieldErrors
+            : undefined;
+        const firstFieldError = fieldErrors
+          ? Object.values(fieldErrors).flat().find((message): message is string => Boolean(message))
+          : null;
+        const detailMessage = typeof body.detail === "string" ? body.detail : null;
+        throw new Error(firstFieldError ?? detailMessage ?? `Unable to update application (${response.status})`);
       }
 
       setSuccess("Application updated.");
@@ -167,6 +180,11 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
       <label>
         Precise Status
         <input name="preciseStatus" maxLength={200} defaultValue={application.preciseStatus ?? ""} />
+      </label>
+
+      <label>
+        Posting Details (Markdown)
+        <textarea name="postingDetails" rows={6} maxLength={50000} defaultValue={application.postingDetails ?? ""} />
       </label>
 
       <label>
