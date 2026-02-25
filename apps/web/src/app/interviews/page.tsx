@@ -11,6 +11,11 @@ export default async function InterviewsPage() {
       include: { application: true, reflection: true },
     }),
     prisma.application.findMany({
+      where: {
+        genericStatus: {
+          notIn: ["rejected", "withdrawn", "archived"],
+        },
+      },
       orderBy: { updatedAt: "desc" },
       select: { id: true, companyName: true, roleTitle: true },
     }),
