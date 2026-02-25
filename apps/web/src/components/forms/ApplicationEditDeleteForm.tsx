@@ -2,7 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel } from "@/lib/format";
@@ -49,7 +55,9 @@ function toIsoFromDateInput(raw: string): string {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-export function ApplicationEditDeleteForm({ application }: ApplicationEditDeleteFormProps) {
+export function ApplicationEditDeleteForm({
+  application,
+}: ApplicationEditDeleteFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -90,20 +98,34 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
           detail?: unknown;
         };
         const fieldErrors =
-          typeof body.error === "object" && body.error && "fieldErrors" in body.error
-            ? (body.error as { fieldErrors?: Record<string, string[] | undefined> }).fieldErrors
+          typeof body.error === "object" &&
+          body.error &&
+          "fieldErrors" in body.error
+            ? (
+                body.error as {
+                  fieldErrors?: Record<string, string[] | undefined>;
+                }
+              ).fieldErrors
             : undefined;
         const firstFieldError = fieldErrors
-          ? Object.values(fieldErrors).flat().find((message): message is string => Boolean(message))
+          ? Object.values(fieldErrors)
+              .flat()
+              .find((message): message is string => Boolean(message))
           : null;
-        const detailMessage = typeof body.detail === "string" ? body.detail : null;
-        throw new Error(firstFieldError ?? detailMessage ?? `Unable to update application (${response.status})`);
+        const detailMessage =
+          typeof body.detail === "string" ? body.detail : null;
+        throw new Error(
+          firstFieldError ??
+            detailMessage ??
+            `Unable to update application (${response.status})`,
+        );
       }
 
       setSuccess("Application updated.");
       router.refresh();
     } catch (saveError) {
-      const message = saveError instanceof Error ? saveError.message : "Unknown error";
+      const message =
+        saveError instanceof Error ? saveError.message : "Unknown error";
       setError(message);
     } finally {
       setSaving(false);
@@ -122,14 +144,21 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        throw new Error(typeof body.error === "string" ? body.error : "Unable to delete application");
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: unknown;
+        };
+        throw new Error(
+          typeof body.error === "string"
+            ? body.error
+            : "Unable to delete application",
+        );
       }
 
       router.push("/applications");
       router.refresh();
     } catch (deleteError) {
-      const message = deleteError instanceof Error ? deleteError.message : "Unknown error";
+      const message =
+        deleteError instanceof Error ? deleteError.message : "Unknown error";
       setError(message);
       setDeleting(false);
     }
@@ -142,18 +171,28 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
       <div className="form-grid form-grid-2">
         <label>
           Company
-          <input name="companyName" required maxLength={200} defaultValue={application.companyName} />
+          <input
+            name="companyName"
+            required
+            maxLength={200}
+            defaultValue={application.companyName}
+          />
         </label>
 
         <label>
           Role Title
-          <input name="roleTitle" required maxLength={200} defaultValue={application.roleTitle} />
+          <input
+            name="roleTitle"
+            required
+            maxLength={200}
+            defaultValue={application.roleTitle}
+          />
         </label>
 
         <label>
           Status
           <select name="genericStatus" defaultValue={application.genericStatus}>
-            {STATUS_OPTIONS.map((status) => (
+            {STATUS_OPTIONS.map(status => (
               <option key={status} value={status}>
                 {toTitleCaseLabel(status)}
               </option>
@@ -163,39 +202,73 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
 
         <label>
           Applied Date
-          <input name="appliedAt" type="date" defaultValue={toDateInputValue(application.appliedAtIso)} />
+          <input
+            name="appliedAt"
+            type="date"
+            defaultValue={toDateInputValue(application.appliedAtIso)}
+          />
         </label>
 
         <label>
           Role Family
-          <input name="roleFamily" maxLength={120} defaultValue={application.roleFamily ?? ""} />
+          <input
+            name="roleFamily"
+            maxLength={120}
+            defaultValue={application.roleFamily ?? ""}
+          />
         </label>
 
         <label>
           Role Level
-          <input name="roleLevel" maxLength={120} defaultValue={application.roleLevel ?? ""} />
+          <input
+            name="roleLevel"
+            maxLength={120}
+            defaultValue={application.roleLevel ?? ""}
+          />
         </label>
       </div>
 
       <label>
         Precise Status
-        <input name="preciseStatus" maxLength={200} defaultValue={application.preciseStatus ?? ""} />
+        <input
+          name="preciseStatus"
+          maxLength={200}
+          defaultValue={application.preciseStatus ?? ""}
+        />
       </label>
 
       <label>
-        Posting Details (Markdown)
-        <textarea name="postingDetails" rows={6} maxLength={50000} defaultValue={application.postingDetails ?? ""} />
+        Posting Details
+        <textarea
+          name="postingDetails"
+          rows={6}
+          maxLength={50000}
+          defaultValue={application.postingDetails ?? ""}
+        />
       </label>
 
       <label>
         Notes
-        <textarea name="notes" rows={4} maxLength={4000} defaultValue={application.notes ?? ""} />
+        <textarea
+          name="notes"
+          rows={4}
+          maxLength={4000}
+          defaultValue={application.notes ?? ""}
+        />
       </label>
 
       <div className="form-actions">
         <button type="submit" disabled={saving || deleting}>
-          {saving ? "Saving..." : (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+          {saving ? (
+            "Saving..."
+          ) : (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+              }}
+            >
               Save Changes
               <SaveIcon sx={{ fontSize: "1rem" }} />
             </span>
@@ -205,7 +278,12 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
           type="button"
           disabled={saving || deleting}
           onClick={() => setIsDeleteDialogOpen(true)}
-          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+          style={{
+            marginLeft: "auto",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.35rem",
+          }}
         >
           {deleting ? "Deleting..." : "Delete Application"}
           <DeleteIcon sx={{ fontSize: "1rem" }} />
@@ -227,11 +305,14 @@ export function ApplicationEditDeleteForm({ application }: ApplicationEditDelete
       >
         <DialogTitle>Delete Application?</DialogTitle>
         <DialogContent>
-          This will permanently delete this application and all linked activity records
-          (interviews, emails, follow-ups, events, and resume links).
+          This will permanently delete this application and all linked activity
+          records (interviews, emails, follow-ups, events, and resume links).
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsDeleteDialogOpen(false)} disabled={deleting}>
+          <Button
+            onClick={() => setIsDeleteDialogOpen(false)}
+            disabled={deleting}
+          >
             Cancel
           </Button>
           <Button

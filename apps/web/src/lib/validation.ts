@@ -130,6 +130,15 @@ export const updateCardStateSchema = z.object({
   snoozeDays: z.number().int().min(1).max(30).optional(),
 });
 
+export const goalsProfileSchema = z.object({
+  missionStatement: z.string().max(8000),
+  compensationPreference: z.string().max(300),
+  preferredLocations: z.string().max(500),
+  employmentTypes: z.array(z.string().max(50)).max(10),
+  workplaceModes: z.array(z.string().max(50)).max(10),
+  priorityNotes: z.string().max(8000),
+});
+
 export const listApplicationsQuerySchema = z.object({
   query: z.string().max(200).optional(),
   genericStatus: z

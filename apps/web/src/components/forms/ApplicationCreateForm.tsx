@@ -2,7 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -61,8 +68,14 @@ export function ApplicationCreateForm() {
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        throw new Error(typeof body.error === "string" ? body.error : "Unable to create application");
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: unknown;
+        };
+        throw new Error(
+          typeof body.error === "string"
+            ? body.error
+            : "Unable to create application",
+        );
       }
 
       form.reset();
@@ -70,7 +83,8 @@ export function ApplicationCreateForm() {
       setIsDialogOpen(false);
       router.refresh();
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Unknown error";
+      const message =
+        submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
     } finally {
       setSubmitting(false);
@@ -122,24 +136,36 @@ export function ApplicationCreateForm() {
         <DialogContent sx={{ pt: 1 }}>
           <form className="form-card" onSubmit={handleSubmit}>
             <div className="form-header">
-              <p className="muted">Create a factual record. No ranking or automation is applied.</p>
+              <p className="muted">
+                Create a factual record. No ranking or automation is applied.
+              </p>
             </div>
 
             <div className="form-grid form-grid-2">
               <label>
                 Company
-                <input name="companyName" required maxLength={200} placeholder="Acme Corp" />
+                <input
+                  name="companyName"
+                  required
+                  maxLength={200}
+                  placeholder="Acme Corp"
+                />
               </label>
 
               <label>
                 Role Title
-                <input name="roleTitle" required maxLength={200} placeholder="Product Manager" />
+                <input
+                  name="roleTitle"
+                  required
+                  maxLength={200}
+                  placeholder="Product Manager"
+                />
               </label>
 
               <label>
                 Status
                 <select name="genericStatus" defaultValue="applied">
-                  {STATUS_OPTIONS.map((status) => (
+                  {STATUS_OPTIONS.map(status => (
                     <option key={status} value={status}>
                       {toTitleCaseLabel(status)}
                     </option>
@@ -154,7 +180,11 @@ export function ApplicationCreateForm() {
 
               <label>
                 Role Family
-                <input name="roleFamily" maxLength={120} placeholder="Engineering" />
+                <input
+                  name="roleFamily"
+                  maxLength={120}
+                  placeholder="Engineering"
+                />
               </label>
 
               <label>
@@ -165,11 +195,15 @@ export function ApplicationCreateForm() {
 
             <label>
               Precise Status
-              <input name="preciseStatus" maxLength={200} placeholder="Recruiter screen completed" />
+              <input
+                name="preciseStatus"
+                maxLength={200}
+                placeholder="Recruiter screen completed"
+              />
             </label>
 
             <label>
-              Posting Details (Markdown)
+              Posting Details
               <textarea
                 name="postingDetails"
                 rows={6}
@@ -180,13 +214,26 @@ export function ApplicationCreateForm() {
 
             <label>
               Notes
-              <textarea name="notes" rows={4} maxLength={4000} placeholder="Any factual notes from the posting or application" />
+              <textarea
+                name="notes"
+                rows={4}
+                maxLength={4000}
+                placeholder="Any factual notes from the posting or application"
+              />
             </label>
 
             <div className="form-actions">
               <button type="submit" disabled={submitting}>
-                {submitting ? "Saving..." : (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                {submitting ? (
+                  "Saving..."
+                ) : (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.35rem",
+                    }}
+                  >
                     Save Application
                     <SaveIcon sx={{ fontSize: "1rem" }} />
                   </span>
