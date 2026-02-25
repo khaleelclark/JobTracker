@@ -24,6 +24,7 @@ import {
   TextField,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 
 interface ResumeOption {
@@ -161,12 +162,14 @@ function handleDeleteDialogClose(
         headerName: "Category",
         flex: 0.9,
         minWidth: 160,
+        align: "center",
         valueGetter: (_value, row) => row.category ?? "Uncategorized",
       },
       {
         field: "experienceYears",
         headerName: "Experience (Years)",
         width: 180,
+        align: "center",
         valueGetter: (_value, row) =>
           row.experienceYears === null ? "Not set" : `${row.experienceYears.toFixed(1)} years`,
       },
@@ -182,6 +185,7 @@ function handleDeleteDialogClose(
         headerName: "Linked Resumes",
         type: "number",
         width: 150,
+        align: "center",
       },
       {
         field: "actions",
@@ -192,13 +196,25 @@ function handleDeleteDialogClose(
         renderCell: (params: GridRenderCellParams<SkillRow>) => {
           const row = params.row;
           return (
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center", height: "100%" }}>
-              <Button size="small" onClick={() => openEditDialog(row)} sx={APP_BUTTON_SX}>
-                Edit
-              </Button>
-              <Button size="small" onClick={() => setDeleteSkill(row)} sx={APP_BUTTON_SX} endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}>
-                Delete
-              </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+              <IconButton
+                size="small"
+                aria-label={`Edit skill ${row.name}`}
+                title="Edit"
+                onClick={() => openEditDialog(row)}
+                sx={APP_BUTTON_SX}
+              >
+                <EditIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
+              <IconButton
+                size="small"
+                aria-label={`Delete skill ${row.name}`}
+                title="Delete"
+                onClick={() => setDeleteSkill(row)}
+                sx={APP_BUTTON_SX}
+              >
+                <DeleteIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
             </Box>
           );
         },
@@ -348,7 +364,20 @@ function handleDeleteDialogClose(
           disableRowSelectionOnClick
           pageSizeOptions={[10, 25, 50]}
           initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }}
-          sx={{ backgroundColor: "#fff" }}
+          sx={{
+            backgroundColor: "#fff",
+            "& .MuiDataGrid-columnHeaderTitleContainer": {
+              justifyContent: "center",
+            },
+            "& .MuiDataGrid-columnHeaderTitleContainerContent": {
+              justifyContent: "center",
+              width: "100%",
+            },
+            "& .MuiDataGrid-columnHeaderTitle": {
+              textAlign: "center",
+              width: "100%",
+            },
+          }}
         />
       </Box>
       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
