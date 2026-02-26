@@ -5,9 +5,15 @@ import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
 
 export default async function ApplicationsPage() {
-  const applications = await prisma.application.findMany({
-    orderBy: { appliedAt: "desc" },
-  });
+  const [applications, resumes] = await Promise.all([
+    prisma.application.findMany({
+      orderBy: { appliedAt: "desc" },
+    }),
+    prisma.resume.findMany({
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true },
+    }),
+  ]);
 
   const summary = applications.reduce(
     (acc, item) => {
@@ -16,6 +22,22 @@ export default async function ApplicationsPage() {
     },
     {} as Record<string, number>,
   );
+
+  const statusSortRank: Record<string, number> = {
+    archived: 1,
+    rejected: 2,
+    withdrawn: 3,
+  };
+
+  const sortedApplications = [...applications].sort((a, b) => {
+    const rankA = statusSortRank[a.genericStatus] ?? 0;
+    const rankB = statusSortRank[b.genericStatus] ?? 0;
+    if (rankA !== rankB) {
+      return rankA - rankB;
+    }
+
+    return b.appliedAt.getTime() - a.appliedAt.getTime();
+  });
 
   return (
     <section className="stack-xl">
@@ -40,10 +62,11 @@ export default async function ApplicationsPage() {
       <div className="card stack-md">
         <ApplicationTable
           title="Application Records"
-          applications={applications.map((application) => ({
+          applications={sortedApplications.map((application) => ({
             ...application,
             appliedAt: application.appliedAt.toISOString(),
           }))}
+          resumes={resumes}
         />
       </div>
     </section>

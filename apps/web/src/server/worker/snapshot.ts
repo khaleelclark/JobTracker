@@ -5,11 +5,14 @@ import {
 } from "@job-tracker/shared";
 import { prisma } from "@/lib/db";
 import { readControlFile } from "@/lib/fileStore";
+import { parseGoalsProfile } from "@/lib/goalsProfile";
 import { truncateText } from "@/lib/truncate";
 
 export interface WorkerSnapshot {
   now: string;
   control_text: string;
+  goals_profile: Record<string, unknown>;
+  goals_progress: Record<string, unknown>;
   master_skills: Array<Record<string, unknown>>;
   applications: Array<Record<string, unknown>>;
   interviews: Array<Record<string, unknown>>;
@@ -19,6 +22,13 @@ export interface WorkerSnapshot {
 }
 
 export async function buildSnapshot(): Promise<WorkerSnapshot> {
+  const now = new Date();
+  const weekStartUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const daysFromMonday = (weekStartUtc.getUTCDay() + 6) % 7;
+  weekStartUtc.setUTCDate(weekStartUtc.getUTCDate() - daysFromMonday);
+  const nextWeekStartUtc = new Date(weekStartUtc);
+  nextWeekStartUtc.setUTCDate(nextWeekStartUtc.getUTCDate() + 7);
+
   const [
     applications,
     masterSkills,
@@ -28,6 +38,7 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     cards,
     recentEmails,
     controlText,
+    applicationsAppliedThisWeek,
   ] = await Promise.all([
     prisma.application.findMany({
       orderBy: { updatedAt: "desc" },
@@ -78,7 +89,22 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
       take: 30,
     }),
     readControlFile(),
+    prisma.application.count({
+      where: {
+        appliedAt: {
+          gte: weekStartUtc,
+          lt: nextWeekStartUtc,
+        },
+      },
+    }),
   ]);
+
+  const goalsProfile = parseGoalsProfile(controlText);
+  const weeklyTarget = goalsProfile?.weeklyApplicationsTarget ?? null;
+  const weeklyRemaining =
+    weeklyTarget === null
+      ? null
+      : Math.max(0, weeklyTarget - applicationsAppliedThisWeek);
 
   const recentEmailByApp = new Map<
     string,
@@ -106,6 +132,7 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     id: app.id,
     company_name: app.companyName,
     role_title: app.roleTitle,
+    compensation: app.compensation,
     generic_status: app.genericStatus,
     precise_status: app.preciseStatus,
     role_family: app.roleFamily,
@@ -181,8 +208,26 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
   }));
 
   return {
-    now: new Date().toISOString(),
+    now: now.toISOString(),
     control_text: controlText,
+    goals_profile: goalsProfile
+      ? {
+          mission_statement: goalsProfile.missionStatement,
+          weekly_applications_target: goalsProfile.weeklyApplicationsTarget,
+          compensation_preference: goalsProfile.compensationPreference,
+          preferred_locations: goalsProfile.preferredLocations,
+          employment_types: goalsProfile.employmentTypes,
+          workplace_modes: goalsProfile.workplaceModes,
+          priority_notes: goalsProfile.priorityNotes,
+        }
+      : {},
+    goals_progress: {
+      week_start_utc: weekStartUtc.toISOString(),
+      week_end_utc: nextWeekStartUtc.toISOString(),
+      applications_applied_this_week: applicationsAppliedThisWeek,
+      weekly_applications_target: weeklyTarget,
+      weekly_applications_remaining: weeklyRemaining,
+    },
     master_skills: masterSkillFacts,
     applications: applicationFacts,
     interviews: interviewFacts,

@@ -1,5 +1,6 @@
 export interface GoalsProfile {
   missionStatement: string;
+  weeklyApplicationsTarget: number | null;
   compensationPreference: string;
   preferredLocations: string;
   employmentTypes: string[];
@@ -9,6 +10,7 @@ export interface GoalsProfile {
 
 export const DEFAULT_GOALS_PROFILE: GoalsProfile = {
   missionStatement: "",
+  weeklyApplicationsTarget: null,
   compensationPreference: "",
   preferredLocations: "",
   employmentTypes: [],
@@ -31,6 +33,19 @@ function parseMaybeStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === "string");
 }
 
+function parseMaybeNumber(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+
+  const rounded = Math.trunc(value);
+  if (rounded < 1 || rounded > 200) {
+    return null;
+  }
+
+  return rounded;
+}
+
 export function parseGoalsProfile(controlText: string): GoalsProfile | null {
   const blockPattern = new RegExp(`${START_MARKER}[\\s\\S]*?\\\`\\\`\\\`json\\n([\\s\\S]*?)\\n\\\`\\\`\\\`[\\s\\S]*?${END_MARKER}`);
   const match = controlText.match(blockPattern);
@@ -42,6 +57,7 @@ export function parseGoalsProfile(controlText: string): GoalsProfile | null {
     const parsed = JSON.parse(match[1]) as Record<string, unknown>;
     return {
       missionStatement: parseMaybeString(parsed.missionStatement),
+      weeklyApplicationsTarget: parseMaybeNumber(parsed.weeklyApplicationsTarget),
       compensationPreference: parseMaybeString(parsed.compensationPreference),
       preferredLocations: parseMaybeString(parsed.preferredLocations),
       employmentTypes: parseMaybeStringArray(parsed.employmentTypes),

@@ -12,9 +12,11 @@ import {
 import {
   Box,
   Button,
+  IconButton,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -28,11 +30,13 @@ interface ApplicationRow {
 
 interface ApplicationTableProps {
   applications: ApplicationRow[];
+  resumes: Array<{ id: string; name: string }>;
   title?: string;
 }
 
 export function ApplicationTable({
   applications,
+  resumes,
   title = "Application Records",
 }: ApplicationTableProps) {
   const theme = useTheme();
@@ -120,13 +124,15 @@ export function ApplicationTable({
         headerAlign: "center",
         align: "center",
         renderCell: (params: GridRenderCellParams<ApplicationRow>) => (
-          <Button
+          <IconButton
             size={isMobile ? "small" : "medium"}
+            aria-label={`Edit application ${params.row.companyName} ${params.row.roleTitle}`}
+            title="Edit"
             component={Link}
             href={`/applications/${params.row.id}`}
           >
-            Edit
-          </Button>
+            <EditIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
         ),
       },
     ],
@@ -172,7 +178,7 @@ export function ApplicationTable({
       <div className="stack-md">
         <div className="section-head">
           <h2 className="no-margin">{title}</h2>
-          <ApplicationCreateForm />
+          <ApplicationCreateForm resumes={resumes} />
         </div>
         <p className="muted">No applications logged yet.</p>
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -188,7 +194,7 @@ export function ApplicationTable({
     <div className="stack-md">
       <div className="section-head">
         <h2 className="no-margin">{title}</h2>
-        <ApplicationCreateForm />
+        <ApplicationCreateForm resumes={resumes} />
       </div>
       <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
         <DataGrid

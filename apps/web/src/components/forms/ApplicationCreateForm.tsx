@@ -24,6 +24,11 @@ const STATUS_OPTIONS = [
   "archived",
 ] as const;
 
+interface ResumeOption {
+  id: string;
+  name: string;
+}
+
 function toIsoFromDateInput(raw: string): string {
   if (!raw) {
     return new Date().toISOString();
@@ -32,7 +37,11 @@ function toIsoFromDateInput(raw: string): string {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-export function ApplicationCreateForm() {
+interface ApplicationCreateFormProps {
+  resumes: ResumeOption[];
+}
+
+export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -52,12 +61,14 @@ export function ApplicationCreateForm() {
       companyName: String(data.get("companyName") ?? "").trim(),
       roleTitle: String(data.get("roleTitle") ?? "").trim(),
       postingDetails: String(data.get("postingDetails") ?? "").trim() || null,
+      compensation: String(data.get("compensation") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
       preciseStatus: String(data.get("preciseStatus") ?? "").trim() || null,
       roleFamily: String(data.get("roleFamily") ?? "").trim() || null,
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
       notes: String(data.get("notes") ?? "").trim() || null,
+      linkedResumeIds: data.getAll("linkedResumeIds").map((value) => String(value)),
     };
 
     try {
@@ -191,6 +202,15 @@ export function ApplicationCreateForm() {
                 Role Level
                 <input name="roleLevel" maxLength={120} placeholder="Mid" />
               </label>
+
+              <label>
+                Compensation
+                <input
+                  name="compensation"
+                  maxLength={300}
+                  placeholder="$140k-$170k base + bonus/equity"
+                />
+              </label>
             </div>
 
             <label>
@@ -210,6 +230,21 @@ export function ApplicationCreateForm() {
                 maxLength={50000}
                 placeholder="Paste factual role posting details (requirements, responsibilities, compensation, location, etc.)"
               />
+            </label>
+
+            <label>
+              Linked Resumes
+              <select
+                name="linkedResumeIds"
+                multiple
+                size={Math.min(6, Math.max(3, resumes.length))}
+              >
+                {resumes.map((resume) => (
+                  <option key={resume.id} value={resume.id}>
+                    {resume.name}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label>

@@ -19,6 +19,7 @@ const SYSTEM_PROMPT = [
   "- If an application is 21+ days old with no inbound response, produce followup_suggestion or email_draft.",
   "- If an interview is upcoming within 7 days, produce strategy_tip asking GPT for focused prep help.",
   "- If an interview was completed and there is no inbound response for 10+ days, produce followup_suggestion and optionally thank_you_prompt/email_draft.",
+  "- If goals_progress.weekly_applications_target is set, use goals_progress.weekly_applications_remaining to generate a weekly_review_prompt or strategy_tip referencing exact remaining gap.",
   "- Use reflection_prompt mainly for post-event learning moments, not as the default card type.",
   "Safety and scope:",
   "- Do not rank applications or declare a single best decision.",

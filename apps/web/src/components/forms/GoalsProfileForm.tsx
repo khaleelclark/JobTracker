@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 interface GoalsProfileFormProps {
   initialProfile: {
     missionStatement: string;
+    weeklyApplicationsTarget: number | null;
     compensationPreference: string;
     preferredLocations: string;
     employmentTypes: string[];
@@ -67,6 +68,14 @@ export function GoalsProfileForm({ initialProfile }: GoalsProfileFormProps) {
 
     const payload = {
       missionStatement: String(data.get("missionStatement") ?? "").trim(),
+      weeklyApplicationsTarget: (() => {
+        const raw = String(data.get("weeklyApplicationsTarget") ?? "").trim();
+        if (!raw) {
+          return null;
+        }
+        const parsed = Number(raw);
+        return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+      })(),
       compensationPreference: String(
         data.get("compensationPreference") ?? "",
       ).trim(),
@@ -156,6 +165,18 @@ export function GoalsProfileForm({ initialProfile }: GoalsProfileFormProps) {
         </label>
 
         <div className="form-grid form-grid-2">
+          <label>
+            Weekly Application Target
+            <input
+              name="weeklyApplicationsTarget"
+              type="number"
+              min={1}
+              max={200}
+              defaultValue={initialProfile.weeklyApplicationsTarget ?? ""}
+              placeholder="10"
+            />
+          </label>
+
           <label>
             Compensation Preference
             <input

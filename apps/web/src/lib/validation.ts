@@ -11,6 +11,7 @@ export const createApplicationSchema = z.object({
   companyName: z.string().min(1).max(200),
   roleTitle: z.string().min(1).max(200),
   postingDetails: z.string().max(50000).optional().nullable(),
+  compensation: z.string().max(300).optional().nullable(),
   genericStatus: z.enum([
     "interested",
     "applied",
@@ -26,6 +27,7 @@ export const createApplicationSchema = z.object({
   roleLevel: z.string().max(120).optional().nullable(),
   appliedAt: z.coerce.date(),
   notes: z.string().max(4000).optional().nullable(),
+  linkedResumeIds: z.array(z.string().uuid()).default([]),
 });
 
 export const updateApplicationSchema = createApplicationSchema;
@@ -85,6 +87,14 @@ export const createResumeSchema = z.object({
   linkedSkillIds: z.array(z.string().uuid()).default([]),
 });
 
+export const updateResumeSchema = z.object({
+  name: z.string().min(1).max(200),
+  filePath: z.string().min(1).max(1000),
+  extractedText: z.string().max(50000).optional().nullable(),
+  linkedApplicationIds: z.array(z.string().uuid()).default([]),
+  linkedSkillIds: z.array(z.string().uuid()).default([]),
+});
+
 export const createMasterSkillSchema = z.object({
   name: z.string().min(1).max(120),
   category: z.string().max(120).optional().nullable(),
@@ -132,6 +142,7 @@ export const updateCardStateSchema = z.object({
 
 export const goalsProfileSchema = z.object({
   missionStatement: z.string().max(8000),
+  weeklyApplicationsTarget: z.number().int().min(1).max(200).nullable(),
   compensationPreference: z.string().max(300),
   preferredLocations: z.string().max(500),
   employmentTypes: z.array(z.string().max(50)).max(10),

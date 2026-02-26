@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   Button,
   Dialog,
@@ -30,13 +30,16 @@ interface ApplicationEditDeleteFormProps {
     companyName: string;
     roleTitle: string;
     postingDetails: string | null;
+    compensation: string | null;
     genericStatus: string;
     preciseStatus: string | null;
     roleFamily: string | null;
     roleLevel: string | null;
     appliedAtIso: string;
     notes: string | null;
+    linkedResumeIds: string[];
   };
+  resumes: Array<{ id: string; name: string }>;
 }
 
 function toDateInputValue(iso: string): string {
@@ -57,6 +60,7 @@ function toIsoFromDateInput(raw: string): string {
 
 export function ApplicationEditDeleteForm({
   application,
+  resumes,
 }: ApplicationEditDeleteFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -64,6 +68,20 @@ export function ApplicationEditDeleteForm({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!success) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccess(null);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [success]);
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,12 +95,14 @@ export function ApplicationEditDeleteForm({
       companyName: String(data.get("companyName") ?? "").trim(),
       roleTitle: String(data.get("roleTitle") ?? "").trim(),
       postingDetails: String(data.get("postingDetails") ?? "").trim() || null,
+      compensation: String(data.get("compensation") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
       preciseStatus: String(data.get("preciseStatus") ?? "").trim() || null,
       roleFamily: String(data.get("roleFamily") ?? "").trim() || null,
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
       notes: String(data.get("notes") ?? "").trim() || null,
+      linkedResumeIds: data.getAll("linkedResumeIds").map((value) => String(value)),
     };
 
     try {
@@ -226,6 +246,15 @@ export function ApplicationEditDeleteForm({
             defaultValue={application.roleLevel ?? ""}
           />
         </label>
+
+        <label>
+          Compensation
+          <input
+            name="compensation"
+            maxLength={300}
+            defaultValue={application.compensation ?? ""}
+          />
+        </label>
       </div>
 
       <label>
@@ -245,6 +274,22 @@ export function ApplicationEditDeleteForm({
           maxLength={50000}
           defaultValue={application.postingDetails ?? ""}
         />
+      </label>
+
+      <label>
+        Linked Resumes
+        <select
+          name="linkedResumeIds"
+          multiple
+          defaultValue={application.linkedResumeIds}
+          size={Math.min(6, Math.max(3, resumes.length))}
+        >
+          {resumes.map((resume) => (
+            <option key={resume.id} value={resume.id}>
+              {resume.name}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label>
@@ -274,6 +319,8 @@ export function ApplicationEditDeleteForm({
             </span>
           )}
         </button>
+        {success ? <span className="success-text">{success}</span> : null}
+        {error ? <span className="error-text">{error}</span> : null}
         <button
           type="button"
           disabled={saving || deleting}
@@ -288,8 +335,6 @@ export function ApplicationEditDeleteForm({
           {deleting ? "Deleting..." : "Delete Application"}
           <DeleteIcon sx={{ fontSize: "1rem" }} />
         </button>
-        {success ? <span className="success-text">{success}</span> : null}
-        {error ? <span className="error-text">{error}</span> : null}
       </div>
 
       <Dialog

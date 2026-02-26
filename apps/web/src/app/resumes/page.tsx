@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import { ResumeCreateForm } from "@/components/forms/ResumeCreateForm";
+import { ResumeLibrary } from "@/components/ResumeLibrary";
 
 export default async function ResumesPage() {
   const [resumes, applications, masterSkills] = await Promise.all([
@@ -37,25 +38,18 @@ export default async function ResumesPage() {
         <ResumeCreateForm applications={applications} skills={masterSkills} />
         <div className="card stack-md">
           <h2 className="no-margin">Resume Library</h2>
-        {resumes.length === 0 ? (
-          <p className="muted">No resumes uploaded yet.</p>
-        ) : (
-          <ul className="clean-list">
-            {resumes.map((resume) => (
-              <li key={resume.id} className="list-row">
-                <div>
-                  <strong>{resume.name}</strong>
-                  <div className="muted">{resume.filePath}</div>
-                </div>
-                <div className="muted">
-                  {resume.applications.length} linked application{resume.applications.length === 1 ? "" : "s"}
-                  {" | "}
-                  {resume.masterSkills.length} linked skill{resume.masterSkills.length === 1 ? "" : "s"}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+          <ResumeLibrary
+            resumes={resumes.map((resume) => ({
+              id: resume.id,
+              name: resume.name,
+              filePath: resume.filePath,
+              extractedText: resume.extractedText,
+              linkedApplicationIds: resume.applications.map((entry) => entry.applicationId),
+              linkedSkillIds: resume.masterSkills.map((entry) => entry.masterSkillId),
+            }))}
+            applications={applications}
+            skills={masterSkills}
+          />
         </div>
       </div>
     </section>

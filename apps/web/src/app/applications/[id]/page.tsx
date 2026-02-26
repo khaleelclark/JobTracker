@@ -18,7 +18,8 @@ export default async function ApplicationDetailPage({
 }: ApplicationDetailPageProps) {
   const { id } = await params;
 
-  const application = await prisma.application.findUnique({
+  const [application, resumes] = await Promise.all([
+    prisma.application.findUnique({
     where: { id },
     include: {
       interviews: {
@@ -36,7 +37,12 @@ export default async function ApplicationDetailPage({
       events: { orderBy: { occurredAt: "desc" } },
       resumes: { include: { resume: true } },
     },
-  });
+    }),
+    prisma.resume.findMany({
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true },
+    }),
+  ]);
 
   if (!application) {
     notFound();
@@ -76,6 +82,9 @@ export default async function ApplicationDetailPage({
             {toTitleCaseLabel(application.genericStatus)}
           </span>
         </p>
+        {application.compensation ? (
+          <p className="muted">Compensation: {application.compensation}</p>
+        ) : null}
         <h3>Posting Details</h3>
         {application.postingDetails ? (
           <MarkdownContent markdown={application.postingDetails} />
@@ -96,13 +105,16 @@ export default async function ApplicationDetailPage({
           companyName: application.companyName,
           roleTitle: application.roleTitle,
           postingDetails: application.postingDetails,
+          compensation: application.compensation,
           genericStatus: application.genericStatus,
           preciseStatus: application.preciseStatus,
           roleFamily: application.roleFamily,
           roleLevel: application.roleLevel,
           appliedAtIso: application.appliedAt.toISOString(),
           notes: application.notes,
+          linkedResumeIds: application.resumes.map((entry) => entry.resumeId),
         }}
+        resumes={resumes}
       />
 
       <ApplicationDetailActivityPanel

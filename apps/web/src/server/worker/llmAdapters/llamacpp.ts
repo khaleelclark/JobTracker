@@ -12,6 +12,7 @@ const SYSTEM_PROMPT = [
   "If application age is 21+ days with no inbound response, prefer followup_suggestion or email_draft.",
   "If an interview is upcoming within 7 days, include strategy_tip that asks GPT for prep help.",
   "If an interview was completed and no inbound response for 10+ days, include followup_suggestion.",
+  "If goals_progress.weekly_applications_target is set, use goals_progress.weekly_applications_remaining to include a weekly_review_prompt or strategy_tip with exact remaining gap.",
   "Every card must include suggested_gpt_prompt.",
 ].join("\n");
 
