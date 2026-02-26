@@ -46,7 +46,10 @@ export const createEmailLogSchema = z.object({
   isHuman: z.boolean(),
   subject: z.string().min(1).max(300),
   body: z.string().min(1).max(12000),
+  notes: z.string().max(4000).optional().nullable(),
 });
+
+export const updateEmailLogSchema = createEmailLogSchema;
 
 export const createFollowupSchema = z.object({
   applicationId: z.string().uuid(),
@@ -54,6 +57,7 @@ export const createFollowupSchema = z.object({
   channel: z.enum(["email", "linkedin", "portal", "other"]),
   sentAt: z.coerce.date(),
 });
+export const updateFollowupSchema = createFollowupSchema;
 
 export const createFollowupResultSchema = z.object({
   followupAttemptId: z.string().uuid(),
@@ -70,6 +74,7 @@ export const createEngagementEventSchema = z.object({
   eventType: z.enum(["recruiter_reply", "phone_screen", "interview_round", "offer", "rejection"]),
   occurredAt: z.coerce.date(),
 });
+export const updateEngagementEventSchema = createEngagementEventSchema;
 
 export const createReflectionSchema = z.object({
   interviewId: z.string().uuid(),
@@ -93,6 +98,10 @@ export const updateResumeSchema = z.object({
   extractedText: z.string().max(50000).optional().nullable(),
   linkedApplicationIds: z.array(z.string().uuid()).default([]),
   linkedSkillIds: z.array(z.string().uuid()).default([]),
+});
+
+export const updateApplicationResumeLinksSchema = z.object({
+  linkedResumeIds: z.array(z.string().uuid()).default([]),
 });
 
 export const createMasterSkillSchema = z.object({
@@ -157,6 +166,8 @@ export const listApplicationsQuerySchema = z.object({
     .optional(),
   limit: z.number().int().min(1).max(100).default(50),
 });
+
+export const updateInterviewSchema = createInterviewSchema;
 
 export const listUiCardsQuerySchema = z.object({
   state: z.enum(["active", "dismissed", "archived"]).optional(),

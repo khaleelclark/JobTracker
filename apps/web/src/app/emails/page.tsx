@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import { EmailLogCreateForm } from "@/components/forms/EmailLogCreateForm";
+import { EmailLogsCrudTable } from "@/components/EmailLogsCrudTable";
 
 export default async function EmailsPage() {
   const [emails, applications] = await Promise.all([
@@ -27,32 +28,20 @@ export default async function EmailsPage() {
         <EmailLogCreateForm applications={applications} />
         <div className="card table-shell">
           <h2 className="no-margin">Recent Emails</h2>
-        {emails.length === 0 ? (
-          <p className="muted">No emails logged yet.</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th>Direction</th>
-                <th>Human</th>
-                <th>Subject</th>
-                <th>Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {emails.map((email) => (
-                <tr key={email.id}>
-                  <td>{email.application.companyName}</td>
-                  <td>{email.direction}</td>
-                  <td>{email.isHuman ? "yes" : "no"}</td>
-                  <td>{email.subject}</td>
-                  <td>{email.createdAt.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+          <EmailLogsCrudTable
+            applications={applications}
+            emails={emails.map((email) => ({
+              id: email.id,
+              applicationId: email.applicationId,
+              direction: email.direction,
+              isHuman: email.isHuman,
+              subject: email.subject,
+              body: email.body,
+              notes: email.notes,
+              createdAtIso: email.createdAt.toISOString(),
+              applicationCompanyName: email.application.companyName,
+            }))}
+          />
         </div>
       </div>
     </section>

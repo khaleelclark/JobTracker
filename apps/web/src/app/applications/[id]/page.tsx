@@ -6,6 +6,11 @@ import { prisma } from "@/lib/db";
 import { MarkdownContent } from "@/components/MarkdownContent";
 import { ApplicationDetailActivityPanel } from "@/components/ApplicationDetailActivityPanel";
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
+import { EmailLogsCrudTable } from "@/components/EmailLogsCrudTable";
+import { FollowupsCrudTable } from "@/components/FollowupsCrudTable";
+import { EngagementEventsCrudTable } from "@/components/EngagementEventsCrudTable";
+import { InterviewsCrudTable } from "@/components/InterviewsCrudTable";
+import { ApplicationResumeLinksManager } from "@/components/ApplicationResumeLinksManager";
 import { toTitleCaseLabel } from "@/lib/format";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 
@@ -139,99 +144,79 @@ export default async function ApplicationDetailPage({
       <div className="grid grid-2">
         <div className="card">
           <h2>Follow-ups</h2>
-          {application.followups.length === 0 ? (
-            <p className="muted">No follow-up attempts.</p>
-          ) : (
-            <ul className="clean-list">
-              {application.followups.map(f => (
-                <li key={f.id} className="list-row">
-                  <span>
-                    Attempt {f.attemptIndex} via {f.channel} on{" "}
-                    {f.sentAt.toLocaleDateString()}
-                  </span>
-                  <span className="pill">
-                    {f.result?.resultStatus ?? "pending"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <FollowupsCrudTable
+            followups={application.followups.map((followup) => ({
+              id: followup.id,
+              applicationId: followup.applicationId,
+              attemptIndex: followup.attemptIndex,
+              channel: followup.channel,
+              sentAtIso: followup.sentAt.toISOString(),
+              resultStatus: followup.result?.resultStatus ?? "pending",
+            }))}
+          />
         </div>
 
         <div className="card">
           <h2>Engagement Events</h2>
-          {application.events.length === 0 ? (
-            <p className="muted">No events.</p>
-          ) : (
-            <ul className="clean-list">
-              {application.events.map(event => (
-                <li key={event.id} className="list-row">
-                  <span>{event.eventType}</span>
-                  <span className="muted">
-                    {event.occurredAt.toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <EngagementEventsCrudTable
+            events={application.events.map((event) => ({
+              id: event.id,
+              applicationId: event.applicationId,
+              eventType: event.eventType,
+              occurredAtIso: event.occurredAt.toISOString(),
+            }))}
+          />
         </div>
       </div>
 
       <div className="card">
         <h2>Recent Emails</h2>
-        {application.emailLogs.length === 0 ? (
-          <p className="muted">No emails logged.</p>
-        ) : (
-          <ul className="clean-list">
-            {application.emailLogs.map(email => (
-              <li key={email.id} className="list-row">
-                <span>
-                  {email.direction} {email.isHuman ? "human" : "automated"}:{" "}
-                  {email.subject}
-                </span>
-                <span className="muted">
-                  {email.createdAt.toLocaleDateString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <EmailLogsCrudTable
+          applications={[
+            {
+              id: application.id,
+              companyName: application.companyName,
+              roleTitle: application.roleTitle,
+            },
+          ]}
+          emails={application.emailLogs.map((email) => ({
+            id: email.id,
+            applicationId: email.applicationId,
+            direction: email.direction,
+            isHuman: email.isHuman,
+            subject: email.subject,
+            body: email.body,
+            notes: email.notes,
+            createdAtIso: email.createdAt.toISOString(),
+            applicationCompanyName: application.companyName,
+          }))}
+        />
       </div>
 
       <div className="card">
         <h2>Resumes</h2>
-        {application.resumes.length === 0 ? (
-          <p className="muted">No linked resumes.</p>
-        ) : (
-          <ul className="clean-list">
-            {application.resumes.map(entry => (
-              <li key={entry.resumeId} className="list-row">
-                <span>{entry.resume.name}</span>
-                <span className="muted">{entry.resume.filePath}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ApplicationResumeLinksManager
+          applicationId={application.id}
+          linkedResumes={application.resumes.map((entry) => ({
+            resumeId: entry.resumeId,
+            name: entry.resume.name,
+          }))}
+          allResumes={resumes}
+        />
       </div>
 
       <div className="card">
         <h2>Interviews</h2>
-        {application.interviews.length === 0 ? (
-          <p className="muted">No interviews logged.</p>
-        ) : (
-          <ul className="clean-list">
-            {application.interviews.map(interview => (
-              <li key={interview.id} className="list-row">
-                <span>
-                  {interview.roundLabel} ({toTitleCaseLabel(interview.status)})
-                </span>
-                <span className="muted">
-                  {interview.scheduledAt.toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <InterviewsCrudTable
+          interviews={application.interviews.map((interview) => ({
+            id: interview.id,
+            applicationId: interview.applicationId,
+            roundIndex: interview.roundIndex,
+            roundLabel: interview.roundLabel,
+            status: interview.status,
+            scheduledAtIso: interview.scheduledAt.toISOString(),
+          }))}
+        />
       </div>
     </section>
   );

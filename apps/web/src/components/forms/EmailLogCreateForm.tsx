@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -22,11 +22,29 @@ function boolFromCheckbox(value: FormDataEntryValue | null): boolean {
   return value === "on";
 }
 
+function nullableTrimmedText(value: FormDataEntryValue | null): string | null {
+  const text = String(value ?? "").trim();
+  return text.length > 0 ? text : null;
+}
+
 export function EmailLogCreateForm({ applications, defaultApplicationId }: EmailLogCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!success && !error) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccess(null);
+      setError(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,6 +61,7 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
       isHuman: boolFromCheckbox(data.get("isHuman")),
       subject: String(data.get("subject") ?? "").trim(),
       body: String(data.get("body") ?? "").trim(),
+      notes: nullableTrimmedText(data.get("notes")),
     };
 
     try {
@@ -122,6 +141,16 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
       <label>
         Body
         <textarea name="body" rows={6} required maxLength={12000} placeholder="Paste the email body" />
+      </label>
+
+      <label>
+        Notes (optional)
+        <textarea
+          name="notes"
+          rows={3}
+          maxLength={4000}
+          placeholder="Add context like sentiment, intent, or follow-up reminders"
+        />
       </label>
 
       <div className="form-actions">

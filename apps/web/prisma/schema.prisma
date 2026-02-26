@@ -184,6 +184,7 @@ model EmailLog {
   isHuman       Boolean       @map("is_human")
   subject       String
   body          String
+  notes         String?
   createdAt     DateTime      @default(now()) @map("created_at")
 
   @@index([applicationId, createdAt])
