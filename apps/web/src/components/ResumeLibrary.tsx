@@ -6,6 +6,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton }
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
+import DownloadIcon from "@mui/icons-material/Download";
 
 interface ResumeOption {
   id: string;
@@ -123,6 +124,15 @@ export function ResumeLibrary({ resumes, applications, skills }: ResumeLibraryPr
               <div className="muted">{resume.filePath}</div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+              <IconButton
+                size="small"
+                aria-label={`Download resume ${resume.name}`}
+                title="Download"
+                component="a"
+                href={`/api/resumes/${resume.id}/download`}
+              >
+                <DownloadIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
               <IconButton
                 size="small"
                 aria-label={`Edit resume ${resume.name}`}
