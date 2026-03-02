@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EmailLogCreateForm } from "./forms/EmailLogCreateForm";
 import { EngagementEventCreateForm } from "./forms/EngagementEventCreateForm";
 import { FollowupCreateForm } from "./forms/FollowupCreateForm";
 import { FollowupResultCreateForm } from "./forms/FollowupResultCreateForm";
@@ -29,11 +28,10 @@ interface ApplicationDetailActivityPanelProps {
   nextFollowupAttemptIndex: number;
 }
 
-type ActivityTab = "interview" | "email" | "followup" | "followupResult" | "event" | "reflection";
+type ActivityTab = "interview" | "followup" | "followupResult" | "event" | "reflection";
 
 const TABS: Array<{ id: ActivityTab; label: string }> = [
   { id: "interview", label: "Interview" },
-  { id: "email", label: "Communication" },
   { id: "followup", label: "Follow-up" },
   { id: "followupResult", label: "Follow-up Result" },
   { id: "event", label: "Event" },
@@ -77,10 +75,6 @@ export function ApplicationDetailActivityPanel({
 
       {activeTab === "interview" ? (
         <InterviewCreateForm applications={appOptions} defaultApplicationId={application.id} />
-      ) : null}
-
-      {activeTab === "email" ? (
-        <EmailLogCreateForm applications={appOptions} defaultApplicationId={application.id} />
       ) : null}
 
       {activeTab === "followup" ? (

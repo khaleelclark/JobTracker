@@ -5,8 +5,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MarkdownContent } from "@/components/MarkdownContent";
 import { ApplicationDetailActivityPanel } from "@/components/ApplicationDetailActivityPanel";
+import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
-import { EmailLogsCrudTable } from "@/components/EmailLogsCrudTable";
 import { FollowupsCrudTable } from "@/components/FollowupsCrudTable";
 import { EngagementEventsCrudTable } from "@/components/EngagementEventsCrudTable";
 import { InterviewsCrudTable } from "@/components/InterviewsCrudTable";
@@ -169,30 +169,28 @@ export default async function ApplicationDetailPage({
         </div>
       </div>
 
-      <div className="card">
-        <h2>Recent Communication</h2>
-        <EmailLogsCrudTable
-          applications={[
-            {
-              id: application.id,
-              companyName: application.companyName,
-              roleTitle: application.roleTitle,
-            },
-          ]}
-          emails={application.emailLogs.map((email) => ({
-            id: email.id,
-            applicationId: email.applicationId,
-            channel: email.channel,
-            direction: email.direction,
-            isHuman: email.isHuman,
-            subject: email.subject,
-            body: email.body,
-            notes: email.notes,
-            createdAtIso: email.createdAt.toISOString(),
-            applicationCompanyName: application.companyName,
-          }))}
-        />
-      </div>
+      <ApplicationCommunicationSection
+        applications={[
+          {
+            id: application.id,
+            companyName: application.companyName,
+            roleTitle: application.roleTitle,
+          },
+        ]}
+        defaultApplicationId={application.id}
+        communicationLogs={application.emailLogs.map((email) => ({
+          id: email.id,
+          applicationId: email.applicationId,
+          channel: email.channel,
+          direction: email.direction,
+          isHuman: email.isHuman,
+          subject: email.subject,
+          body: email.body,
+          notes: email.notes,
+          createdAtIso: email.createdAt.toISOString(),
+          applicationCompanyName: application.companyName,
+        }))}
+      />
 
       <div className="card">
         <h2>Resumes</h2>

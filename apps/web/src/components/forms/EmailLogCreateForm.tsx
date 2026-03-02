@@ -14,6 +14,9 @@ interface ApplicationOption {
 interface EmailLogCreateFormProps {
   applications: ApplicationOption[];
   defaultApplicationId?: string;
+  compact?: boolean;
+  hideHeader?: boolean;
+  onSaved?: () => void;
 }
 
 const COMMUNICATION_CHANNEL_OPTIONS = ["email", "linkedin"] as const;
@@ -60,7 +63,13 @@ function resolveApiErrorMessage(errorBody: unknown, fallback: string): string {
   return fallback;
 }
 
-export function EmailLogCreateForm({ applications, defaultApplicationId }: EmailLogCreateFormProps) {
+export function EmailLogCreateForm({
+  applications,
+  defaultApplicationId,
+  compact = false,
+  hideHeader = false,
+  onSaved,
+}: EmailLogCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +128,7 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
         }
       }
       setSuccess("Communication log saved.");
+      onSaved?.();
       router.refresh();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
@@ -129,11 +139,13 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
   }
 
   return (
-    <form className="form-card" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h2>Log Communication</h2>
-        <p className="muted">Store inbound or outbound communication records, including LinkedIn messages.</p>
-      </div>
+    <form className={compact ? "form-card compact" : "form-card"} onSubmit={handleSubmit}>
+      {hideHeader ? null : (
+        <div className="form-header">
+          <h2>Log Communication</h2>
+          <p className="muted">Store inbound or outbound communication records, including LinkedIn messages.</p>
+        </div>
+      )}
 
       <div className="form-grid form-grid-2">
         <label>
