@@ -351,7 +351,7 @@ export function ApplicationEditDeleteForm({
         <DialogTitle>Delete Application?</DialogTitle>
         <DialogContent>
           This will permanently delete this application and all linked activity
-          records (interviews, emails, follow-ups, events, and resume links).
+          records (interviews, communication logs, follow-ups, events, and resume links).
         </DialogContent>
         <DialogActions>
           <Button

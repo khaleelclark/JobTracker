@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { updateEmailLogSchema } from "@/lib/validation";
 import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
@@ -24,7 +25,11 @@ export async function GET(_: Request, context: RouteContext) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
-  const payload = await request.json();
+  const payload = await request.json().catch(() => null);
+  if (!payload || typeof payload !== "object") {
+    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+  }
+
   const parsed = updateEmailLogSchema.safeParse(payload);
 
   if (!parsed.success) {
@@ -36,14 +41,31 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const emailLog = await prisma.emailLog.update({
-    where: { id },
-    data: parsed.data,
-    include: { application: true },
-  });
+  try {
+    const emailLog = await prisma.emailLog.update({
+      where: { id },
+      data: parsed.data,
+      include: { application: true },
+    });
 
-  await triggerWorkerFromWrite();
-  return NextResponse.json({ emailLog });
+    await triggerWorkerFromWrite();
+    return NextResponse.json({ emailLog });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2022") {
+        return NextResponse.json(
+          { error: "Database schema is out of date. Run pnpm db:migrate, then restart the web server." },
+          { status: 500 },
+        );
+      }
+
+      if (error.code === "P2003") {
+        return NextResponse.json({ error: "Invalid application reference." }, { status: 400 });
+      }
+    }
+
+    return NextResponse.json({ error: "Unable to update communication log." }, { status: 500 });
+  }
 }
 
 export async function DELETE(_: Request, context: RouteContext) {

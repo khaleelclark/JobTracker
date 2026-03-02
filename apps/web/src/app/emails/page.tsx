@@ -20,19 +20,20 @@ export default async function EmailsPage() {
   return (
     <section className="stack-xl">
       <header className="page-header">
-        <h1>Email Logs</h1>
+        <h1>Communication Logs</h1>
         <p className="muted">Store communication history for context and follow-through.</p>
       </header>
 
       <div className="layout-split">
         <EmailLogCreateForm applications={applications} />
         <div className="card table-shell">
-          <h2 className="no-margin">Recent Emails</h2>
+          <h2 className="no-margin">Recent Communication</h2>
           <EmailLogsCrudTable
             applications={applications}
             emails={emails.map((email) => ({
               id: email.id,
               applicationId: email.applicationId,
+              channel: email.channel,
               direction: email.direction,
               isHuman: email.isHuman,
               subject: email.subject,

@@ -18,6 +18,7 @@ interface ApplicationOption {
 interface EmailLogRow {
   id: string;
   applicationId: string;
+  channel: "email" | "linkedin";
   direction: "inbound" | "outbound";
   isHuman: boolean;
   subject: string;
@@ -72,6 +73,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
     const data = new FormData(event.currentTarget);
     const payload = {
       applicationId: String(data.get("applicationId") ?? "").trim(),
+      channel: String(data.get("channel") ?? "email"),
       direction: String(data.get("direction") ?? "inbound"),
       isHuman: data.get("isHuman") === "on",
       subject: String(data.get("subject") ?? "").trim(),
@@ -88,11 +90,11 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
 
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        throw new Error(typeof body.error === "string" ? body.error : "Unable to update email log");
+        throw new Error(typeof body.error === "string" ? body.error : "Unable to update communication log");
       }
 
       setEditingEmail(null);
-      setSuccess("Email log updated.");
+      setSuccess("Communication log updated.");
       router.refresh();
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Unknown error");
@@ -117,11 +119,11 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
 
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        throw new Error(typeof body.error === "string" ? body.error : "Unable to delete email log");
+        throw new Error(typeof body.error === "string" ? body.error : "Unable to delete communication log");
       }
 
       setDeleteEmail(null);
-      setSuccess("Email log deleted.");
+      setSuccess("Communication log deleted.");
       router.refresh();
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Unknown error");
@@ -130,7 +132,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
   }
 
   if (emails.length === 0) {
-    return <p className="muted">No emails logged yet.</p>;
+    return <p className="muted">No communication logs yet.</p>;
   }
 
   return (
@@ -142,6 +144,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
           <tr>
             <th>Company</th>
             <th>Direction</th>
+            <th>Channel</th>
             <th>Human</th>
             <th>Subject</th>
             <th>Notes</th>
@@ -154,6 +157,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
             <tr key={email.id}>
               <td>{email.applicationCompanyName}</td>
               <td>{toTitleCaseLabel(email.direction)}</td>
+              <td>{toTitleCaseLabel(email.channel)}</td>
               <td>{email.isHuman ? "Yes" : "No"}</td>
               <td>{email.subject}</td>
               <td>{email.notes ?? "-"}</td>
@@ -162,7 +166,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
                 <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
                   <IconButton
                     size="small"
-                    aria-label={`View email log ${email.subject}`}
+                    aria-label={`View communication log ${email.subject}`}
                     title="View"
                     onClick={() => {
                       setViewingEmail(email);
@@ -173,7 +177,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
                   </IconButton>
                   <IconButton
                     size="small"
-                    aria-label={`Edit email log ${email.subject}`}
+                    aria-label={`Edit communication log ${email.subject}`}
                     title="Edit"
                     onClick={() => {
                       setEditingEmail(email);
@@ -184,7 +188,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
                   </IconButton>
                   <IconButton
                     size="small"
-                    aria-label={`Delete email log ${email.subject}`}
+                    aria-label={`Delete communication log ${email.subject}`}
                     title="Delete"
                     onClick={() => {
                       setDeleteEmail(email);
@@ -211,11 +215,12 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Email Log Details</DialogTitle>
+        <DialogTitle>Communication Log Details</DialogTitle>
         <DialogContent>
           {viewingEmail ? (
             <div className="stack-md">
               <p><strong>Company:</strong> {viewingEmail.applicationCompanyName}</p>
+              <p><strong>Channel:</strong> {toTitleCaseLabel(viewingEmail.channel)}</p>
               <p><strong>Direction:</strong> {toTitleCaseLabel(viewingEmail.direction)}</p>
               <p><strong>Human:</strong> {viewingEmail.isHuman ? "Yes" : "No"}</p>
               <p><strong>Subject:</strong> {viewingEmail.subject}</p>
@@ -245,7 +250,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Edit Email Log</DialogTitle>
+        <DialogTitle>Edit Communication Log</DialogTitle>
         <DialogContent>
           {editingEmail ? (
             <form id="edit-email-log-form" className="form-card" onSubmit={handleEditSubmit}>
@@ -257,6 +262,14 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
                       {application.companyName} - {application.roleTitle}
                     </option>
                   ))}
+                </select>
+              </label>
+
+              <label>
+                Channel
+                <select name="channel" defaultValue={editingEmail.channel}>
+                  <option value="email">Email</option>
+                  <option value="linkedin">LinkedIn</option>
                 </select>
               </label>
 
@@ -313,7 +326,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Delete Email Log?</DialogTitle>
+        <DialogTitle>Delete Communication Log?</DialogTitle>
         <DialogContent>
           Delete <strong>{deleteEmail?.subject}</strong>?
           {error ? <p className="error-text">{error}</p> : null}

@@ -16,6 +16,7 @@ interface EmailLogCreateFormProps {
   defaultApplicationId?: string;
 }
 
+const COMMUNICATION_CHANNEL_OPTIONS = ["email", "linkedin"] as const;
 const EMAIL_DIRECTION_OPTIONS = ["inbound", "outbound"] as const;
 
 function boolFromCheckbox(value: FormDataEntryValue | null): boolean {
@@ -25,6 +26,38 @@ function boolFromCheckbox(value: FormDataEntryValue | null): boolean {
 function nullableTrimmedText(value: FormDataEntryValue | null): string | null {
   const text = String(value ?? "").trim();
   return text.length > 0 ? text : null;
+}
+
+function resolveApiErrorMessage(errorBody: unknown, fallback: string): string {
+  if (!errorBody || typeof errorBody !== "object") {
+    return fallback;
+  }
+
+  const body = errorBody as {
+    error?: unknown;
+  };
+
+  if (typeof body.error === "string" && body.error.trim()) {
+    return body.error;
+  }
+
+  if (body.error && typeof body.error === "object") {
+    const candidate = body.error as { formErrors?: unknown; fieldErrors?: unknown };
+    if (Array.isArray(candidate.formErrors) && typeof candidate.formErrors[0] === "string") {
+      return candidate.formErrors[0];
+    }
+
+    if (candidate.fieldErrors && typeof candidate.fieldErrors === "object") {
+      const fieldErrorLists = Object.values(candidate.fieldErrors as Record<string, unknown>);
+      for (const fieldErrorList of fieldErrorLists) {
+        if (Array.isArray(fieldErrorList) && typeof fieldErrorList[0] === "string") {
+          return fieldErrorList[0];
+        }
+      }
+    }
+  }
+
+  return fallback;
 }
 
 export function EmailLogCreateForm({ applications, defaultApplicationId }: EmailLogCreateFormProps) {
@@ -57,6 +90,7 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
 
     const payload = {
       applicationId: String(data.get("applicationId") ?? ""),
+      channel: String(data.get("channel") ?? "email"),
       direction: String(data.get("direction") ?? "inbound"),
       isHuman: boolFromCheckbox(data.get("isHuman")),
       subject: String(data.get("subject") ?? "").trim(),
@@ -72,8 +106,8 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        throw new Error(typeof body.error === "string" ? body.error : "Unable to save email log");
+        const body = await response.json().catch(() => ({}));
+        throw new Error(resolveApiErrorMessage(body, "Unable to save communication log"));
       }
 
       if (!defaultApplicationId) {
@@ -84,7 +118,7 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
           appField.value = defaultApplicationId;
         }
       }
-      setSuccess("Email log saved.");
+      setSuccess("Communication log saved.");
       router.refresh();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
@@ -97,8 +131,8 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
   return (
     <form className="form-card" onSubmit={handleSubmit}>
       <div className="form-header">
-        <h2>Log Email</h2>
-        <p className="muted">Store inbound or outbound communication records.</p>
+        <h2>Log Communication</h2>
+        <p className="muted">Store inbound or outbound communication records, including LinkedIn messages.</p>
       </div>
 
       <div className="form-grid form-grid-2">
@@ -111,6 +145,17 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
             {applications.map((application) => (
               <option key={application.id} value={application.id}>
                 {application.companyName} - {application.roleTitle}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Channel
+          <select name="channel" defaultValue="email">
+            {COMMUNICATION_CHANNEL_OPTIONS.map((channel) => (
+              <option key={channel} value={channel}>
+                {toTitleCaseLabel(channel)}
               </option>
             ))}
           </select>
@@ -140,7 +185,7 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
 
       <label>
         Body
-        <textarea name="body" rows={6} required maxLength={12000} placeholder="Paste the email body" />
+        <textarea name="body" rows={6} required maxLength={12000} placeholder="Paste the message body" />
       </label>
 
       <label>
@@ -157,7 +202,7 @@ export function EmailLogCreateForm({ applications, defaultApplicationId }: Email
         <button type="submit" disabled={submitting || applications.length === 0}>
           {submitting ? "Saving..." : (
             <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              Save Email Log
+              Save Communication Log
               <SaveIcon sx={{ fontSize: "1rem" }} />
             </span>
           )}

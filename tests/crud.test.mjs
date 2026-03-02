@@ -172,6 +172,7 @@ test("core CRUD across job tracker entities", async () => {
     const emailLog = await prisma.emailLog.create({
       data: {
         applicationId: application.id,
+        channel: "linkedin",
         direction: "outbound",
         isHuman: true,
         subject: "Follow up",

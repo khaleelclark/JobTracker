@@ -75,7 +75,7 @@ export default async function TodayPage() {
     })),
     ...emails.map((email) => ({
       id: `email_${email.id}`,
-      label: `${email.application.companyName}: ${email.direction} email (${email.subject})`,
+      label: `${email.application.companyName}: ${email.direction} ${email.channel} communication (${email.subject})`,
       occurredAt: email.createdAt,
     })),
   ]

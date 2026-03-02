@@ -24,13 +24,13 @@ Local-first monorepo for passive job-search record keeping.
 
 ## Web UI Capabilities
 - Application detail page supports direct section actions:
-  - Emails: view/edit/delete.
+  - Communication logs: view/edit/delete.
   - Follow-ups: view/edit/delete.
   - Engagement events: view/edit/delete.
   - Interviews: view/edit/delete.
   - Resume links: add/remove links and download linked resume files.
 - Quick Log forms auto-dismiss success/error messages after 3 seconds.
-- Email Logs page has full CRUD.
+- Communication Logs page has full CRUD.
 
 ## Runtime Ports
 - Web app: `127.0.0.1:3000`

@@ -170,7 +170,7 @@ export default async function ApplicationDetailPage({
       </div>
 
       <div className="card">
-        <h2>Recent Emails</h2>
+        <h2>Recent Communication</h2>
         <EmailLogsCrudTable
           applications={[
             {
@@ -182,6 +182,7 @@ export default async function ApplicationDetailPage({
           emails={application.emailLogs.map((email) => ({
             id: email.id,
             applicationId: email.applicationId,
+            channel: email.channel,
             direction: email.direction,
             isHuman: email.isHuman,
             subject: email.subject,

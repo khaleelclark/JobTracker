@@ -42,6 +42,7 @@ export const createInterviewSchema = z.object({
 
 export const createEmailLogSchema = z.object({
   applicationId: z.string().uuid(),
+  channel: z.enum(["email", "linkedin"]),
   direction: z.enum(["inbound", "outbound"]),
   isHuman: z.boolean(),
   subject: z.string().min(1).max(300),

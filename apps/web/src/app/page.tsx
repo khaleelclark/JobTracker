@@ -22,7 +22,7 @@ export default function HomePage() {
 
         <div className="card interactive">
           <h2>Capture Records</h2>
-          <p className="muted">Use interactive forms to log applications, interviews, emails, and more.</p>
+          <p className="muted">Use interactive forms to log applications, interviews, communication, and more.</p>
           <Link className="cta-link" href="/applications">
             Go To Applications
           </Link>

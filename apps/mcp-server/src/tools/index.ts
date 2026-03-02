@@ -85,7 +85,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   },
   {
     name: "list_email_logs",
-    description: "List email logs for an application.",
+    description: "List communication logs for an application.",
     inputSchema: {
       type: "object",
       properties: {

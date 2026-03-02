@@ -35,6 +35,11 @@ enum EmailDirection {
   outbound
 }
 
+enum CommunicationChannel {
+  email
+  linkedin
+}
+
 enum FollowupChannel {
   email
   linkedin
@@ -180,6 +185,7 @@ model EmailLog {
   id            String        @id @default(uuid())
   applicationId String        @map("application_id")
   application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  channel       CommunicationChannel @default(email)
   direction     EmailDirection
   isHuman       Boolean       @map("is_human")
   subject       String

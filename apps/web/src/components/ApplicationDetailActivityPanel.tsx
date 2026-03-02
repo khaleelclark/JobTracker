@@ -33,7 +33,7 @@ type ActivityTab = "interview" | "email" | "followup" | "followupResult" | "even
 
 const TABS: Array<{ id: ActivityTab; label: string }> = [
   { id: "interview", label: "Interview" },
-  { id: "email", label: "Email" },
+  { id: "email", label: "Communication" },
   { id: "followup", label: "Follow-up" },
   { id: "followupResult", label: "Follow-up Result" },
   { id: "event", label: "Event" },

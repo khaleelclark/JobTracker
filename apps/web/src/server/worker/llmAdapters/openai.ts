@@ -20,6 +20,8 @@ const SYSTEM_PROMPT = [
   "- If an interview is upcoming within 7 days, produce strategy_tip asking GPT for focused prep help.",
   "- If an interview was completed and there is no inbound response for 10+ days, produce followup_suggestion and optionally thank_you_prompt/email_draft.",
   "- If goals_progress.weekly_applications_target is set, use goals_progress.weekly_applications_remaining to generate a weekly_review_prompt or strategy_tip referencing exact remaining gap.",
+  "- Use goals_profile fields (mission_statement, compensation_preference, preferred_locations, employment_types, workplace_modes, priority_notes) to tailor titles, body text, and suggested_gpt_prompt.",
+  "- When goals_profile fields are empty, avoid inventing preferences.",
   "- Use reflection_prompt mainly for post-event learning moments, not as the default card type.",
   "Safety and scope:",
   "- Do not rank applications or declare a single best decision.",

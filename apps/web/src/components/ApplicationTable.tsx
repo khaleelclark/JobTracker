@@ -83,28 +83,31 @@ export function ApplicationTable({
         minWidth: isMobile ? 120 : 160,
         headerAlign: "center",
         align: "center",
-        renderCell: (params: GridRenderCellParams<ApplicationRow>) => (
-          <Box
-            sx={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <span
-              className={`pill status-${params.row.genericStatus}`}
-              style={{
-                lineHeight: 1.2,
+        renderCell: (params: GridRenderCellParams<ApplicationRow>) => {
+          const application = params.row;
+          return (
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
                 alignItems: "center",
-                whiteSpace: "nowrap",
               }}
             >
-              {toTitleCaseLabel(params.row.genericStatus)}
-            </span>
-          </Box>
-        ),
+              <span
+                className={`pill status-${application.genericStatus}`}
+                style={{
+                  lineHeight: 1.2,
+                  alignItems: "center",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {toTitleCaseLabel(application.genericStatus)}
+              </span>
+            </Box>
+          );
+        },
       },
       {
         field: "appliedAt",
