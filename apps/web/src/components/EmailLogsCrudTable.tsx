@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, ListItemText, MenuItem, Select } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
@@ -17,7 +17,8 @@ interface ApplicationOption {
 
 interface EmailLogRow {
   id: string;
-  applicationId: string;
+  applicationId: string | null;
+  companyName: string;
   channel: "email" | "linkedin";
   direction: "inbound" | "outbound";
   isHuman: boolean;
@@ -25,7 +26,6 @@ interface EmailLogRow {
   body: string;
   notes: string | null;
   createdAtIso: string;
-  applicationCompanyName: string;
 }
 
 interface EmailLogsCrudTableProps {
@@ -40,7 +40,15 @@ function nullableTrimmedText(value: FormDataEntryValue | null): string | null {
 
 export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableProps) {
   const router = useRouter();
+  const companyOptions = Array.from(
+    new Set([
+      ...applications.map((application) => application.companyName),
+      ...emails.map((email) => email.companyName),
+    ]),
+  ).sort((a, b) => a.localeCompare(b));
   const [editingEmail, setEditingEmail] = useState<EmailLogRow | null>(null);
+  const [editTargetMode, setEditTargetMode] = useState<"application" | "applications" | "company">("application");
+  const [editApplicationIds, setEditApplicationIds] = useState<string[]>([]);
   const [viewingEmail, setViewingEmail] = useState<EmailLogRow | null>(null);
   const [deleteEmail, setDeleteEmail] = useState<EmailLogRow | null>(null);
   const [saving, setSaving] = useState(false);
@@ -71,8 +79,8 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
     setSuccess(null);
 
     const data = new FormData(event.currentTarget);
-    const payload = {
-      applicationId: String(data.get("applicationId") ?? "").trim(),
+    const targetMode = String(data.get("targetMode") ?? "application");
+    const payload: Record<string, unknown> = {
       channel: String(data.get("channel") ?? "email"),
       direction: String(data.get("direction") ?? "inbound"),
       isHuman: data.get("isHuman") === "on",
@@ -80,6 +88,18 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
       body: String(data.get("body") ?? "").trim(),
       notes: nullableTrimmedText(data.get("notes")),
     };
+    if (targetMode === "company") {
+      payload.companyName = String(data.get("companyName") ?? "").trim();
+    } else if (targetMode === "applications") {
+      if (editApplicationIds.length === 0) {
+        setError("Select at least one application.");
+        setSaving(false);
+        return;
+      }
+      payload.applicationIds = editApplicationIds;
+    } else {
+      payload.applicationId = String(data.get("applicationId") ?? "").trim();
+    }
 
     try {
       const response = await fetch(`/api/emails/${editingEmail.id}`, {
@@ -155,7 +175,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         <tbody>
           {emails.map((email) => (
             <tr key={email.id}>
-              <td>{email.applicationCompanyName}</td>
+              <td>{email.companyName}</td>
               <td>{toTitleCaseLabel(email.direction)}</td>
               <td>{toTitleCaseLabel(email.channel)}</td>
               <td>{email.isHuman ? "Yes" : "No"}</td>
@@ -181,6 +201,13 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
                     title="Edit"
                     onClick={() => {
                       setEditingEmail(email);
+                      if (email.applicationId) {
+                        setEditTargetMode("application");
+                        setEditApplicationIds([email.applicationId]);
+                      } else {
+                        setEditTargetMode("company");
+                        setEditApplicationIds([]);
+                      }
                       setError(null);
                     }}
                   >
@@ -219,7 +246,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         <DialogContent>
           {viewingEmail ? (
             <div className="stack-md">
-              <p><strong>Company:</strong> {viewingEmail.applicationCompanyName}</p>
+              <p><strong>Company:</strong> {viewingEmail.companyName}</p>
               <p><strong>Channel:</strong> {toTitleCaseLabel(viewingEmail.channel)}</p>
               <p><strong>Direction:</strong> {toTitleCaseLabel(viewingEmail.direction)}</p>
               <p><strong>Human:</strong> {viewingEmail.isHuman ? "Yes" : "No"}</p>
@@ -255,15 +282,82 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
           {editingEmail ? (
             <form id="edit-email-log-form" className="form-card" onSubmit={handleEditSubmit}>
               <label>
-                Application
-                <select name="applicationId" required defaultValue={editingEmail.applicationId}>
-                  {applications.map((application) => (
-                    <option key={application.id} value={application.id}>
-                      {application.companyName} - {application.roleTitle}
-                    </option>
-                  ))}
+                Link To
+                <select
+                  name="targetMode"
+                  value={editTargetMode}
+                  onChange={(event) => {
+                    const nextMode = event.target.value as "application" | "applications" | "company";
+                    setEditTargetMode(nextMode);
+                    if (nextMode === "applications" && editingEmail?.applicationId) {
+                      setEditApplicationIds([editingEmail.applicationId]);
+                    }
+                  }}
+                >
+                  <option value="application">Single Application</option>
+                  <option value="applications">Multiple Applications</option>
+                  <option value="company">Company</option>
                 </select>
               </label>
+
+              {editTargetMode === "application" ? (
+                <label>
+                  Application
+                  <select name="applicationId" required defaultValue={editingEmail.applicationId ?? ""}>
+                    <option value="" disabled>
+                      Select application
+                    </option>
+                    {applications.map((application) => (
+                      <option key={application.id} value={application.id}>
+                        {application.companyName} - {application.roleTitle}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {editTargetMode === "applications" ? (
+                <FormControl>
+                  <InputLabel id="edit-application-ids-label">Applications</InputLabel>
+                  <Select
+                    labelId="edit-application-ids-label"
+                    multiple
+                    value={editApplicationIds}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setEditApplicationIds(typeof value === "string" ? value.split(",") : value);
+                    }}
+                    renderValue={(selected) => {
+                      const selectedIds = selected as string[];
+                      return applications
+                        .filter((application) => selectedIds.includes(application.id))
+                        .map((application) => `${application.companyName} - ${application.roleTitle}`)
+                        .join(", ");
+                    }}
+                    label="Applications"
+                  >
+                    {applications.map((application) => (
+                      <MenuItem key={application.id} value={application.id}>
+                        <Checkbox checked={editApplicationIds.includes(application.id)} />
+                        <ListItemText primary={`${application.companyName} - ${application.roleTitle}`} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : null}
+
+              {editTargetMode === "company" ? (
+                <label>
+                  Company
+                  <select name="companyName" required defaultValue={editingEmail.companyName}>
+                    {companyOptions.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
 
               <label>
                 Channel

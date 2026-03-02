@@ -48,6 +48,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       data: {
         companyName: parsed.data.companyName,
         roleTitle: parsed.data.roleTitle,
+        careersPageUrl: parsed.data.careersPageUrl,
         postingDetails: parsed.data.postingDetails,
         compensation: parsed.data.compensation,
         genericStatus: parsed.data.genericStatus,

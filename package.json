@@ -16,7 +16,9 @@
     "init:data-dir": "tsx scripts/initDataDir.ts",
     "test:invariants": "node --test tests/invariants.test.mjs",
     "test:crud": "node --test tests/crud.test.mjs",
-    "test": "pnpm test:invariants && pnpm test:crud"
+    "test:api": "cd apps/web && TSX_TSCONFIG=tsconfig.json node --import tsx --test ../../tests/api-crud.test.ts",
+    "test:worker-queue": "cd apps/web && TSX_TSCONFIG=tsconfig.json node --import tsx --test ../../tests/worker-queue-crud.test.ts",
+    "test": "pnpm test:invariants && pnpm test:crud && pnpm test:api && pnpm test:worker-queue"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

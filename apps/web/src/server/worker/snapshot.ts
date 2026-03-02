@@ -17,6 +17,7 @@ export interface WorkerSnapshot {
   applications: Array<Record<string, unknown>>;
   interviews: Array<Record<string, unknown>>;
   followups: Array<Record<string, unknown>>;
+  recent_communications: Array<Record<string, unknown>>;
   recent_events: Array<Record<string, unknown>>;
   existing_cards: Array<Record<string, unknown>>;
 }
@@ -87,6 +88,11 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     prisma.emailLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 30,
+      include: {
+        application: {
+          select: { id: true, companyName: true, roleTitle: true },
+        },
+      },
     }),
     readControlFile(),
     prisma.application.count({
@@ -116,11 +122,33 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
       body_excerpt: string;
     }
   >();
+  const recentCompanyEmailByName = new Map<
+    string,
+    {
+      subject: string;
+      direction: string;
+      channel: string;
+      is_human: boolean;
+      created_at: string;
+      body_excerpt: string;
+    }
+  >();
   for (const email of recentEmails) {
-    if (!recentEmailByApp.has(email.applicationId)) {
+    if (email.applicationId && !recentEmailByApp.has(email.applicationId)) {
       recentEmailByApp.set(email.applicationId, {
         subject: truncateText(email.subject, 120),
         direction: email.direction,
+        is_human: email.isHuman,
+        created_at: email.createdAt.toISOString(),
+        body_excerpt: truncateText(email.body, SNAPSHOT_EMAIL_SNIPPET_LENGTH),
+      });
+    }
+
+    if (!email.applicationId && email.companyName && !recentCompanyEmailByName.has(email.companyName)) {
+      recentCompanyEmailByName.set(email.companyName, {
+        subject: truncateText(email.subject, 120),
+        direction: email.direction,
+        channel: email.channel,
         is_human: email.isHuman,
         created_at: email.createdAt.toISOString(),
         body_excerpt: truncateText(email.body, SNAPSHOT_EMAIL_SNIPPET_LENGTH),
@@ -145,6 +173,7 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     notes_excerpt: app.notes ? truncateText(app.notes, 260) : null,
     latest_email: recentEmailByApp.get(app.id) ?? null,
     latest_email_excerpt: recentEmailByApp.get(app.id)?.body_excerpt ?? null,
+    latest_company_communication: recentCompanyEmailByName.get(app.companyName) ?? null,
     engagement_flags: app.events.map((event) => event.eventType),
     latest_followups: app.followups.map((f) => ({
       id: f.id,
@@ -191,6 +220,21 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     response_type: f.result?.responseType ?? null,
   }));
 
+  const recentCommunicationFacts = recentEmails.map((email) => ({
+    id: email.id,
+    scope: email.applicationId ? "application" : "company",
+    application_id: email.applicationId,
+    company_name: email.companyName ?? email.application?.companyName ?? null,
+    role_title: email.application?.roleTitle ?? null,
+    direction: email.direction,
+    channel: email.channel,
+    is_human: email.isHuman,
+    subject: truncateText(email.subject, 120),
+    body_excerpt: truncateText(email.body, SNAPSHOT_EMAIL_SNIPPET_LENGTH),
+    notes_excerpt: email.notes ? truncateText(email.notes, 200) : null,
+    created_at: email.createdAt.toISOString(),
+  }));
+
   const recentEvents = events.map((event) => ({
     id: event.id,
     application_id: event.applicationId,
@@ -232,6 +276,7 @@ export async function buildSnapshot(): Promise<WorkerSnapshot> {
     applications: applicationFacts,
     interviews: interviewFacts,
     followups: followupFacts,
+    recent_communications: recentCommunicationFacts,
     recent_events: recentEvents,
     existing_cards: existingCards,
   };

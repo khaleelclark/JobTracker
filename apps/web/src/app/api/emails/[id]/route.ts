@@ -42,11 +42,63 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   try {
-    const emailLog = await prisma.emailLog.update({
-      where: { id },
-      data: parsed.data,
-      include: { application: true },
-    });
+    const { applicationId, applicationIds, companyName, ...emailData } = parsed.data;
+    let emailLog;
+
+    if (applicationIds) {
+      const targetApplicationIds = Array.from(new Set(applicationIds));
+      const existingApplications = await prisma.application.findMany({
+        where: { id: { in: targetApplicationIds } },
+        select: { id: true },
+      });
+      const existingIds = new Set(existingApplications.map((application) => application.id));
+      const invalidIds = targetApplicationIds.filter((targetId) => !existingIds.has(targetId));
+      if (invalidIds.length > 0) {
+        return NextResponse.json(
+          {
+            error: `Invalid application references: ${invalidIds.join(", ")}`,
+          },
+          { status: 400 },
+        );
+      }
+
+      const [primaryApplicationId, ...additionalApplicationIds] = targetApplicationIds;
+      if (!primaryApplicationId) {
+        return NextResponse.json({ error: "At least one application is required." }, { status: 400 });
+      }
+
+      const [updatedPrimary] = await prisma.$transaction([
+        prisma.emailLog.update({
+          where: { id },
+          data: {
+            applicationId: primaryApplicationId,
+            companyName: null,
+            ...emailData,
+          },
+          include: { application: true },
+        }),
+        ...additionalApplicationIds.map((extraApplicationId) =>
+          prisma.emailLog.create({
+            data: {
+              applicationId: extraApplicationId,
+              companyName: null,
+              ...emailData,
+            },
+          }),
+        ),
+      ]);
+      emailLog = updatedPrimary;
+    } else {
+      emailLog = await prisma.emailLog.update({
+        where: { id },
+        data: {
+          applicationId: applicationId ?? null,
+          companyName: companyName?.trim() || null,
+          ...emailData,
+        },
+        include: { application: true },
+      });
+    }
 
     await triggerWorkerFromWrite();
     return NextResponse.json({ emailLog });

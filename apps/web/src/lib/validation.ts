@@ -10,6 +10,7 @@ const experienceYearsSchema = z
 export const createApplicationSchema = z.object({
   companyName: z.string().min(1).max(200),
   roleTitle: z.string().min(1).max(200),
+  careersPageUrl: z.string().url().max(1000).optional().nullable(),
   postingDetails: z.string().max(50000).optional().nullable(),
   compensation: z.string().max(300).optional().nullable(),
   genericStatus: z.enum([
@@ -40,8 +41,7 @@ export const createInterviewSchema = z.object({
   status: z.enum(["scheduled", "completed", "cancelled"]),
 });
 
-export const createEmailLogSchema = z.object({
-  applicationId: z.string().uuid(),
+const emailLogPayloadSchema = z.object({
   channel: z.enum(["email", "linkedin"]),
   direction: z.enum(["inbound", "outbound"]),
   isHuman: z.boolean(),
@@ -50,7 +50,44 @@ export const createEmailLogSchema = z.object({
   notes: z.string().max(4000).optional().nullable(),
 });
 
-export const updateEmailLogSchema = createEmailLogSchema;
+export const createEmailLogSchema = emailLogPayloadSchema
+  .extend({
+    applicationId: z.string().uuid().optional(),
+    applicationIds: z.array(z.string().uuid()).min(1).max(100).optional(),
+    companyName: z.string().min(1).max(200).optional(),
+  })
+  .superRefine((data, context) => {
+    const targetCount = Number(Boolean(data.applicationId))
+      + Number(Array.isArray(data.applicationIds) && data.applicationIds.length > 0)
+      + Number(Boolean(data.companyName?.trim()));
+
+    if (targetCount !== 1) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Provide exactly one target: applicationId, applicationIds, or companyName.",
+        path: ["applicationId"],
+      });
+    }
+  });
+
+export const updateEmailLogSchema = emailLogPayloadSchema
+  .extend({
+    applicationId: z.string().uuid().optional(),
+    applicationIds: z.array(z.string().uuid()).min(1).max(100).optional(),
+    companyName: z.string().min(1).max(200).optional(),
+  })
+  .superRefine((data, context) => {
+    const targetCount = Number(Boolean(data.applicationId))
+      + Number(Array.isArray(data.applicationIds) && data.applicationIds.length > 0)
+      + Number(Boolean(data.companyName?.trim()));
+    if (targetCount !== 1) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Provide exactly one target: applicationId, applicationIds, or companyName.",
+        path: ["applicationId"],
+      });
+    }
+  });
 
 export const createFollowupSchema = z.object({
   applicationId: z.string().uuid(),

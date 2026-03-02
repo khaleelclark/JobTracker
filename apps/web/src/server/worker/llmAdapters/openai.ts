@@ -31,6 +31,7 @@ const SYSTEM_PROMPT = [
   "- Anchor cards to a specific application or interview whenever possible.",
   "- Title must include concrete context (company, role, round label, or event).",
   "- Body must cite at least one concrete fact from snapshot (status, timestamp, channel, outcome, or reflection note).",
+  "- Use recent_communications facts (including company-level communication when available) as valid evidence signals.",
   "- suggested_gpt_prompt must include concrete facts before asking GPT for next-step help.",
   "- dedupe_key must be specific to factual anchor (include card_type + app/interview id fragment + signal).",
   "If no valid cards are warranted, return {\"cards\":[]}.",

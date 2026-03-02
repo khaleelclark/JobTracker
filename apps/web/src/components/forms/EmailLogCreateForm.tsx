@@ -71,9 +71,13 @@ export function EmailLogCreateForm({
   onSaved,
 }: EmailLogCreateFormProps) {
   const router = useRouter();
+  const [targetMode, setTargetMode] = useState<"application" | "applications" | "company">("application");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const companyOptions = Array.from(new Set(applications.map((application) => application.companyName))).sort((a, b) =>
+    a.localeCompare(b),
+  );
 
   useEffect(() => {
     if (!success && !error) {
@@ -96,9 +100,12 @@ export function EmailLogCreateForm({
 
     const form = event.currentTarget;
     const data = new FormData(form);
+    const selectedApplicationIds = data
+      .getAll("applicationIds")
+      .map((value) => String(value).trim())
+      .filter((value) => value.length > 0);
 
-    const payload = {
-      applicationId: String(data.get("applicationId") ?? ""),
+    const payload: Record<string, unknown> = {
       channel: String(data.get("channel") ?? "email"),
       direction: String(data.get("direction") ?? "inbound"),
       isHuman: boolFromCheckbox(data.get("isHuman")),
@@ -106,6 +113,13 @@ export function EmailLogCreateForm({
       body: String(data.get("body") ?? "").trim(),
       notes: nullableTrimmedText(data.get("notes")),
     };
+    if (targetMode === "application") {
+      payload.applicationId = String(data.get("applicationId") ?? "").trim();
+    } else if (targetMode === "applications") {
+      payload.applicationIds = selectedApplicationIds;
+    } else {
+      payload.companyName = String(data.get("companyName") ?? "").trim();
+    }
 
     try {
       const response = await fetch("/api/emails", {
@@ -121,7 +135,9 @@ export function EmailLogCreateForm({
 
       if (!defaultApplicationId) {
         form.reset();
+        setTargetMode("application");
       } else {
+        setTargetMode("application");
         const appField = form.elements.namedItem("applicationId") as HTMLSelectElement | null;
         if (appField) {
           appField.value = defaultApplicationId;
@@ -149,18 +165,64 @@ export function EmailLogCreateForm({
 
       <div className="form-grid form-grid-2">
         <label>
-          Application
-          <select name="applicationId" required defaultValue={defaultApplicationId ?? ""}>
-            <option value="" disabled>
-              Select application
-            </option>
-            {applications.map((application) => (
-              <option key={application.id} value={application.id}>
-                {application.companyName} - {application.roleTitle}
-              </option>
-            ))}
+          Link To
+          <select
+            name="targetMode"
+            value={targetMode}
+            onChange={(event) => {
+              setTargetMode(event.target.value as "application" | "applications" | "company");
+            }}
+          >
+            <option value="application">Single Application</option>
+            <option value="applications">Multiple Applications</option>
+            <option value="company">Company</option>
           </select>
         </label>
+
+        {targetMode === "application" ? (
+          <label>
+            Application
+            <select name="applicationId" required defaultValue={defaultApplicationId ?? ""}>
+              <option value="" disabled>
+                Select application
+              </option>
+              {applications.map((application) => (
+                <option key={application.id} value={application.id}>
+                  {application.companyName} - {application.roleTitle}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        {targetMode === "applications" ? (
+          <label>
+            Applications
+            <select name="applicationIds" multiple required defaultValue={[]} style={{ minHeight: "7.25rem" }}>
+              {applications.map((application) => (
+                <option key={application.id} value={application.id}>
+                  {application.companyName} - {application.roleTitle}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        {targetMode === "company" ? (
+          <label>
+            Company
+            <select name="companyName" required defaultValue="">
+              <option value="" disabled>
+                Select company
+              </option>
+              {companyOptions.map((companyName) => (
+                <option key={companyName} value={companyName}>
+                  {companyName}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
 
         <label>
           Channel
@@ -211,7 +273,7 @@ export function EmailLogCreateForm({
       </label>
 
       <div className="form-actions">
-        <button type="submit" disabled={submitting || applications.length === 0}>
+        <button type="submit" disabled={submitting || applications.length === 0 || (targetMode === "company" && companyOptions.length === 0)}>
           {submitting ? "Saving..." : (
             <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
               Save Communication Log
@@ -220,6 +282,7 @@ export function EmailLogCreateForm({
           )}
         </button>
         {applications.length === 0 ? <span className="error-text">Create an application first.</span> : null}
+        {targetMode === "applications" ? <span className="muted">Hold Ctrl/Cmd to select multiple applications.</span> : null}
         {success ? <span className="success-text">{success}</span> : null}
         {error ? <span className="error-text">{error}</span> : null}
       </div>

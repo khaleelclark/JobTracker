@@ -84,6 +84,7 @@ model Application {
   id             String              @id @default(uuid())
   companyName    String              @map("company_name")
   roleTitle      String              @map("role_title")
+  careersPageUrl String?             @map("careers_page_url")
   postingDetails String?             @map("posting_details")
   compensation   String?
   genericStatus  GenericStatus       @map("generic_status")
@@ -183,8 +184,9 @@ model InterviewReflection {
 
 model EmailLog {
   id            String        @id @default(uuid())
-  applicationId String        @map("application_id")
-  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String?       @map("application_id")
+  application   Application?  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  companyName   String?       @map("company_name")
   channel       CommunicationChannel @default(email)
   direction     EmailDirection
   isHuman       Boolean       @map("is_human")
@@ -194,6 +196,7 @@ model EmailLog {
   createdAt     DateTime      @default(now()) @map("created_at")
 
   @@index([applicationId, createdAt])
+  @@index([companyName, createdAt])
   @@map("email_logs")
 }
 

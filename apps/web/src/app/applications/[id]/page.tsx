@@ -79,7 +79,7 @@ export default async function ApplicationDetailPage({
         </Link>
       </div>
 
-      <div className="card">
+      <div className="card stack-md">
         <h1 className="no-margin">{application.companyName}</h1>
         <p>
           {application.roleTitle} -{" "}
@@ -89,6 +89,27 @@ export default async function ApplicationDetailPage({
         </p>
         {application.compensation ? (
           <p className="muted">Compensation: {application.compensation}</p>
+        ) : null}
+        {application.careersPageUrl ? (
+          <p>
+            <a
+              href={application.careersPageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-block",
+                textDecoration: "none",
+                border: "1px solid rgba(15, 74, 134, 0.25)",
+                background: "linear-gradient(145deg, #ffffff 0%, #e5efff 100%)",
+                color: "var(--brand-strong)",
+                borderRadius: "10px",
+                padding: "0.43rem 0.75rem",
+                lineHeight: 1.2,
+              }}
+            >
+              Open Careers Page
+            </a>
+          </p>
         ) : null}
         <h3>Posting Details</h3>
         {application.postingDetails ? (
@@ -109,6 +130,7 @@ export default async function ApplicationDetailPage({
           id: application.id,
           companyName: application.companyName,
           roleTitle: application.roleTitle,
+          careersPageUrl: application.careersPageUrl,
           postingDetails: application.postingDetails,
           compensation: application.compensation,
           genericStatus: application.genericStatus,
@@ -181,6 +203,7 @@ export default async function ApplicationDetailPage({
         communicationLogs={application.emailLogs.map((email) => ({
           id: email.id,
           applicationId: email.applicationId,
+          companyName: application.companyName,
           channel: email.channel,
           direction: email.direction,
           isHuman: email.isHuman,
@@ -188,7 +211,6 @@ export default async function ApplicationDetailPage({
           body: email.body,
           notes: email.notes,
           createdAtIso: email.createdAt.toISOString(),
-          applicationCompanyName: application.companyName,
         }))}
       />
 

@@ -15,6 +15,7 @@ const SYSTEM_PROMPT = [
   "If an interview was completed and no inbound response for 10+ days, include followup_suggestion.",
   "If goals_progress.weekly_applications_target is set, use goals_progress.weekly_applications_remaining to include a weekly_review_prompt or strategy_tip with exact remaining gap.",
   "Use goals_profile fields (mission_statement, compensation_preference, preferred_locations, employment_types, workplace_modes, priority_notes) to tailor card content and prompts.",
+  "Use recent_communications facts (including company-level communication when available) as valid evidence signals.",
   "When goals_profile fields are empty, avoid inventing preferences.",
   "Each card requires: card_type, priority, title, body, evidence, dedupe_key, expires_in_hours.",
   "Every card must include suggested_gpt_prompt with a clear question to ask GPT.",

@@ -37,6 +37,16 @@ function toIsoFromDateInput(raw: string): string {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
+function normalizedCareersPageUrl(value: FormDataEntryValue | null): string | null {
+  const raw = String(value ?? "").trim();
+  if (!raw) {
+    return null;
+  }
+
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return withProtocol;
+}
+
 interface ApplicationCreateFormProps {
   resumes: ResumeOption[];
 }
@@ -60,6 +70,7 @@ export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
     const payload = {
       companyName: String(data.get("companyName") ?? "").trim(),
       roleTitle: String(data.get("roleTitle") ?? "").trim(),
+      careersPageUrl: normalizedCareersPageUrl(data.get("careersPageUrl")),
       postingDetails: String(data.get("postingDetails") ?? "").trim() || null,
       compensation: String(data.get("compensation") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
@@ -170,6 +181,15 @@ export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
                   required
                   maxLength={200}
                   placeholder="Product Manager"
+                />
+              </label>
+
+              <label>
+                Careers Page (optional)
+                <input
+                  name="careersPageUrl"
+                  maxLength={1000}
+                  placeholder="https://jobs.company.com/roles/123"
                 />
               </label>
 

@@ -14,7 +14,8 @@ interface ApplicationOption {
 
 interface CommunicationLogRow {
   id: string;
-  applicationId: string;
+  applicationId: string | null;
+  companyName: string;
   channel: "email" | "linkedin";
   direction: "inbound" | "outbound";
   isHuman: boolean;
@@ -22,7 +23,6 @@ interface CommunicationLogRow {
   body: string;
   notes: string | null;
   createdAtIso: string;
-  applicationCompanyName: string;
 }
 
 interface ApplicationCommunicationSectionProps {

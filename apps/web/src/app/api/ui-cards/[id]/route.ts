@@ -19,19 +19,19 @@ export async function PATCH(request: Request, context: RouteContext) {
   const action = parsed.data.action;
 
   if (action === "dismiss") {
-    const card = await prisma.uiCard.update({
-      where: { id },
-      data: { state: "dismissed" },
-    });
+    const card = await transitionCardState(id, "dismissed");
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
 
     return NextResponse.json({ card });
   }
 
   if (action === "archive") {
-    const card = await prisma.uiCard.update({
-      where: { id },
-      data: { state: "archived" },
-    });
+    const card = await transitionCardState(id, "archived");
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
 
     return NextResponse.json({ card });
   }
@@ -45,4 +45,35 @@ export async function PATCH(request: Request, context: RouteContext) {
   });
 
   return NextResponse.json({ card });
+}
+
+async function transitionCardState(
+  id: string,
+  targetState: "dismissed" | "archived",
+) {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.uiCard.findUnique({
+      where: { id },
+      select: { id: true, dedupeKey: true },
+    });
+
+    if (!existing) {
+      return null;
+    }
+
+    // Keep latest actionable row for a dedupe/state pair so state transitions
+    // cannot fail on the unique (dedupe_key, state) constraint.
+    await tx.uiCard.deleteMany({
+      where: {
+        dedupeKey: existing.dedupeKey,
+        state: targetState,
+        NOT: { id },
+      },
+    });
+
+    return tx.uiCard.update({
+      where: { id },
+      data: { state: targetState },
+    });
+  });
 }

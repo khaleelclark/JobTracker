@@ -33,6 +33,7 @@ export default async function EmailsPage() {
             emails={emails.map((email) => ({
               id: email.id,
               applicationId: email.applicationId,
+              companyName: email.companyName ?? email.application?.companyName ?? "Unknown Company",
               channel: email.channel,
               direction: email.direction,
               isHuman: email.isHuman,
@@ -40,7 +41,6 @@ export default async function EmailsPage() {
               body: email.body,
               notes: email.notes,
               createdAtIso: email.createdAt.toISOString(),
-              applicationCompanyName: email.application.companyName,
             }))}
           />
         </div>

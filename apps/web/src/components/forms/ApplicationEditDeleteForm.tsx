@@ -29,6 +29,7 @@ interface ApplicationEditDeleteFormProps {
     id: string;
     companyName: string;
     roleTitle: string;
+    careersPageUrl: string | null;
     postingDetails: string | null;
     compensation: string | null;
     genericStatus: string;
@@ -56,6 +57,16 @@ function toIsoFromDateInput(raw: string): string {
   }
 
   return new Date(`${raw}T12:00:00`).toISOString();
+}
+
+function normalizedCareersPageUrl(value: FormDataEntryValue | null): string | null {
+  const raw = String(value ?? "").trim();
+  if (!raw) {
+    return null;
+  }
+
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return withProtocol;
 }
 
 export function ApplicationEditDeleteForm({
@@ -94,6 +105,7 @@ export function ApplicationEditDeleteForm({
     const payload = {
       companyName: String(data.get("companyName") ?? "").trim(),
       roleTitle: String(data.get("roleTitle") ?? "").trim(),
+      careersPageUrl: normalizedCareersPageUrl(data.get("careersPageUrl")),
       postingDetails: String(data.get("postingDetails") ?? "").trim() || null,
       compensation: String(data.get("compensation") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
@@ -206,6 +218,15 @@ export function ApplicationEditDeleteForm({
             required
             maxLength={200}
             defaultValue={application.roleTitle}
+          />
+        </label>
+
+        <label>
+          Careers Page (optional)
+          <input
+            name="careersPageUrl"
+            maxLength={1000}
+            defaultValue={application.careersPageUrl ?? ""}
           />
         </label>
 

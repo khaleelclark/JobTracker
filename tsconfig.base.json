@@ -10,6 +10,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["apps/web/src/*"],
       "@job-tracker/shared/*": ["packages/shared/src/*"]
     }
   }

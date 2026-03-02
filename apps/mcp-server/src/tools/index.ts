@@ -85,14 +85,14 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   },
   {
     name: "list_email_logs",
-    description: "List communication logs for an application.",
+    description: "List communication logs for an application, a company, or globally.",
     inputSchema: {
       type: "object",
       properties: {
         application_id: { type: "string", format: "uuid" },
+        company_name: { type: "string", minLength: 1, maxLength: 200 },
         limit: { type: "integer", minimum: 1, maximum: 100 },
       },
-      required: ["application_id"],
       additionalProperties: false,
     },
   },

@@ -31,12 +31,65 @@ export async function POST(request: Request) {
   }
 
   try {
-    const emailLog = await prisma.emailLog.create({
-      data: parsed.data,
-    });
+    const { applicationId, applicationIds, companyName, ...emailData } = parsed.data;
+    let targetApplicationIds: string[];
+
+    if (applicationId) {
+      targetApplicationIds = [applicationId];
+    } else if (applicationIds) {
+      targetApplicationIds = Array.from(new Set(applicationIds));
+    } else {
+      const selectedCompanyName = companyName?.trim() ?? "";
+      if (!selectedCompanyName) {
+        return NextResponse.json({ error: "Company name is required." }, { status: 400 });
+      }
+
+      const emailLog = await prisma.emailLog.create({
+        data: {
+          applicationId: null,
+          companyName: selectedCompanyName,
+          ...emailData,
+        },
+      });
+
+      await triggerWorkerFromWrite();
+      return NextResponse.json({ emailLog }, { status: 201 });
+    }
+
+    if (targetApplicationIds.length > 1) {
+      const existingApplications = await prisma.application.findMany({
+        where: { id: { in: targetApplicationIds } },
+        select: { id: true },
+      });
+      const existingIds = new Set(existingApplications.map((application) => application.id));
+      const invalidIds = targetApplicationIds.filter((id) => !existingIds.has(id));
+      if (invalidIds.length > 0) {
+        return NextResponse.json(
+          {
+            error: `Invalid application references: ${invalidIds.join(", ")}`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    const emailLogs = await prisma.$transaction(
+      targetApplicationIds.map((targetApplicationId) =>
+        prisma.emailLog.create({
+          data: {
+            applicationId: targetApplicationId,
+            ...emailData,
+          },
+        }),
+      ),
+    );
 
     await triggerWorkerFromWrite();
-    return NextResponse.json({ emailLog }, { status: 201 });
+    if (emailLogs.length === 1) {
+      return NextResponse.json({ emailLog: emailLogs[0] }, { status: 201 });
+    }
+
+    return NextResponse.json({ emailLogs, createdCount: emailLogs.length }, { status: 201 });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2022") {
