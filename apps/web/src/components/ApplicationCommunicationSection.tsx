@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { IconButton } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import { EmailLogCreateForm } from "@/components/forms/EmailLogCreateForm";
 import { EmailLogsCrudTable } from "@/components/EmailLogsCrudTable";
 
@@ -61,13 +62,41 @@ export function ApplicationCommunicationSection({
       </div>
 
       {isFormOpen ? (
-        <EmailLogCreateForm
-          applications={applications}
-          defaultApplicationId={defaultApplicationId}
-          compact
-          hideHeader
-          onSaved={() => setIsFormOpen(false)}
-        />
+        <Dialog
+          open={isFormOpen}
+          onClose={(_event, reason) => {
+            if (reason === "backdropClick") {
+              return;
+            }
+            setIsFormOpen(false);
+          }}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
+            Add Communication
+            <IconButton
+              size="small"
+              aria-label="Close add communication dialog"
+              title="Close"
+              onClick={() => setIsFormOpen(false)}
+            >
+              <CloseIcon sx={{ fontSize: "1rem" }} />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <EmailLogCreateForm
+              applications={applications}
+              defaultApplicationId={defaultApplicationId}
+              compact
+              hideHeader
+              onSaved={() => setIsFormOpen(false)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsFormOpen(false)}>Cancel</Button>
+          </DialogActions>
+        </Dialog>
       ) : null}
 
       <EmailLogsCrudTable applications={applications} emails={communicationLogs} />

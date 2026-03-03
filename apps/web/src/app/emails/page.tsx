@@ -1,8 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
-import { EmailLogCreateForm } from "@/components/forms/EmailLogCreateForm";
-import { EmailLogsCrudTable } from "@/components/EmailLogsCrudTable";
+import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 
 export default async function EmailsPage() {
   const [emails, applications] = await Promise.all([
@@ -24,27 +23,22 @@ export default async function EmailsPage() {
         <p className="muted">Store communication history for context and follow-through.</p>
       </header>
 
-      <div className="layout-split">
-        <EmailLogCreateForm applications={applications} />
-        <div className="card table-shell">
-          <h2 className="no-margin">Recent Communication</h2>
-          <EmailLogsCrudTable
-            applications={applications}
-            emails={emails.map((email) => ({
-              id: email.id,
-              applicationId: email.applicationId,
-              companyName: email.companyName ?? email.application?.companyName ?? "Unknown Company",
-              channel: email.channel,
-              direction: email.direction,
-              isHuman: email.isHuman,
-              subject: email.subject,
-              body: email.body,
-              notes: email.notes,
-              createdAtIso: email.createdAt.toISOString(),
-            }))}
-          />
-        </div>
-      </div>
+      <ApplicationCommunicationSection
+        applications={applications}
+        defaultApplicationId={applications[0]?.id ?? ""}
+        communicationLogs={emails.map((email) => ({
+          id: email.id,
+          applicationId: email.applicationId,
+          companyName: email.companyName ?? email.application?.companyName ?? "Unknown Company",
+          channel: email.channel,
+          direction: email.direction,
+          isHuman: email.isHuman,
+          subject: email.subject,
+          body: email.body,
+          notes: email.notes,
+          createdAtIso: email.createdAt.toISOString(),
+        }))}
+      />
     </section>
   );
 }

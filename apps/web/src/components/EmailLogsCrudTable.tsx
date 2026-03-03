@@ -2,11 +2,13 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, ListItemText, MenuItem, Select } from "@mui/material";
+import { DataGrid, GridColDef, GridPaginationModel, GridRenderCellParams, GridRowId } from "@mui/x-data-grid";
+import { Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, ListItemText, MenuItem, Select, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import CloseIcon from "@mui/icons-material/Close";
 import { toTitleCaseLabel } from "@/lib/format";
 
 interface ApplicationOption {
@@ -40,6 +42,9 @@ function nullableTrimmedText(value: FormDataEntryValue | null): string | null {
 
 export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableProps) {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
   const companyOptions = Array.from(
     new Set([
       ...applications.map((application) => application.companyName),
@@ -155,81 +160,206 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
     return <p className="muted">No communication logs yet.</p>;
   }
 
+  const columns: GridColDef<EmailLogRow>[] = [
+    {
+      field: "view",
+      headerName: "View",
+      sortable: false,
+      filterable: false,
+      width: 80,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params: GridRenderCellParams<EmailLogRow>) => {
+        const email = params.row;
+        return (
+          <IconButton
+            size="small"
+            aria-label={`View communication log ${email.subject}`}
+            title="View"
+            onClick={() => {
+              setViewingEmail(email);
+              setError(null);
+            }}
+          >
+            <VisibilityIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+        );
+      },
+    },
+    {
+      field: "companyName",
+      headerName: "Company",
+      flex: 1,
+      minWidth: isMobile ? 110 : 150,
+      headerAlign: "center",
+      align: "left",
+    },
+    {
+      field: "direction",
+      headerName: "Direction",
+      flex: 0.7,
+      minWidth: 95,
+      headerAlign: "center",
+      align: "center",
+      valueGetter: (_value, row) => toTitleCaseLabel(row.direction),
+    },
+    {
+      field: "channel",
+      headerName: "Channel",
+      flex: 0.7,
+      minWidth: 95,
+      headerAlign: "center",
+      align: "center",
+      valueGetter: (_value, row) => toTitleCaseLabel(row.channel),
+    },
+    {
+      field: "subject",
+      headerName: "Message",
+      flex: 1.6,
+      minWidth: isMobile ? 180 : 260,
+      headerAlign: "center",
+      align: "left",
+      renderCell: (params: GridRenderCellParams<EmailLogRow>) => {
+        const notes = params.row.notes?.trim();
+        return (
+          <Box sx={{ width: "100%", py: 0.35, textAlign: "left" }}>
+            <span
+              style={{
+                display: "block",
+                fontWeight: 500,
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+              }}
+            >
+              {params.row.subject}
+            </span>
+            {notes ? (
+              <span
+                style={{
+                  display: "block",
+                  marginTop: "0.2rem",
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                  fontSize: "0.8rem",
+                  color: "rgba(19, 33, 48, 0.72)",
+                }}
+              >
+                {notes}
+              </span>
+            ) : null}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "createdAtIso",
+      headerName: "Created",
+      width: isMobile ? 110 : 160,
+      headerAlign: "center",
+      align: "center",
+      valueGetter: (_value, row) =>
+        new Intl.DateTimeFormat(undefined, {
+          month: "numeric",
+          day: "numeric",
+          year: "2-digit",
+          hour: "numeric",
+          minute: "2-digit",
+        }).format(new Date(row.createdAtIso)),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      filterable: false,
+      width: 100,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params: GridRenderCellParams<EmailLogRow>) => {
+        const email = params.row;
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+            <IconButton
+              size="small"
+              aria-label={`Edit communication log ${email.subject}`}
+              title="Edit"
+              onClick={() => {
+                setEditingEmail(email);
+                if (email.applicationId) {
+                  setEditTargetMode("application");
+                  setEditApplicationIds([email.applicationId]);
+                } else {
+                  setEditTargetMode("company");
+                  setEditApplicationIds([]);
+                }
+                setError(null);
+              }}
+            >
+              <EditIcon sx={{ fontSize: "1rem" }} />
+            </IconButton>
+            <IconButton
+              size="small"
+              aria-label={`Delete communication log ${email.subject}`}
+              title="Delete"
+              onClick={() => {
+                setDeleteEmail(email);
+                setError(null);
+              }}
+            >
+              <DeleteIcon sx={{ fontSize: "1rem" }} />
+            </IconButton>
+          </div>
+        );
+      },
+    },
+  ];
+
+  const paginationModel: GridPaginationModel = isMobile
+    ? { pageSize: 5, page: 0 }
+    : { pageSize: 10, page: 0 };
+
   return (
     <>
       {success ? <p className="success-text">{success}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Direction</th>
-            <th>Channel</th>
-            <th>Human</th>
-            <th>Subject</th>
-            <th>Notes</th>
-            <th>Created</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {emails.map((email) => (
-            <tr key={email.id}>
-              <td>{email.companyName}</td>
-              <td>{toTitleCaseLabel(email.direction)}</td>
-              <td>{toTitleCaseLabel(email.channel)}</td>
-              <td>{email.isHuman ? "Yes" : "No"}</td>
-              <td>{email.subject}</td>
-              <td>{email.notes ?? "-"}</td>
-              <td>{new Date(email.createdAtIso).toLocaleString()}</td>
-              <td>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                  <IconButton
-                    size="small"
-                    aria-label={`View communication log ${email.subject}`}
-                    title="View"
-                    onClick={() => {
-                      setViewingEmail(email);
-                      setError(null);
-                    }}
-                  >
-                    <VisibilityIcon sx={{ fontSize: "1rem" }} />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    aria-label={`Edit communication log ${email.subject}`}
-                    title="Edit"
-                    onClick={() => {
-                      setEditingEmail(email);
-                      if (email.applicationId) {
-                        setEditTargetMode("application");
-                        setEditApplicationIds([email.applicationId]);
-                      } else {
-                        setEditTargetMode("company");
-                        setEditApplicationIds([]);
-                      }
-                      setError(null);
-                    }}
-                  >
-                    <EditIcon sx={{ fontSize: "1rem" }} />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    aria-label={`Delete communication log ${email.subject}`}
-                    title="Delete"
-                    onClick={() => {
-                      setDeleteEmail(email);
-                      setError(null);
-                    }}
-                  >
-                    <DeleteIcon sx={{ fontSize: "1rem" }} />
-                  </IconButton>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+        <DataGrid
+          rows={emails}
+          columns={columns}
+          autoHeight
+          getRowId={(row: EmailLogRow): GridRowId => row.id}
+          disableRowSelectionOnClick
+          disableColumnResize
+          getRowHeight={() => "auto"}
+          columnVisibilityModel={{
+            companyName: !isMobile || !isTablet,
+          }}
+          pageSizeOptions={isMobile ? [5, 10, 25] : [10, 25, 50]}
+          density="compact"
+          initialState={{
+            pagination: { paginationModel },
+          }}
+          sx={{
+            backgroundColor: "#fff",
+            width: "100%",
+            maxWidth: "100%",
+            "& .MuiDataGrid-columnHeaderTitleContainer, & .MuiDataGrid-cell": {
+              justifyContent: "center",
+              alignItems: "center",
+            },
+            "& .MuiDataGrid-cell": {
+              display: "flex",
+              textAlign: "center",
+            },
+            "& .MuiDataGrid-cell[data-field='companyName'], & .MuiDataGrid-cell[data-field='subject']": {
+              justifyContent: "flex-start",
+              textAlign: "left",
+            },
+            "& .MuiDataGrid-cell, & .MuiDataGrid-columnHeaderTitleContainer": {
+              px: isMobile ? 1 : 2,
+            },
+          }}
+        />
+      </Box>
 
       <Dialog
         open={Boolean(viewingEmail)}
@@ -242,27 +372,90 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Communication Log Details</DialogTitle>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
+          Communication Log Details
+          <IconButton
+            size="small"
+            aria-label="Close communication log details dialog"
+            title="Close"
+            onClick={() => setViewingEmail(null)}
+          >
+            <CloseIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+        </DialogTitle>
         <DialogContent>
           {viewingEmail ? (
-            <div className="stack-md">
-              <p><strong>Company:</strong> {viewingEmail.companyName}</p>
-              <p><strong>Channel:</strong> {toTitleCaseLabel(viewingEmail.channel)}</p>
-              <p><strong>Direction:</strong> {toTitleCaseLabel(viewingEmail.direction)}</p>
-              <p><strong>Human:</strong> {viewingEmail.isHuman ? "Yes" : "No"}</p>
-              <p><strong>Subject:</strong> {viewingEmail.subject}</p>
-              <p><strong>Notes:</strong> {viewingEmail.notes ?? "-"}</p>
-              <p><strong>Created:</strong> {new Date(viewingEmail.createdAtIso).toLocaleString()}</p>
-              <div>
-                <strong>Body</strong>
-                <pre style={{ whiteSpace: "pre-wrap", marginTop: "0.5rem" }}>{viewingEmail.body}</pre>
-              </div>
-            </div>
+            <Box sx={{ display: "grid", gap: 2 }}>
+              <Box>
+                <Typography variant="overline" sx={{ color: "text.secondary", letterSpacing: 0.4 }}>
+                  {viewingEmail.companyName}
+                </Typography>
+                <Typography variant="h6" sx={{ lineHeight: 1.3 }}>
+                  {viewingEmail.subject}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                <Chip size="small" label={`Channel: ${toTitleCaseLabel(viewingEmail.channel)}`} />
+                <Chip size="small" label={`Direction: ${toTitleCaseLabel(viewingEmail.direction)}`} />
+                <Chip size="small" label={viewingEmail.isHuman ? "Human" : "Automated"} />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Created: ${new Intl.DateTimeFormat(undefined, {
+                    month: "numeric",
+                    day: "numeric",
+                    year: "2-digit",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }).format(new Date(viewingEmail.createdAtIso))}`}
+                />
+              </Box>
+
+              {viewingEmail.notes ? (
+                <Box
+                  sx={{
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 1.5,
+                    px: 1.5,
+                    py: 1.1,
+                    backgroundColor: "rgba(15, 23, 42, 0.02)",
+                  }}
+                >
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    Notes
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.4 }}>
+                    {viewingEmail.notes}
+                  </Typography>
+                </Box>
+              ) : null}
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 0.8 }}>
+                  Message
+                </Typography>
+                <Box
+                  sx={{
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 1.5,
+                    px: 1.5,
+                    py: 1.2,
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+                    {viewingEmail.body}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
           ) : null}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setViewingEmail(null)}>Close</Button>
-        </DialogActions>
       </Dialog>
 
       <Dialog
@@ -277,7 +470,23 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Edit Communication Log</DialogTitle>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
+          Edit Communication Log
+          <IconButton
+            size="small"
+            aria-label="Close edit communication dialog"
+            title="Close"
+            onClick={() => {
+              if (saving) {
+                return;
+              }
+              setEditingEmail(null);
+              setError(null);
+            }}
+          >
+            <CloseIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+        </DialogTitle>
         <DialogContent>
           {editingEmail ? (
             <form id="edit-email-log-form" className="form-card" onSubmit={handleEditSubmit}>
