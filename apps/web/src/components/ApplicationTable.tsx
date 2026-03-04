@@ -17,6 +17,7 @@ import {
   useTheme,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -45,6 +46,26 @@ export function ApplicationTable({
 
   const columns = useMemo<GridColDef<ApplicationRow>[]>(
     () => [
+      {
+        field: "view",
+        headerName: "View",
+        sortable: false,
+        filterable: false,
+        width: 80,
+        headerAlign: "center",
+        align: "center",
+        renderCell: (params: GridRenderCellParams<ApplicationRow>) => (
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            aria-label={`View application ${params.row.companyName} ${params.row.roleTitle}`}
+            title="View"
+            component={Link}
+            href={`/applications/${params.row.id}`}
+          >
+            <VisibilityIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+        ),
+      },
       {
         field: "companyName",
         headerName: "Company",

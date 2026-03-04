@@ -1,25 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import { InterviewList } from "@/components/InterviewList";
-import { RefreshInsightsButton } from "@/components/RefreshInsightsButton";
 import { Timeline } from "@/components/Timeline";
-import { UiCardList } from "@/components/UiCardList";
 import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
 
 export default async function TodayPage() {
   const now = new Date();
 
-  const [cards, interviews, engagementEvents, followups, emails, recentApplications] = await Promise.all([
-    prisma.uiCard.findMany({
-      where: {
-        state: "active",
-        OR: [{ snoozedUntil: null }, { snoozedUntil: { lte: now } }],
-        AND: [{ OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] }],
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    }),
+  const [interviews, engagementEvents, followups, emails, recentApplications] = await Promise.all([
     prisma.interview.findMany({
       where: {
         scheduledAt: { gte: now },
@@ -87,26 +76,11 @@ export default async function TodayPage() {
       <div className="page-header with-action">
         <div>
           <h1>Today</h1>
-          <p className="muted">Review current insights and recent activity.</p>
+          <p className="muted">Review upcoming interviews and recent activity.</p>
         </div>
-        <RefreshInsightsButton />
       </div>
 
       <div className="layout-split">
-        <div className="stack-md">
-          <h2>Active Cards</h2>
-          <UiCardList
-            cards={cards.map((card) => ({
-              id: card.id,
-              title: card.title,
-              body: card.body,
-              priority: card.priority,
-              cardType: card.cardType,
-              prompt: card.suggestedGptPrompt,
-            }))}
-          />
-        </div>
-
         <div className="stack-md">
           <section>
             <h2>Upcoming Interviews</h2>

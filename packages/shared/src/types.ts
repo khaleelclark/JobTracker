@@ -1,7 +1,4 @@
 import {
-  CARD_PRIORITIES,
-  CARD_STATES,
-  CARD_TYPES,
   EMAIL_DIRECTIONS,
   ENGAGEMENT_EVENT_TYPES,
   FOLLOWUP_CHANNELS,
@@ -20,26 +17,6 @@ export type FollowupChannel = (typeof FOLLOWUP_CHANNELS)[number];
 export type FollowupResultStatus = (typeof FOLLOWUP_RESULT_STATUS)[number];
 export type FollowupResponseType = (typeof FOLLOWUP_RESPONSE_TYPES)[number];
 export type EngagementEventType = (typeof ENGAGEMENT_EVENT_TYPES)[number];
-export type CardPriority = (typeof CARD_PRIORITIES)[number];
-export type CardState = (typeof CARD_STATES)[number];
-export type CardType = (typeof CARD_TYPES)[number];
-
-export interface WorkerCardInput {
-  card_type: CardType;
-  priority: CardPriority;
-  title: string;
-  body: string;
-  evidence: Record<string, unknown>;
-  dedupe_key: string;
-  expires_in_hours: number;
-  suggested_gpt_prompt?: string;
-  related_application_id?: string;
-  related_interview_id?: string;
-}
-
-export interface WorkerResponse {
-  cards: WorkerCardInput[];
-}
 
 export interface ControlFileSections {
   goals?: string;

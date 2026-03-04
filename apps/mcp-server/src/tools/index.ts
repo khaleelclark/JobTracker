@@ -1,5 +1,6 @@
 import { getApplication } from "./getApplication";
 import { getControlFile } from "./getControlFile";
+import { getFullContextDump } from "./getFullContextDump";
 import { getReflection } from "./getReflection";
 import { getResume } from "./getResume";
 import { listEmailLogs } from "./listEmailLogs";
@@ -9,7 +10,10 @@ import { listInterviews } from "./listInterviews";
 import { listMasterSkills } from "./listMasterSkills";
 import { searchApplications } from "./searchApplications";
 
-export const toolHandlers: Record<string, (input: unknown) => Promise<unknown>> = {
+export const toolHandlers: Record<
+  string,
+  (input: unknown) => Promise<unknown>
+> = {
   search_applications: searchApplications,
   get_application: getApplication,
   list_interviews: listInterviews,
@@ -20,6 +24,7 @@ export const toolHandlers: Record<string, (input: unknown) => Promise<unknown>> 
   get_resume: getResume,
   list_master_skills: listMasterSkills,
   get_control_file: getControlFile,
+  get_full_context_dump: getFullContextDump,
 };
 
 export const requiredToolNames = Object.keys(toolHandlers);
@@ -33,14 +38,24 @@ export interface MpcToolDefinition {
 export const mcpToolDefinitions: MpcToolDefinition[] = [
   {
     name: "search_applications",
-    description: "Search applications by query/status and return a bounded list.",
+    description:
+      "Search applications by query/status and return a bounded list.",
     inputSchema: {
       type: "object",
       properties: {
         query: { type: "string" },
         generic_status: {
           type: "string",
-          enum: ["interested", "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived"],
+          enum: [
+            "interested",
+            "applied",
+            "under_review",
+            "interviewing",
+            "offered",
+            "rejected",
+            "withdrawn",
+            "archived",
+          ],
         },
         limit: { type: "integer", minimum: 1, maximum: 100 },
       },
@@ -49,7 +64,8 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   },
   {
     name: "get_application",
-    description: "Fetch full details for one application including related interviews/followups/events.",
+    description:
+      "Fetch full details for one application including related interviews/followups/events.",
     inputSchema: {
       type: "object",
       properties: {
@@ -85,7 +101,8 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   },
   {
     name: "list_email_logs",
-    description: "List communication logs for an application, a company, or globally.",
+    description:
+      "List communication logs for an application, a company, or globally.",
     inputSchema: {
       type: "object",
       properties: {
@@ -122,7 +139,8 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   },
   {
     name: "get_resume",
-    description: "Get one resume by id, including linked applications and master skills.",
+    description:
+      "Get one resume by id, including linked applications and master skills.",
     inputSchema: {
       type: "object",
       properties: {
@@ -134,7 +152,8 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   },
   {
     name: "list_master_skills",
-    description: "List master skills (canonical skill inventory), optionally filtered by query/category.",
+    description:
+      "List master skills (canonical skill inventory), optionally filtered by query/category.",
     inputSchema: {
       type: "object",
       properties: {
@@ -151,6 +170,29 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
     inputSchema: {
       type: "object",
       properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "get_full_context_dump",
+    description:
+      "WARNING: Use only when explicitly asked for full/system-wide context. Prefer narrower tools for routine retrieval.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        since: {
+          type: "string",
+          format: "date-time",
+          description:
+            "Optional ISO timestamp. Only include rows at/after this value where applicable.",
+        },
+        limit_per_table: {
+          type: "integer",
+          minimum: 1,
+          maximum: 500,
+          default: 100,
+        },
+      },
       additionalProperties: false,
     },
   },

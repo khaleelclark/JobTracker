@@ -69,11 +69,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
   process.env.NODE_ENV = "test";
   process.env.JOBTRACKER_DATA_DIR = dataDir;
   process.env.DATABASE_URL = sqliteFileUrl(dbPath);
-  process.env.LOCAL_LLM_PROMPT_ONLY = "true";
-  process.env.OPENAI_API_KEY = "";
-  process.env.LMSTUDIO_BASE_URL = "";
-  process.env.OLLAMA_BASE_URL = "";
-  process.env.LLAMACPP_BASE_URL = "";
 
   const prisma = new PrismaClient({
     datasources: {
@@ -172,10 +167,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
     const generateMasterSkillsRoute = await importRoute<{
       POST: (request: Request) => Promise<Response>;
     }>("apps/web/src/app/api/master-skills/generate-from-resume/route.ts");
-
-    const uiCardByIdRoute = await importRoute<{
-      PATCH: (request: Request, context: { params: Promise<{ id: string }> }) => Promise<Response>;
-    }>("apps/web/src/app/api/ui-cards/[id]/route.ts");
 
     const goalsProfileRoute = await importRoute<{
       GET: () => Promise<Response>;
@@ -586,42 +577,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
       buildContext(eventId),
     );
     assert.equal(updateEventResponse.status, 200);
-
-    const createdCard = await prisma.uiCard.create({
-      data: {
-        cardType: "followup_suggestion",
-        priority: "medium",
-        title: "Reminder",
-        body: "Follow up soon",
-        evidenceJson: "{}",
-        dedupeKey: "api-test-card",
-      },
-    });
-
-    const dismissCardResponse = await uiCardByIdRoute.PATCH(
-      buildJsonRequest(`http://localhost/api/ui-cards/${createdCard.id}`, "PATCH", {
-        action: "dismiss",
-      }),
-      buildContext(createdCard.id),
-    );
-    assert.equal(dismissCardResponse.status, 200);
-
-    const archiveCardResponse = await uiCardByIdRoute.PATCH(
-      buildJsonRequest(`http://localhost/api/ui-cards/${createdCard.id}`, "PATCH", {
-        action: "archive",
-      }),
-      buildContext(createdCard.id),
-    );
-    assert.equal(archiveCardResponse.status, 200);
-
-    const snoozeCardResponse = await uiCardByIdRoute.PATCH(
-      buildJsonRequest(`http://localhost/api/ui-cards/${createdCard.id}`, "PATCH", {
-        action: "snooze",
-        snoozeDays: 2,
-      }),
-      buildContext(createdCard.id),
-    );
-    assert.equal(snoozeCardResponse.status, 200);
 
     const goalsGetResponse = await goalsProfileRoute.GET();
     assert.equal(goalsGetResponse.status, 200);

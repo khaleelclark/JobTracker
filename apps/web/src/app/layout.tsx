@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Sora, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
-import { startWorkerScheduler } from "@/server/worker/llmWorker";
 import { AppNav } from "@/components/AppNav";
 import { MuiProvider } from "@/components/MuiProvider";
-
-startWorkerScheduler();
 
 const headingFont = Sora({
   subsets: ["latin"],

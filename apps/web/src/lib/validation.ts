@@ -182,11 +182,6 @@ export const generateMasterSkillsFromResumeSchema = z
     },
   );
 
-export const updateCardStateSchema = z.object({
-  action: z.enum(["dismiss", "archive", "snooze"]),
-  snoozeDays: z.number().int().min(1).max(30).optional(),
-});
-
 export const goalsProfileSchema = z.object({
   missionStatement: z.string().max(8000),
   weeklyApplicationsTarget: z.number().int().min(1).max(200).nullable(),
@@ -206,8 +201,3 @@ export const listApplicationsQuerySchema = z.object({
 });
 
 export const updateInterviewSchema = createInterviewSchema;
-
-export const listUiCardsQuerySchema = z.object({
-  state: z.enum(["active", "dismissed", "archived"]).optional(),
-  limit: z.number().int().min(1).max(100).default(100),
-});

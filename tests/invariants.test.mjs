@@ -12,10 +12,11 @@ function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 }
 
-test("write trigger only queues worker runs", () => {
+test("write trigger has no worker side effects", () => {
   const source = read("apps/web/src/server/hooks/onWriteTriggers.ts");
-  assert.match(source, /queueWorkerRun\(\)/);
-  assert.doesNotMatch(source, /runWorkerOnce\(/);
+  assert.doesNotMatch(source, /server\/worker/);
+  assert.doesNotMatch(source, /queueWorkerRun/);
+  assert.doesNotMatch(source, /runWorkerOnce/);
 });
 
 test("mcp tools are read-only (no prisma mutations)", () => {
@@ -30,15 +31,11 @@ test("mcp tools are read-only (no prisma mutations)", () => {
   }
 });
 
-test("llm worker mutates only card/run tables", () => {
-  const source = read("apps/web/src/server/worker/llmWorker.ts");
-  const mutationPattern = /prisma\.([a-zA-Z0-9_]+)\.(create|update|updateMany|upsert|delete|deleteMany|createMany)\(/g;
-  const allowedModels = new Set(["uiCard", "llmRun"]);
-
-  for (const match of source.matchAll(mutationPattern)) {
-    const model = match[1];
-    assert.ok(allowedModels.has(model), `unexpected prisma mutation target in worker: ${model}`);
-  }
+test("insight-card and worker endpoints are removed", () => {
+  assert.equal(fs.existsSync(path.join(repoRoot, "apps/web/src/app/api/ui-cards/route.ts")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, "apps/web/src/app/api/ui-cards/[id]/route.ts")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, "apps/web/src/app/api/worker/refresh/route.ts")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, "apps/web/src/server/worker/llmWorker.ts")), false);
 });
 
 test("generic status includes under_review across schema/constants/validation/mcp", () => {
@@ -67,4 +64,10 @@ test("application status displays use title-case formatter", () => {
   assert.match(appDetail, /toTitleCaseLabel\(application\.genericStatus\)/);
   assert.match(today, /toTitleCaseLabel\(application\.genericStatus\)/);
   assert.match(globals, /\.status-under_review/);
+});
+
+test("mcp full-context tool is available with warning metadata", () => {
+  const toolsIndex = read("apps/mcp-server/src/tools/index.ts");
+  assert.match(toolsIndex, /name:\s*"get_full_context_dump"/);
+  assert.match(toolsIndex, /Use only when explicitly asked for full\/system-wide context/i);
 });

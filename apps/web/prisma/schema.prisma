@@ -68,18 +68,6 @@ enum EngagementEventType {
   rejection
 }
 
-enum CardPriority {
-  low
-  medium
-  high
-}
-
-enum CardState {
-  active
-  dismissed
-  archived
-}
-
 model Application {
   id             String              @id @default(uuid())
   companyName    String              @map("company_name")
@@ -100,7 +88,6 @@ model Application {
   emailLogs      EmailLog[]
   followups      FollowupAttempt[]
   events         EngagementEvent[]
-  uiCards        UiCard[]
 
   @@index([genericStatus])
   @@index([appliedAt])
@@ -164,7 +151,6 @@ model Interview {
   status      InterviewStatus
   createdAt   DateTime              @default(now()) @map("created_at")
   reflection  InterviewReflection?
-  uiCards     UiCard[]
 
   @@index([applicationId, scheduledAt])
   @@unique([applicationId, roundIndex])
@@ -235,47 +221,4 @@ model EngagementEvent {
 
   @@index([applicationId, occurredAt])
   @@map("engagement_events")
-}
-
-model UiCard {
-  id                   String       @id @default(uuid())
-  createdAt            DateTime     @default(now()) @map("created_at")
-  cardType             String       @map("card_type")
-  priority             CardPriority
-  title                String
-  body                 String
-  evidenceJson         String       @map("evidence_json")
-  suggestedGptPrompt   String?      @map("suggested_gpt_prompt")
-  relatedApplicationId String?      @map("related_application_id")
-  relatedInterviewId   String?      @map("related_interview_id")
-  relatedApplication   Application? @relation(fields: [relatedApplicationId], references: [id], onDelete: SetNull)
-  relatedInterview     Interview?   @relation(fields: [relatedInterviewId], references: [id], onDelete: SetNull)
-  state                CardState    @default(active)
-  snoozedUntil         DateTime?    @map("snoozed_until")
-  expiresAt            DateTime?    @map("expires_at")
-  dedupeKey            String       @map("dedupe_key")
-
-  @@index([state, priority])
-  @@unique([dedupeKey, state])
-  @@map("ui_cards")
-}
-
-model LlmRunQueue {
-  id               Int       @id
-  pending          Boolean   @default(false)
-  lastRunStartedAt DateTime? @map("last_run_started_at")
-  lastRunFinishedAt DateTime? @map("last_run_finished_at")
-  cooldownUntil    DateTime? @map("cooldown_until")
-
-  @@map("llm_run_queue")
-}
-
-model LlmRun {
-  id               String    @id @default(uuid())
-  startedAt        DateTime  @map("started_at")
-  finishedAt       DateTime? @map("finished_at")
-  cardsCreatedCount Int      @default(0) @map("cards_created_count")
-  error            String?
-
-  @@map("llm_runs")
 }

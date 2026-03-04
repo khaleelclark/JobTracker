@@ -156,13 +156,14 @@ function handleDeleteDialogClose(
 
   const columns = useMemo<GridColDef<SkillRow>[]>(
     () => [
-      { field: "name", headerName: "Skill", flex: 1.1, minWidth: 180 },
+      { field: "name", headerName: "Skill", flex: 1.1, minWidth: 180, align: "center", headerAlign: "center" },
       {
         field: "category",
         headerName: "Category",
         flex: 0.9,
         minWidth: 160,
         align: "center",
+        headerAlign: "center",
         valueGetter: (_value, row) => row.category ?? "Uncategorized",
       },
       {
@@ -170,6 +171,7 @@ function handleDeleteDialogClose(
         headerName: "Experience (Years)",
         width: 180,
         align: "center",
+        headerAlign: "center",
         valueGetter: (_value, row) =>
           row.experienceYears === null ? "Not set" : `${row.experienceYears.toFixed(1)} years`,
       },
@@ -178,7 +180,22 @@ function handleDeleteDialogClose(
         headerName: "Notes",
         flex: 1.6,
         minWidth: 220,
-        valueGetter: (_value, row) => row.notes ?? "",
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params: GridRenderCellParams<SkillRow>) => (
+          <Box
+            sx={{
+              width: "100%",
+              py: 0.5,
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+              lineHeight: 1.5,
+              textAlign: "center",
+            }}
+          >
+            {params.row.notes ?? ""}
+          </Box>
+        ),
       },
       {
         field: "linkedResumeCount",
@@ -186,6 +203,7 @@ function handleDeleteDialogClose(
         type: "number",
         width: 150,
         align: "center",
+        headerAlign: "center",
       },
       {
         field: "actions",
@@ -193,6 +211,8 @@ function handleDeleteDialogClose(
         sortable: false,
         filterable: false,
         width: 180,
+        align: "center",
+        headerAlign: "center",
         renderCell: (params: GridRenderCellParams<SkillRow>) => {
           const row = params.row;
           return (
@@ -361,11 +381,21 @@ function handleDeleteDialogClose(
           rows={skills}
           columns={columns}
           getRowId={(row: SkillRow): GridRowId => row.id}
+          getRowHeight={() => "auto"}
           disableRowSelectionOnClick
           pageSizeOptions={[10, 25, 50]}
           initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }}
           sx={{
             backgroundColor: "#fff",
+            "& .MuiDataGrid-cell": {
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+            },
+            "& .MuiDataGrid-cellContent": {
+              width: "100%",
+              textAlign: "center",
+            },
             "& .MuiDataGrid-columnHeaderTitleContainer": {
               justifyContent: "center",
             },

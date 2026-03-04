@@ -5,11 +5,10 @@ Local-first monorepo for passive job-search record keeping.
 ## Philosophy
 - Store and display factual records only.
 - Keep strategy and decision-making outside the app.
-- Local LLM worker can write `ui_cards` only.
 - MCP service is read-only.
 
 ## Monorepo Layout
-- `apps/web`: Next.js UI, API routes, Prisma schema, local LLM worker.
+- `apps/web`: Next.js UI, API routes, Prisma schema.
 - `apps/mcp-server`: OAuth-protected read-only MCP/SSE service.
 - `packages/shared`: shared constants, schemas, and types.
 - `scripts`: operational scripts (`db:migrate`, backups, data-dir init).
@@ -20,7 +19,6 @@ Local-first monorepo for passive job-search record keeping.
 - Follow-up attempts and follow-up results.
 - Email logs (with optional notes), engagement events.
 - Resumes + application links, master skills + resume links.
-- LLM run queue/runs and generated UI cards.
 
 ## Web UI Capabilities
 - Application detail page supports direct section actions:
@@ -43,11 +41,6 @@ Key variables:
 - Paths:
   - `JOBTRACKER_DATA_DIR` (optional override for data root)
   - `DATABASE_URL` (optional override; defaults to local SQLite file)
-- LLM runtime:
-  - `LLM_RUNTIME=lmstudio|ollama|llamacpp|openai`
-  - `LMSTUDIO_BASE_URL`, `OLLAMA_BASE_URL`, `LLAMACPP_BASE_URL`, `OPENAI_BASE_URL`
-  - `OPENAI_API_KEY`, `OPENAI_MODEL`, `LLM_MODEL`
-  - `LLM_WORKER_INTERVAL_HOURS`, `LLM_WORKER_MIN_GAP_MINUTES`
 - MCP/OAuth:
   - `MCP_PORT`, `MCP_BASE_URL`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`
 
@@ -67,7 +60,6 @@ Key variables:
 ## Useful Commands
 - `pnpm dev:web`: run web service only.
 - `pnpm dev:mcp`: run MCP service only.
-- `pnpm worker:run`: force one worker run.
 - `pnpm backup:run`: create SQLite backup + prune old backups.
 - `pnpm db:studio`: Prisma Studio.
 - `pnpm test`: run invariant + CRUD tests.
@@ -83,11 +75,9 @@ Key variables:
   - `/api/reflections`
   - `/api/resumes`, `/api/resumes/[id]`, `/api/resumes/[id]/download`
   - `/api/master-skills`, `/api/master-skills/[id]`, `/api/master-skills/generate-from-resume`
-  - `/api/ui-cards`, `/api/ui-cards/[id]`
 - Other:
   - `/api/goals-profile`
   - `/api/control-file`
-  - `/api/worker/refresh`
 
 ## MCP Endpoints
 - Auth/OAuth metadata:
@@ -113,5 +103,6 @@ Supported tool names:
 - `get_resume`
 - `list_master_skills`
 - `get_control_file`
+- `get_full_context_dump` (use only when full/system-wide context is explicitly requested)
 
 All MCP outputs are read-only and truncated for safety.

@@ -11,20 +11,35 @@ import { generateMasterSkillsFromResumeSchema } from "@/lib/validation";
 import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 const execFileAsync = promisify(execFile);
-const TEXT_FILE_EXTENSIONS = new Set([".txt", ".md", ".text", ".rtf", ".csv", ".json"]);
+const TEXT_FILE_EXTENSIONS = new Set([
+  ".txt",
+  ".md",
+  ".text",
+  ".rtf",
+  ".csv",
+  ".json",
+]);
 
 async function extractTextFromFilePath(sourcePath: string): Promise<string> {
   const ext = path.extname(sourcePath).toLowerCase();
 
   try {
     if (ext === ".pdf") {
-      const { stdout } = await execFileAsync("pdftotext", ["-layout", sourcePath, "-"]);
+      const { stdout } = await execFileAsync("pdftotext", [
+        "-layout",
+        sourcePath,
+        "-",
+      ]);
       return String(stdout ?? "").trim();
     }
 
     if (ext === ".docx") {
       // .docx is a zip archive; parse word/document.xml via unzip and strip XML tags.
-      const { stdout } = await execFileAsync("unzip", ["-p", sourcePath, "word/document.xml"]);
+      const { stdout } = await execFileAsync("unzip", [
+        "-p",
+        sourcePath,
+        "word/document.xml",
+      ]);
       const xml = String(stdout ?? "");
       const text = xml
         .replace(/<w:tab\/>/g, "\t")
@@ -37,7 +52,11 @@ async function extractTextFromFilePath(sourcePath: string): Promise<string> {
 
     if (ext === ".doc") {
       // Best-effort fallback for legacy .doc binaries when dedicated parser isn't installed.
-      const { stdout } = await execFileAsync("strings", ["-n", "4", sourcePath]);
+      const { stdout } = await execFileAsync("strings", [
+        "-n",
+        "4",
+        sourcePath,
+      ]);
       return String(stdout ?? "").trim();
     }
 
@@ -52,7 +71,10 @@ async function extractTextFromFilePath(sourcePath: string): Promise<string> {
   }
 }
 
-async function extractTextFromUploadedFile(fileName: string, fileBase64: string): Promise<string> {
+async function extractTextFromUploadedFile(
+  fileName: string,
+  fileBase64: string,
+): Promise<string> {
   const ext = path.extname(fileName).toLowerCase();
   const buffer = Buffer.from(fileBase64, "base64");
 
@@ -60,7 +82,9 @@ async function extractTextFromUploadedFile(fileName: string, fileBase64: string)
     return buffer.toString("utf8").trim();
   }
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "job-tracker-skill-import-"));
+  const tempDir = await fs.mkdtemp(
+    path.join(os.tmpdir(), "job-tracker-skill-import-"),
+  );
   const tempFilePath = path.join(tempDir, `${crypto.randomUUID()}${ext}`);
 
   try {
@@ -71,17 +95,6 @@ async function extractTextFromUploadedFile(fileName: string, fileBase64: string)
   }
 }
 
-function parseSkillsArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((item) => (typeof item === "string" ? item.trim() : ""))
-    .filter((item) => item.length > 0)
-    .slice(0, 80);
-}
-
 interface ParsedSkillCandidate {
   name: string;
   experienceYears: number | null;
@@ -89,31 +102,6 @@ interface ParsedSkillCandidate {
 
 function normalizeHalfYear(value: number): number {
   return Number((Math.round(value * 2) / 2).toFixed(1));
-}
-
-function parseExperienceYears(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    if (value < 0 || value > 60) {
-      return null;
-    }
-    return normalizeHalfYear(value);
-  }
-
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const match = value.match(/\d+(\.\d+)?/);
-  if (!match) {
-    return null;
-  }
-
-  const parsed = Number.parseFloat(match[0]);
-  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 60) {
-    return null;
-  }
-
-  return normalizeHalfYear(parsed);
 }
 
 function inferDefaultExperienceYears(resumeText: string): number {
@@ -147,133 +135,15 @@ function inferDefaultExperienceYears(resumeText: string): number {
   return 2.0;
 }
 
-function parseSkillsWithExperience(value: unknown): ParsedSkillCandidate[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  const deduped = new Map<string, ParsedSkillCandidate>();
-
-  for (const item of value) {
-    if (typeof item === "string") {
-      const name = item.trim();
-      if (!name) {
-        continue;
-      }
-
-      const key = name.toLowerCase();
-      if (!deduped.has(key)) {
-        deduped.set(key, { name, experienceYears: null });
-      }
-      continue;
-    }
-
-    if (!item || typeof item !== "object") {
-      continue;
-    }
-
-    const candidate = item as {
-      name?: unknown;
-      skill?: unknown;
-      experience_years?: unknown;
-      experienceYears?: unknown;
-      years?: unknown;
-    };
-
-    const nameRaw = typeof candidate.name === "string" ? candidate.name : candidate.skill;
-    const name = typeof nameRaw === "string" ? nameRaw.trim() : "";
-    if (!name) {
-      continue;
-    }
-
-    const experienceYears =
-      parseExperienceYears(candidate.experience_years) ??
-      parseExperienceYears(candidate.experienceYears) ??
-      parseExperienceYears(candidate.years);
-
-    const key = name.toLowerCase();
-    const existing = deduped.get(key);
-
-    if (!existing) {
-      deduped.set(key, { name, experienceYears });
-      continue;
-    }
-
-    if (existing.experienceYears === null && experienceYears !== null) {
-      deduped.set(key, { ...existing, experienceYears });
-    }
-  }
-
-  return Array.from(deduped.values()).slice(0, 80);
-}
-
-async function extractSkillsWithLlm(text: string): Promise<ParsedSkillCandidate[]> {
-  const openAiApiKey = process.env.OPENAI_API_KEY;
-  const openAiBase = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
-  const openAiModel = process.env.OPENAI_MODEL ?? process.env.LLM_MODEL ?? "gpt-4o-mini";
-
-  const lmStudioBase = process.env.LMSTUDIO_BASE_URL;
-  const endpointBase = openAiApiKey ? openAiBase : lmStudioBase ? `${lmStudioBase.replace(/\/$/, "")}/v1` : "";
-  if (!endpointBase) {
-    return [];
-  }
-
-  const response = await fetch(`${endpointBase.replace(/\/$/, "")}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(openAiApiKey ? { Authorization: `Bearer ${openAiApiKey}` } : {}),
-    },
-    body: JSON.stringify({
-      model: openAiModel,
-      temperature: 0,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "Extract only explicit professional/technical skills from resume text. Return JSON: {\"skills\":[{\"name\":\"...\",\"experience_years\":number}]}. experience_years must be an estimated number in 0.5-year increments (no nulls). No commentary.",
-        },
-        {
-          role: "user",
-          content: text.slice(0, 20000),
-        },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    return [];
-  }
-
-  const json = (await response.json().catch(() => null)) as
-    | { choices?: Array<{ message?: { content?: string } }> }
-    | null;
-  const content = json?.choices?.[0]?.message?.content;
-
-  if (!content) {
-    return [];
-  }
-
-  try {
-    const parsed = JSON.parse(content) as { skills?: unknown };
-    const withExperience = parseSkillsWithExperience(parsed.skills);
-    if (withExperience.length > 0) {
-      return withExperience;
-    }
-
-    return parseSkillsArray(parsed.skills).map((name) => ({ name, experienceYears: null }));
-  } catch {
-    return [];
-  }
-}
-
 export async function POST(request: Request) {
   const payload = await request.json();
   const parsed = generateMasterSkillsFromResumeSchema.safeParse(payload);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const data = parsed.data;
@@ -282,7 +152,10 @@ export async function POST(request: Request) {
   let defaultResumeId: string | null = data.resumeId ?? null;
 
   if (!resumeText && data.uploadedFileName && data.uploadedFileBase64) {
-    resumeText = await extractTextFromUploadedFile(data.uploadedFileName, data.uploadedFileBase64);
+    resumeText = await extractTextFromUploadedFile(
+      data.uploadedFileName,
+      data.uploadedFileBase64,
+    );
   }
 
   if (!resumeText && data.resumeId) {
@@ -298,7 +171,9 @@ export async function POST(request: Request) {
     defaultResumeId = resume.id;
     resumeText = resume.extractedText?.trim() ?? "";
     if (!resumeText) {
-      resumeText = resume.filePath ? await extractTextFromFilePath(resume.filePath) : "";
+      resumeText = resume.filePath
+        ? await extractTextFromFilePath(resume.filePath)
+        : "";
     }
 
     if (!resumeText) {
@@ -318,7 +193,8 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "resume_text_required",
-        message: "No parsable resume text found. Upload a file or paste resume text.",
+        message:
+          "No parsable resume text found. Upload a file or paste resume text.",
       },
       { status: 400 },
     );
@@ -327,17 +203,25 @@ export async function POST(request: Request) {
   const linkResumeId = data.linkResumeId ?? defaultResumeId;
 
   if (linkResumeId) {
-    const linkedResume = await prisma.resume.findUnique({ where: { id: linkResumeId }, select: { id: true } });
+    const linkedResume = await prisma.resume.findUnique({
+      where: { id: linkResumeId },
+      select: { id: true },
+    });
     if (!linkedResume) {
-      return NextResponse.json({ error: "link_resume_not_found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "link_resume_not_found" },
+        { status: 404 },
+      );
     }
   }
 
-  const ruleBasedCandidates = extractSkillCandidatesFromResumeText(resumeText).map((name) => ({
+  const ruleBasedCandidates = extractSkillCandidatesFromResumeText(
+    resumeText,
+  ).map(name => ({
     name,
     experienceYears: null,
   }));
-  const llmCandidates = await extractSkillsWithLlm(resumeText);
+  const llmCandidates: ParsedSkillCandidate[] = [];
   const mergedCandidateMap = new Map<string, ParsedSkillCandidate>();
 
   for (const candidate of [...ruleBasedCandidates, ...llmCandidates]) {
@@ -349,14 +233,17 @@ export async function POST(request: Request) {
       continue;
     }
 
-    if (existing.experienceYears === null && candidate.experienceYears !== null) {
+    if (
+      existing.experienceYears === null &&
+      candidate.experienceYears !== null
+    ) {
       mergedCandidateMap.set(key, candidate);
     }
   }
 
   const mergedCandidates = Array.from(mergedCandidateMap.values()).slice(0, 80);
   const fallbackExperienceYears = inferDefaultExperienceYears(resumeText);
-  const normalizedCandidates = mergedCandidates.map((candidate) => ({
+  const normalizedCandidates = mergedCandidates.map(candidate => ({
     ...candidate,
     experienceYears: candidate.experienceYears ?? fallbackExperienceYears,
   }));
@@ -372,16 +259,20 @@ export async function POST(request: Request) {
   }
 
   const existingSkills = await prisma.masterSkill.findMany({
-    where: { name: { in: normalizedCandidates.map((candidate) => candidate.name) } },
+    where: {
+      name: { in: normalizedCandidates.map(candidate => candidate.name) },
+    },
     select: { id: true, name: true, experienceYears: true },
   });
 
-  const existingByName = new Map(existingSkills.map((row) => [row.name.toLowerCase(), row]));
+  const existingByName = new Map(
+    existingSkills.map(row => [row.name.toLowerCase(), row]),
+  );
 
   const createdNames: string[] = [];
   const linkedPairs: Array<{ resumeId: string; masterSkillId: string }> = [];
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async tx => {
     for (const candidate of normalizedCandidates) {
       const existingSkill = existingByName.get(candidate.name.toLowerCase());
       let skillId = existingSkill?.id;
@@ -392,14 +283,17 @@ export async function POST(request: Request) {
             name: candidate.name,
             category: "resume_import",
             experienceYears: candidate.experienceYears,
-            notes: "Imported from resume content (rule + LLM parse attempted).",
+            notes: "Imported from resume content (rule-based parse).",
           },
           select: { id: true },
         });
 
         skillId = created.id;
         createdNames.push(candidate.name);
-      } else if (existingSkill?.experienceYears === null && candidate.experienceYears !== null) {
+      } else if (
+        existingSkill?.experienceYears === null &&
+        candidate.experienceYears !== null
+      ) {
         await tx.masterSkill.update({
           where: { id: skillId },
           data: { experienceYears: candidate.experienceYears },
@@ -433,6 +327,6 @@ export async function POST(request: Request) {
     matchedExisting: normalizedCandidates.length - createdNames.length,
     candidates: normalizedCandidates,
     createdNames,
-    usedLlm: true,
+    usedLlm: false,
   });
 }

@@ -235,28 +235,6 @@ test("core CRUD across job tracker entities", async () => {
     const eventDeleted = await prisma.engagementEvent.findUnique({ where: { id: event.id } });
     assert.equal(eventDeleted, null);
 
-    // UiCard CRUD
-    const card = await prisma.uiCard.create({
-      data: {
-        cardType: "followup_suggestion",
-        priority: "medium",
-        title: "Acme follow-up",
-        body: "No inbound response yet.",
-        evidenceJson: JSON.stringify({ application_id: application.id }),
-        dedupeKey: "followup_acme_1",
-        state: "active",
-        relatedApplicationId: application.id,
-      },
-    });
-    const cardUpdated = await prisma.uiCard.update({
-      where: { id: card.id },
-      data: { state: "dismissed" },
-    });
-    assert.equal(cardUpdated.state, "dismissed");
-    await prisma.uiCard.delete({ where: { id: card.id } });
-    const cardDeleted = await prisma.uiCard.findUnique({ where: { id: card.id } });
-    assert.equal(cardDeleted, null);
-
     // Delete interview then application (final D step)
     await prisma.interview.delete({ where: { id: interview.id } });
     await prisma.application.delete({ where: { id: application.id } });
