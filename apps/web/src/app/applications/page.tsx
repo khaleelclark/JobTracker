@@ -28,10 +28,9 @@ export default async function ApplicationsPage() {
     interviewing: 1,
     under_review: 2,
     applied: 3,
-    interested: 4,
-    archived: 5,
-    rejected: 6,
-    withdrawn: 7,
+    archived: 4,
+    rejected: 5,
+    withdrawn: 6,
   };
 
   const sortedApplications = [...applications].sort((a, b) => {

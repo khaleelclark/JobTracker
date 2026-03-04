@@ -47,7 +47,6 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
         generic_status: {
           type: "string",
           enum: [
-            "interested",
             "applied",
             "under_review",
             "interviewing",

@@ -352,7 +352,6 @@ td a:hover {
   color: #0f766e;
 }
 
-.status-interested,
 .status-applied,
 .status-under_review,
 .status-interviewing,
@@ -361,11 +360,6 @@ td a:hover {
 .status-withdrawn,
 .status-archived {
   border: none;
-}
-
-.status-interested {
-  background: rgba(59, 130, 246, 0.14);
-  color: #1d4ed8;
 }
 
 .status-applied {

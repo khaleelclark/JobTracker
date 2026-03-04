@@ -11,7 +11,6 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
 const migrationsDir = path.join(repoRoot, "apps/web/prisma/migrations");
 const GENERIC_STATUSES = [
-  "interested",
   "applied",
   "under_review",
   "interviewing",

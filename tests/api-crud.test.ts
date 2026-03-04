@@ -196,7 +196,7 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
       data: {
         companyName: "Acme Corp",
         roleTitle: "Platform Engineer",
-        genericStatus: "interested",
+        genericStatus: "applied",
         appliedAt: new Date("2026-03-02T10:00:00.000Z"),
       },
     });

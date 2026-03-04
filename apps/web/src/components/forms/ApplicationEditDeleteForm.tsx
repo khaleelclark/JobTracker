@@ -14,7 +14,6 @@ import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel } from "@/lib/format";
 
 const STATUS_OPTIONS = [
-  "interested",
   "applied",
   "under_review",
   "interviewing",

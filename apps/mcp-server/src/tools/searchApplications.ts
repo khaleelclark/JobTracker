@@ -6,7 +6,7 @@ const searchInputSchema = z
   .object({
     query: z.string().max(200).optional(),
     generic_status: z
-      .enum(["interested", "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived"])
+      .enum(["applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived"])
       .optional(),
     limit: z.number().int().min(1).max(100).default(25),
   })
