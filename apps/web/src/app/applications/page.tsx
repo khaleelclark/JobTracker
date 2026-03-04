@@ -24,14 +24,19 @@ export default async function ApplicationsPage() {
   );
 
   const statusSortRank: Record<string, number> = {
-    archived: 1,
-    rejected: 2,
-    withdrawn: 3,
+    offered: 0,
+    interviewing: 1,
+    under_review: 2,
+    applied: 3,
+    interested: 4,
+    archived: 5,
+    rejected: 6,
+    withdrawn: 7,
   };
 
   const sortedApplications = [...applications].sort((a, b) => {
-    const rankA = statusSortRank[a.genericStatus] ?? 0;
-    const rankB = statusSortRank[b.genericStatus] ?? 0;
+    const rankA = statusSortRank[a.genericStatus] ?? Number.MAX_SAFE_INTEGER;
+    const rankB = statusSortRank[b.genericStatus] ?? Number.MAX_SAFE_INTEGER;
     if (rankA !== rankB) {
       return rankA - rankB;
     }
