@@ -13,6 +13,7 @@ interface FollowupOption {
 
 interface FollowupResultCreateFormProps {
   followups: FollowupOption[];
+  applicationId: string;
 }
 
 const RESULT_STATUS_OPTIONS = ["pending", "resolved", "expired_no_response"] as const;
@@ -31,7 +32,18 @@ function toIsoFromDate(raw: string): string | null {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-export function FollowupResultCreateForm({ followups }: FollowupResultCreateFormProps) {
+function notifyRejectedStatus(applicationId: string) {
+  window.dispatchEvent(
+    new CustomEvent("application-status-updated", {
+      detail: {
+        applicationId,
+        status: "rejected",
+      },
+    }),
+  );
+}
+
+export function FollowupResultCreateForm({ followups, applicationId }: FollowupResultCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +92,12 @@ export function FollowupResultCreateForm({ followups }: FollowupResultCreateForm
 
       form.reset();
       setSuccess("Follow-up result saved.");
-      router.refresh();
+
+      if (payload.responseType === "rejection_reply") {
+        notifyRejectedStatus(applicationId);
+      } else {
+        router.refresh();
+      }
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);

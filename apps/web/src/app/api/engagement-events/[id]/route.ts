@@ -35,10 +35,21 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const event = await prisma.engagementEvent.update({
-    where: { id },
-    data: parsed.data,
-    include: { application: true },
+  const event = await prisma.$transaction(async (tx) => {
+    const updated = await tx.engagementEvent.update({
+      where: { id },
+      data: parsed.data,
+      include: { application: true },
+    });
+
+    if (updated.eventType === "rejection") {
+      await tx.application.update({
+        where: { id: updated.applicationId },
+        data: { genericStatus: "rejected" },
+      });
+    }
+
+    return updated;
   });
 
   await triggerWorkerFromWrite();

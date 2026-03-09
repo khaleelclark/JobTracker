@@ -538,11 +538,16 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
       buildJsonRequest("http://localhost/api/followup-results", "POST", {
         followupAttemptId: followupId,
         resultStatus: "resolved",
-        responseType: "human_reply",
+        responseType: "rejection_reply",
         resolvedAt: "2026-03-08T15:00:00.000Z",
       }),
     );
     assert.equal(updateFollowupResultViaUpsertResponse.status, 201);
+    const appAfterRejectionReply = await prisma.application.findUnique({
+      where: { id: applicationId },
+      select: { genericStatus: true },
+    });
+    assert.equal(appAfterRejectionReply?.genericStatus, "rejected");
 
     const listFollowupResultsResponse = await followupResultsRoute.GET(
       new Request(`http://localhost/api/followup-results?followupAttemptId=${followupId}`),

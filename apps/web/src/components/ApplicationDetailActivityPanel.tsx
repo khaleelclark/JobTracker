@@ -81,7 +81,9 @@ export function ApplicationDetailActivityPanel({
         <FollowupCreateForm applicationId={application.id} defaultAttemptIndex={nextFollowupAttemptIndex} />
       ) : null}
 
-      {activeTab === "followupResult" ? <FollowupResultCreateForm followups={followups} /> : null}
+      {activeTab === "followupResult" ? (
+        <FollowupResultCreateForm followups={followups} applicationId={application.id} />
+      ) : null}
 
       {activeTab === "event" ? <EngagementEventCreateForm applicationId={application.id} /> : null}
 

@@ -24,8 +24,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const event = await prisma.engagementEvent.create({
-    data: parsed.data,
+  const event = await prisma.$transaction(async (tx) => {
+    const created = await tx.engagementEvent.create({
+      data: parsed.data,
+    });
+
+    if (created.eventType === "rejection") {
+      await tx.application.update({
+        where: { id: created.applicationId },
+        data: { genericStatus: "rejected" },
+      });
+    }
+
+    return created;
   });
 
   await triggerWorkerFromWrite();

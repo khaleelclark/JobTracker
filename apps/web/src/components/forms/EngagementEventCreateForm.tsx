@@ -25,6 +25,17 @@ function toIsoFromDateTime(raw: string): string {
   return new Date(raw).toISOString();
 }
 
+function notifyRejectedStatus(applicationId: string) {
+  window.dispatchEvent(
+    new CustomEvent("application-status-updated", {
+      detail: {
+        applicationId,
+        status: "rejected",
+      },
+    }),
+  );
+}
+
 export function EngagementEventCreateForm({ applicationId }: EngagementEventCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -73,7 +84,12 @@ export function EngagementEventCreateForm({ applicationId }: EngagementEventCrea
 
       form.reset();
       setSuccess("Engagement event logged.");
-      router.refresh();
+
+      if (payload.eventType === "rejection") {
+        notifyRejectedStatus(applicationId);
+      } else {
+        router.refresh();
+      }
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);

@@ -11,7 +11,7 @@ import { FollowupsCrudTable } from "@/components/FollowupsCrudTable";
 import { EngagementEventsCrudTable } from "@/components/EngagementEventsCrudTable";
 import { InterviewsCrudTable } from "@/components/InterviewsCrudTable";
 import { ApplicationResumeLinksManager } from "@/components/ApplicationResumeLinksManager";
-import { toTitleCaseLabel } from "@/lib/format";
+import { ApplicationStatusPill } from "@/components/ApplicationStatusPill";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 
 interface ApplicationDetailPageProps {
@@ -83,9 +83,7 @@ export default async function ApplicationDetailPage({
         <h1 className="no-margin">{application.companyName}</h1>
         <p>
           {application.roleTitle} -{" "}
-          <span className={`pill status-${application.genericStatus}`}>
-            {toTitleCaseLabel(application.genericStatus)}
-          </span>
+          <ApplicationStatusPill applicationId={application.id} initialStatus={application.genericStatus} />
         </p>
         {application.compensation ? (
           <p className="muted">Compensation: {application.compensation}</p>
