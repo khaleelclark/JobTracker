@@ -108,7 +108,7 @@ export async function exchangeAuthCode(input: {
   const accessToken = crypto.randomBytes(24).toString("hex");
   accessTokens[accessToken] = {
     clientId: input.clientId,
-    expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
   };
 
   await persist();
