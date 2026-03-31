@@ -1,5 +1,7 @@
 version: "2"
-authtoken: ${NGROK_AUTHTOKEN}
+# Optional helper for users who choose ngrok.
+# Install your token separately with:
+#   ngrok config add-authtoken <token>
 
 tunnels:
   mcp:

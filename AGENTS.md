@@ -39,7 +39,7 @@ The app stores truth. AI provides insight. The user makes decisions.
 ## Architecture Overview
 
 Local machine system composed of: - Web UI (Next.js) - SQLite database -
-Local LLM worker - MCP server (read‑only via ngrok) - External GPT
+Local LLM worker - MCP server (read‑only, optionally exposed through any HTTPS transport) - External GPT
 integration
 
 The application stores reality. AI interprets it.
@@ -70,7 +70,8 @@ It acts as a triage assistant, not a decision maker.
 ## MCP Server Rules
 
 The MCP server exposes read‑only tools. No mutations allowed. All
-outputs must be truncated for safety.
+outputs must be truncated for safety. Public exposure method is
+deployment-specific and not part of the application architecture.
 
 ------------------------------------------------------------------------
 

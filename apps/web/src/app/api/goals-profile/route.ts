@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { readControlFile, writeControlFile } from "@/lib/fileStore";
 import { DEFAULT_GOALS_PROFILE, parseGoalsProfile, upsertGoalsProfile } from "@/lib/goalsProfile";

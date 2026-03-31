@@ -8,6 +8,7 @@
     "dev:web": "pnpm --filter @job-tracker/web dev",
     "dev:mcp": "pnpm --filter @job-tracker/mcp-server dev",
     "db:migrate": "tsx scripts/dbMigrate.ts",
+    "db:deploy": "pnpm --filter @job-tracker/web prisma migrate deploy",
     "db:studio": "tsx scripts/dbStudio.ts",
     "backup:run": "tsx scripts/backup.ts",
     "init:data-dir": "tsx scripts/initDataDir.ts",
