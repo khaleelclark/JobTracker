@@ -18,12 +18,15 @@ const TEXT_FILE_EXTENSIONS = new Set([
   ".json",
 ]);
 
-const inputSchema = z
-  .object({
-    since: z.coerce.date().optional(),
-    limit_per_table: z.number().int().min(1).max(MAX_LIMIT_PER_TABLE).default(DEFAULT_LIMIT_PER_TABLE),
-  })
-  .default({});
+const inputSchema = z.object({
+  since: z.coerce.date().optional(),
+  limit_per_table: z
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_LIMIT_PER_TABLE)
+    .default(DEFAULT_LIMIT_PER_TABLE),
+});
 
 function applySinceFilter(
   since: Date | undefined,
@@ -102,11 +105,7 @@ async function extractResumeText(
 
   if (extension === ".doc") {
     try {
-      const { stdout } = await execFileAsync("strings", [
-        "-n",
-        "4",
-        filePath,
-      ]);
+      const { stdout } = await execFileAsync("strings", ["-n", "4", filePath]);
       const text = String(stdout ?? "").trim();
       return text
         ? {
@@ -215,7 +214,7 @@ export async function getFullContextDump(input: unknown) {
   ]);
 
   const resumesWithContent = await Promise.all(
-    resumes.map(async (resume) => ({
+    resumes.map(async resume => ({
       ...resume,
       content: await extractResumeText(resume.extractedText, resume.filePath),
     })),
@@ -236,7 +235,10 @@ export async function getFullContextDump(input: unknown) {
   };
 
   const tableCounts = Object.fromEntries(
-    Object.entries(data).map(([table, rows]) => [table, Array.isArray(rows) ? rows.length : 0]),
+    Object.entries(data).map(([table, rows]) => [
+      table,
+      Array.isArray(rows) ? rows.length : 0,
+    ]),
   );
 
   const likelyTruncatedTables = Object.entries(tableCounts)

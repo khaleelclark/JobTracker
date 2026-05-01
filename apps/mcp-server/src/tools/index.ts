@@ -69,9 +69,8 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
       type: "object",
       properties: {
         id: { type: "string", format: "uuid" },
-        application_id: { type: "string", format: "uuid" },
       },
-      anyOf: [{ required: ["id"] }, { required: ["application_id"] }],
+      required: ["id"],
       additionalProperties: false,
     },
   },
