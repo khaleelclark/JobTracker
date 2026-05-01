@@ -583,6 +583,28 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
     );
     assert.equal(updateEventResponse.status, 200);
 
+    for (const eventType of ["rejection_automated", "rejection_human"] as const) {
+      await prisma.application.update({
+        where: { id: applicationId },
+        data: { genericStatus: "under_review" },
+      });
+
+      const createRejectionEventResponse = await engagementEventsRoute.POST(
+        buildJsonRequest("http://localhost/api/engagement-events", "POST", {
+          applicationId,
+          eventType,
+          occurredAt: "2026-03-11T09:00:00.000Z",
+        }),
+      );
+      assert.equal(createRejectionEventResponse.status, 201);
+
+      const appAfterRejectionEvent = await prisma.application.findUnique({
+        where: { id: applicationId },
+        select: { genericStatus: true },
+      });
+      assert.equal(appAfterRejectionEvent?.genericStatus, "rejected");
+    }
+
     const goalsGetResponse = await goalsProfileRoute.GET();
     assert.equal(goalsGetResponse.status, 200);
 

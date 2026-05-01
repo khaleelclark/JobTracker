@@ -5,6 +5,10 @@ import { prisma } from "@/lib/db";
 import { createEngagementEventSchema } from "@/lib/validation";
 import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
+function isRejectionEventType(eventType: string): boolean {
+  return eventType === "rejection_automated" || eventType === "rejection_human" || eventType === "rejection";
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const applicationId = searchParams.get("applicationId")?.trim();
@@ -31,7 +35,7 @@ export async function POST(request: Request) {
       data: parsed.data,
     });
 
-    if (created.eventType === "rejection") {
+    if (isRejectionEventType(created.eventType)) {
       await tx.application.update({
         where: { id: created.applicationId },
         data: { genericStatus: "rejected" },

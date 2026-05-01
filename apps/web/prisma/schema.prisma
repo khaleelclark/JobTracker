@@ -64,6 +64,8 @@ enum EngagementEventType {
   phone_screen
   interview_round
   offer
+  rejection_automated
+  rejection_human
   rejection
 }
 

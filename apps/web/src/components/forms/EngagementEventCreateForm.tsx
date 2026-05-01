@@ -14,8 +14,13 @@ const EVENT_TYPE_OPTIONS = [
   "phone_screen",
   "interview_round",
   "offer",
-  "rejection",
+  "rejection_automated",
+  "rejection_human",
 ] as const;
+
+function isRejectionEventType(eventType: string): boolean {
+  return eventType === "rejection_automated" || eventType === "rejection_human" || eventType === "rejection";
+}
 
 function toIsoFromDateTime(raw: string): string {
   if (!raw) {
@@ -85,7 +90,7 @@ export function EngagementEventCreateForm({ applicationId }: EngagementEventCrea
       form.reset();
       setSuccess("Engagement event logged.");
 
-      if (payload.eventType === "rejection") {
+      if (isRejectionEventType(payload.eventType)) {
         notifyRejectedStatus(applicationId);
       } else {
         router.refresh();

@@ -108,7 +108,15 @@ export const createFollowupResultSchema = z.object({
 
 export const createEngagementEventSchema = z.object({
   applicationId: z.string().uuid(),
-  eventType: z.enum(["recruiter_reply", "phone_screen", "interview_round", "offer", "rejection"]),
+  eventType: z.enum([
+    "recruiter_reply",
+    "phone_screen",
+    "interview_round",
+    "offer",
+    "rejection_automated",
+    "rejection_human",
+    "rejection",
+  ]),
   occurredAt: z.coerce.date(),
 });
 export const updateEngagementEventSchema = createEngagementEventSchema;

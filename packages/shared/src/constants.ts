@@ -34,6 +34,8 @@ export const ENGAGEMENT_EVENT_TYPES = [
   "phone_screen",
   "interview_round",
   "offer",
+  "rejection_automated",
+  "rejection_human",
   "rejection",
 ] as const;
 

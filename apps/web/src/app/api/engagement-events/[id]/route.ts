@@ -5,6 +5,10 @@ import { prisma } from "@/lib/db";
 import { updateEngagementEventSchema } from "@/lib/validation";
 import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
+function isRejectionEventType(eventType: string): boolean {
+  return eventType === "rejection_automated" || eventType === "rejection_human" || eventType === "rejection";
+}
+
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
@@ -44,7 +48,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       include: { application: true },
     });
 
-    if (updated.eventType === "rejection") {
+    if (isRejectionEventType(updated.eventType)) {
       await tx.application.update({
         where: { id: updated.applicationId },
         data: { genericStatus: "rejected" },

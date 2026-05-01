@@ -12,7 +12,7 @@ import { toTitleCaseLabel } from "@/lib/format";
 interface EventRow {
   id: string;
   applicationId: string;
-  eventType: "recruiter_reply" | "phone_screen" | "interview_round" | "offer" | "rejection";
+  eventType: "recruiter_reply" | "phone_screen" | "interview_round" | "offer" | "rejection_automated" | "rejection_human" | "rejection";
   occurredAtIso: string;
 }
 
@@ -20,7 +20,14 @@ interface EngagementEventsCrudTableProps {
   events: EventRow[];
 }
 
-const EVENT_TYPES = ["recruiter_reply", "phone_screen", "interview_round", "offer", "rejection"] as const;
+const EVENT_TYPES = [
+  "recruiter_reply",
+  "phone_screen",
+  "interview_round",
+  "offer",
+  "rejection_automated",
+  "rejection_human",
+] as const;
 
 function toDateInputValue(iso: string): string {
   const date = new Date(iso);
