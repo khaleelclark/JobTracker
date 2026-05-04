@@ -5,6 +5,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { prisma } from "../lib/db";
 import { truncatePayload } from "../lib/truncate";
+import { listEngagementEventRows } from "./engagementEventsRaw";
 
 const MAX_LIMIT_PER_TABLE = 500;
 const DEFAULT_LIMIT_PER_TABLE = 100;
@@ -206,11 +207,7 @@ export async function getFullContextDump(input: unknown) {
       take: limitPerTable,
       orderBy: { id: "asc" },
     }),
-    prisma.engagementEvent.findMany({
-      where: applySinceFilter(since, "occurredAt"),
-      orderBy: { occurredAt: "desc" },
-      take: limitPerTable,
-    }),
+    listEngagementEventRows({ since, take: limitPerTable }),
   ]);
 
   const resumesWithContent = await Promise.all(
