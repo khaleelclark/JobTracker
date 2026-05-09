@@ -1,8 +1,10 @@
 import { getApplication } from "./getApplication";
 import { getControlFile } from "./getControlFile";
 import { getFullContextDump } from "./getFullContextDump";
+import { getMasterResume } from "./getMasterResume";
 import { getReflection } from "./getReflection";
 import { getResume } from "./getResume";
+import { generateResume } from "./generateResume";
 import { listEmailLogs } from "./listEmailLogs";
 import { listEngagementEvents } from "./listEngagementEvents";
 import { listFollowupAttempts } from "./listFollowupAttempts";
@@ -22,6 +24,8 @@ export const toolHandlers: Record<
   list_followup_attempts: listFollowupAttempts,
   list_engagement_events: listEngagementEvents,
   get_resume: getResume,
+  get_master_resume: getMasterResume,
+  generate_resume: generateResume,
   list_master_skills: listMasterSkills,
   get_control_file: getControlFile,
   get_full_context_dump: getFullContextDump,
@@ -145,6 +149,40 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
         resume_id: { type: "string", format: "uuid" },
       },
       required: ["resume_id"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "get_master_resume",
+    description:
+      "Return the master resume JSON from /home/khaleel/Projects/Job App/master-resume.json. Use this as the source resume when creating a tailored resume for a job position.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "generate_resume",
+    description:
+      "Generate a PDF resume from an AI-tailored resume JSON object and save it to /home/khaleel/Generated Resumes.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        resume: {
+          type: "object",
+          description:
+            "Resume JSON in the master resume format after tailoring/reordering for the target position.",
+        },
+        file_name: {
+          type: "string",
+          minLength: 1,
+          maxLength: 160,
+          description:
+            "Optional PDF file name. Invalid filename characters are sanitized.",
+        },
+      },
+      required: ["resume"],
       additionalProperties: false,
     },
   },

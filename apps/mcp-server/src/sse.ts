@@ -20,6 +20,16 @@ interface Session {
 
 const sessions = new Map<string, Session>();
 
+const MCP_INSTRUCTIONS = [
+  "Job tracker tools are factual retrieval tools, except for the resume generation workflow.",
+  "Use get_master_resume as the master resume source when creating a new resume based on existing resume history.",
+  "When the user asks for a generated resume for a job position, first look over the job position details, then call get_master_resume.",
+  "After retrieving the master resume, generate a new resume JSON object in the same format that is arranged optimally for the position and omits anything unnecessary for that position.",
+  "The tailored resume should be human readable and ATS-friendly.",
+  "Then call generate_resume with the tailored JSON to save the PDF to /home/khaleel/Generated Resumes.",
+  "Once generation succeeds, explain how the resume was reformatted for the specific position.",
+].join(" ");
+
 function writeSseEvent(res: Response, event: string, data: string): void {
   res.write(`event: ${event}\n`);
   for (const line of data.split(/\r?\n/)) {
@@ -105,7 +115,7 @@ async function handleRpcRequest(session: Session, input: unknown): Promise<void>
         name: "job-tracker-mcp",
         version: "0.1.0",
       },
-      instructions: "Read-only job tracker tools. Use tools for factual retrieval only.",
+      instructions: MCP_INSTRUCTIONS,
     });
     return;
   }

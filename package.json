@@ -12,6 +12,7 @@
     "db:studio": "tsx scripts/dbStudio.ts",
     "backup:run": "tsx scripts/backup.ts",
     "init:data-dir": "tsx scripts/initDataDir.ts",
+    "resume:pdf": "node scripts/generateResumePdf.js",
     "test:invariants": "node --test tests/invariants.test.mjs",
     "test:crud": "node --test tests/crud.test.mjs",
     "test:api": "cd apps/web && TSX_TSCONFIG=tsconfig.json node --import tsx --test ../../tests/api-crud.test.ts",

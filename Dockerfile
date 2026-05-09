@@ -51,10 +51,15 @@ ENTRYPOINT ["./docker/entrypoint-web.sh"]
 
 FROM runtime-base AS mcp-runtime
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends chromium \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/apps/mcp-server/node_modules /app/apps/mcp-server/node_modules
 COPY --from=build /app/apps/mcp-server/src /app/apps/mcp-server/src
 COPY --from=build /app/apps/mcp-server/package.json /app/apps/mcp-server/package.json
+COPY --from=build /app/master-resume.json /app/master-resume.json
 COPY --from=build /app/docker/entrypoint-mcp.sh /app/docker/entrypoint-mcp.sh
 
 ENTRYPOINT ["./docker/entrypoint-mcp.sh"]
