@@ -40,6 +40,7 @@ Local-first monorepo for passive job-search record keeping.
 ## Web UI Capabilities
 
 ### Application Detail Page
+
 - Direct section actions for:
   - Communication logs: view/edit/delete with multi-channel support (email, LinkedIn).
   - Follow-ups: view/edit/delete with multiple channel types (email, LinkedIn, portal, other).
@@ -50,6 +51,7 @@ Local-first monorepo for passive job-search record keeping.
 - Bulk email creation: create emails across multiple applications in one action.
 
 ### Global Features
+
 - Search/filter applications by company name, role title, and generic status.
 - Communication Logs page: full CRUD for all email/LinkedIn messages (application-level and company-level).
 - Master Skills management: create, update, delete skills with categories and experience tracking.
@@ -130,6 +132,7 @@ Notes:
 ## Web API Surface
 
 ### Applications
+
 - `GET /api/applications` - List applications with optional filtering (query, genericStatus, limit).
 - `POST /api/applications` - Create new application with linked resumes.
 - `GET /api/applications/[id]` - Get application with all related data (interviews, emails, followups, events, resumes).
@@ -138,6 +141,7 @@ Notes:
 - `PATCH /api/applications/[id]/resumes` - Update resume links for an application.
 
 ### Interviews & Reflections
+
 - `GET /api/interviews` - List all interviews with optional application filter.
 - `POST /api/interviews` - Create interview and update application to "interviewing" status.
 - `GET /api/interviews/[id]` - Get interview with reflection data.
@@ -147,12 +151,14 @@ Notes:
 - `POST /api/reflections` - Create or upsert interview reflection.
 
 ### Communication Logs & Email
+
 - `GET /api/emails` - List email logs with optional application filter and limit control.
 - `POST /api/emails` - Create email log(s) (supports single application, multiple applications, or company-level).
 - `GET /api/emails/[id]` - Get specific email log with application info.
 - `PATCH /api/emails/[id]` - Update email log (supports moving between applications).
 
 ### Follow-ups & Engagement
+
 - `GET /api/followups` - List follow-up attempts with optional application filter.
 - `POST /api/followups` - Create follow-up attempt.
 - `GET /api/followups/[id]` - Get follow-up with application and result data.
@@ -167,6 +173,7 @@ Notes:
 - `DELETE /api/engagement-events/[id]` - Delete engagement event.
 
 ### Resumes & Skills
+
 - `GET /api/resumes` - List all resumes with applications and master skills.
 - `POST /api/resumes` - Create resume (supports file upload or existing file path).
 - `GET /api/resumes/[id]` - Get resume with application and skill links.
@@ -182,18 +189,21 @@ Notes:
 - `POST /api/master-skills/generate-from-resume` - Extract and import skills from resume (supports file upload, text paste, or existing resume).
 
 ### Configuration
+
 - `GET /api/goals-profile` - Get goals profile and control file path.
 - `PUT /api/goals-profile` - Update goals profile in control file.
 - `GET /api/control-file` - Get current control file text.
 - `GET /api/health` - Health check endpoint.
 
 ### Data Extraction & Utilities
+
 - Resume text extraction: Supports PDF (via pdftotext), DOCX (XML parsing), DOC (strings), and plain text formats.
 - Skill extraction: Rule-based and candidate parsing from resume text with automatic experience year inference.
 - Auto-status updates: Application status automatically updates to "interviewing", "rejected", etc. based on events.
 - Bulk operations: Email logs and skill operations support creating/updating multiple records in transactions.
 
 ### Write Triggers
+
 - All write operations trigger a worker signal for LLM-based UI card generation.
 - Worker reads structured data snapshots and produces suggestion cards without modifying truth data.
 
@@ -202,45 +212,54 @@ Notes:
 The MCP server provides read-only access to job tracking data via OAuth-protected endpoints. It supports both SSE streaming and traditional HTTP request/response patterns.
 
 ### OAuth & Security
+
 - `GET /.well-known/oauth-protected-resource` - OAuth resource metadata.
 - `GET /.well-known/oauth-authorization-server` - OAuth authorization server metadata.
 - `GET /oauth/authorize` - OAuth authorization endpoint.
 - `POST /oauth/token` - OAuth token endpoint.
 
 ### Streaming & Messages
+
 - `GET /sse` - Server-Sent Events stream for real-time updates.
 - `POST /messages` - Send messages to streaming connection.
 
 ### Tools & Data Access
+
 - `GET /mcp/tools` - List available MCP tools with descriptions and schemas.
 - `POST /mcp/tools/:toolName` - Execute MCP tool with JSON input.
 
 ### Available MCP Tools (Read-Only)
 
 #### Application & Search Tools
+
 - `search_applications` - Search by query/status with limit (enum: applied, under_review, interviewing, offered, rejected, withdrawn, archived).
 - `get_application` - Fetch full application with interviews, emails, followups, and events.
 
 #### Interview & Reflection Tools
+
 - `list_interviews` - List interviews optionally filtered by application.
 - `get_reflection` - Get interview reflection (pending/advanced/rejected outcome).
 
 #### Communication & Follow-up Tools
+
 - `list_email_logs` - List emails optionally filtered by application or company.
 - `list_followup_attempts` - List follow-up attempts with results for an application.
 - `list_engagement_events` - List engagement events (recruiter_reply, phone_screen, interview_round, offer, rejection).
 
 #### Resume & Skill Tools
+
 - `get_resume` - Get resume with linked applications and master skills.
 - `get_master_resume` - Get master resume JSON from master-resume.json (use as source for AI-tailored resumes).
 - `generate_resume` - Generate PDF resume from AI-tailored resume JSON.
 - `list_master_skills` - List master skills with optional query/category filter.
 
 #### System Tools
+
 - `get_control_file` - Get current control file text.
 - `get_full_context_dump` - Full system-wide data context (use only when explicitly requested).
 
 ### MCP Tool Characteristics
+
 - All outputs are **read-only** (no mutations).
 - All outputs are **truncated for safety** (bounded result sizes).
 - Tools return structured data for AI analysis and decision support.
@@ -251,45 +270,56 @@ The MCP server provides read-only access to job tracking data via OAuth-protecte
 ### Core Entities
 
 **Application**
+
 - Fields: companyName, roleTitle, genericStatus (applied/under_review/interviewing/offered/rejected/withdrawn/archived), preciseStatus, roleFamily, roleLevel, appliedAt, careersPageUrl, postingDetails, compensation, notes.
 - Relations: interviews, emailLogs, followups, events, resumes.
 
 **Interview**
+
 - Fields: roundIndex, roundLabel, scheduledAt, status (scheduled/completed/cancelled).
 - Relations: application, reflection.
 
 **InterviewReflection**
+
 - Fields: summary, outcome (pending/advanced/rejected).
 - Relations: interview (1:1).
 
 **EmailLog**
+
 - Fields: direction (inbound/outbound), isHuman, subject, body, channel (email/linkedin), notes.
 - Relations: application (optional), companyName (optional - for non-application emails).
 
 **FollowupAttempt**
+
 - Fields: attemptIndex, channel (email/linkedin/portal/other), sentAt.
 - Relations: application, result (optional).
 
 **FollowupResult**
+
 - Fields: resultStatus (pending/resolved/expired_no_response), responseType (human_reply/rejection_reply/screen_scheduled/interview_scheduled), resolvedAt.
 - Relations: followupAttempt (1:1).
 
 **EngagementEvent**
+
 - Fields: eventType (recruiter_reply/phone_screen/interview_round/offer/rejection_automated/rejection_human/rejection), occurredAt.
 - Relations: application.
 
 **Resume**
+
 - Fields: name, filePath, extractedText (from PDF/DOC/DOCX parsing).
 - Relations: applications, masterSkills.
 
 **MasterSkill**
+
 - Fields: name (unique), category, experienceYears, notes, createdAt.
 - Relations: resumeLinks.
 
 **ApplicationResume** (Junction)
+
 - Relation: links Application ↔ Resume.
 
 **ResumeMasterSkill** (Junction)
+
 - Relation: links Resume ↔ MasterSkill.
 
 ### Automatic Features
@@ -304,6 +334,7 @@ The MCP server provides read-only access to job tracking data via OAuth-protecte
 ## LLM Worker System
 
 The application includes a local LLM worker that:
+
 - Runs periodically (triggered by data write events).
 - Reads structured data snapshots without modifying truth data.
 - Generates suggestion cards for user review.
@@ -325,16 +356,19 @@ pnpm test:mcp           # MCP server integration tests
 ## File Management
 
 ### Resume Storage
+
 - Resumes are stored in `$JOBTRACKER_DATA_DIR/resumes/` (default: `./data/resumes`).
 - Supported formats: PDF, DOCX, DOC, TXT, and other text formats.
 - Text extraction is automatic on import; original files are preserved.
 
 ### Control File
+
 - Stores goals profile and job search strategy.
 - Located at `$JOBTRACKER_DATA_DIR/control.txt` (default: `./config/control.txt`).
 - Managed via `/api/goals-profile` endpoint.
 
 ### Backups
+
 - SQLite database backups are created in `$JOBTRACKER_DATA_DIR/backups/`.
 - Run `pnpm backup:run` to manually create and prune old backups.
 
