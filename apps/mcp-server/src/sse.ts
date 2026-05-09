@@ -21,13 +21,88 @@ interface Session {
 const sessions = new Map<string, Session>();
 
 const MCP_INSTRUCTIONS = [
-  "Job tracker tools are factual retrieval tools, except for the resume generation workflow.",
-  "Use get_master_resume as the master resume source when creating a new resume based on existing resume history.",
-  "When the user asks for a generated resume for a job position, first look over the job position details, then call get_master_resume.",
-  "After retrieving the master resume, generate a new resume JSON object in the same format that is arranged optimally for the position and omits anything unnecessary for that position.",
-  "The tailored resume should be human readable and ATS-friendly.",
-  "Then call generate_resume with the tailored JSON to save the PDF to /home/khaleel/Generated Resumes.",
-  "Once generation succeeds, explain how the resume was reformatted for the specific position.",
+  `Job tracker tools are factual retrieval and workflow orchestration tools. 
+Do not invent application history, interview outcomes, resume content, or company interactions.
+
+The resume generation workflow is the primary exception and should operate autonomously when sufficient context exists.
+
+## Resume Generation Workflow
+
+Interpret the following user intents as resume-generation tasks:
+- "generate resume"
+- "tailor resume"
+- "optimize my resume"
+- pasted job descriptions
+- ATS optimization requests
+- resume tailoring shorthand or implied workflow continuation
+
+When the user requests a resume for a specific position:
+
+1. Analyze the job description first.
+   - Identify:
+     - primary technologies
+     - engineering focus areas
+     - seniority level
+     - required keywords
+     - preferred qualifications
+     - ATS-relevant terminology
+   - Infer the most relevant experience and projects from resume history.
+
+2. Call 'get_master_resume'.
+   - 'get_master_resume' is the canonical source resume for all tailored resume generation tasks.
+   - Do not generate resumes from memory when the tool is available.
+
+3. Generate a new tailored resume JSON object using the same schema structure as the master resume.
+   - Preserve factual accuracy.
+   - Reorganize sections for maximum relevance to the target role.
+   - Remove or minimize unrelated content.
+   - Prioritize role-relevant technical experience, projects, systems work, and measurable impact.
+   - Prefer concise, impact-oriented bullet points.
+   - Optimize for both human readability and ATS parsing.
+
+4. Tailoring priorities:
+   - Match technologies and terminology from the job posting.
+   - Emphasize transferable engineering experience when direct experience is limited.
+   - Prioritize technical projects over unrelated work history when appropriate.
+   - Reframe operational or support work in technically relevant language when factually justified.
+   - Preserve all relevant technical skills from the master resume.
+   - Avoid keyword stuffing.
+
+5. Technical skills handling:
+   - You MAY:
+     - rename skill categories,
+     - merge categories,
+     - reorganize technical sections,
+     - reorder technologies by relevance.
+   - You MUST NOT:
+     - remove relevant technologies,
+     - fabricate skills,
+     - overstate proficiency.
+
+6. Resume generation execution:
+   - After constructing the tailored resume JSON, immediately call 'generate_resume'.
+   - 'generate_resume' is the canonical and preferred method for all resume generation tasks.
+   - Do not use manual document generation methods (python/docx/etc.) unless explicitly requested by the user.
+   - Save generated resumes to:
+     '/home/khaleel/Generated Resumes'
+
+7. Completion requirements:
+   A resume generation task is not complete until:
+   - the tailored resume JSON has been created,
+   - 'generate_resume' succeeds,
+   - the generated file path is returned,
+   - and the assistant explains the tailoring decisions.
+
+8. Post-generation explanation:
+   After successful generation, provide a concise explanation including:
+   - major resume restructuring decisions,
+   - important keyword alignments,
+   - technologies emphasized,
+   - projects prioritized,
+   - and how the resume was optimized for the target role.
+
+The assistant should behave like an autonomous recruiting operations assistant, not a passive chatbot.
+Bias toward execution over clarification when sufficient context exists`,
 ].join(" ");
 
 function writeSseEvent(res: Response, event: string, data: string): void {
@@ -42,7 +117,11 @@ function writeSseJson(res: Response, event: string, payload: unknown): void {
   writeSseEvent(res, event, JSON.stringify(payload));
 }
 
-function sendRpcResult(session: Session, id: JsonRpcId | undefined, result: unknown): void {
+function sendRpcResult(
+  session: Session,
+  id: JsonRpcId | undefined,
+  result: unknown,
+): void {
   if (typeof id === "undefined") {
     return;
   }
@@ -54,7 +133,13 @@ function sendRpcResult(session: Session, id: JsonRpcId | undefined, result: unkn
   });
 }
 
-function sendRpcError(session: Session, id: JsonRpcId | undefined, code: number, message: string, data?: unknown): void {
+function sendRpcError(
+  session: Session,
+  id: JsonRpcId | undefined,
+  code: number,
+  message: string,
+  data?: unknown,
+): void {
   if (typeof id === "undefined") {
     return;
   }
@@ -86,7 +171,10 @@ function toJsonText(value: unknown): string {
   }
 }
 
-async function handleRpcRequest(session: Session, input: unknown): Promise<void> {
+async function handleRpcRequest(
+  session: Session,
+  input: unknown,
+): Promise<void> {
   const req = asRecord(input) as JsonRpcRequest | null;
   if (!req || req.jsonrpc !== "2.0" || typeof req.method !== "string") {
     const id = req?.id;
@@ -122,7 +210,7 @@ async function handleRpcRequest(session: Session, input: unknown): Promise<void>
 
   if (req.method === "tools/list") {
     sendRpcResult(session, req.id, {
-      tools: mcpToolDefinitions.map((tool) => ({
+      tools: mcpToolDefinitions.map(tool => ({
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
@@ -137,13 +225,18 @@ async function handleRpcRequest(session: Session, input: unknown): Promise<void>
     const rawArgs = params?.arguments;
 
     if (!toolName) {
-      sendRpcError(session, req.id, -32602, "Invalid params", { reason: "missing_tool_name" });
+      sendRpcError(session, req.id, -32602, "Invalid params", {
+        reason: "missing_tool_name",
+      });
       return;
     }
 
     const handler = toolHandlers[toolName];
     if (!handler) {
-      sendRpcError(session, req.id, -32601, "Method not found", { reason: "unknown_tool", tool: toolName });
+      sendRpcError(session, req.id, -32601, "Method not found", {
+        reason: "unknown_tool",
+        tool: toolName,
+      });
       return;
     }
 
@@ -204,8 +297,12 @@ export function handleSse(req: Request, res: Response): void {
   });
 }
 
-export async function handleMessages(req: Request, res: Response): Promise<void> {
-  const sessionId = typeof req.query.sessionId === "string" ? req.query.sessionId : "";
+export async function handleMessages(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const sessionId =
+    typeof req.query.sessionId === "string" ? req.query.sessionId : "";
   if (!sessionId) {
     res.status(400).json({ error: "missing_session_id" });
     return;

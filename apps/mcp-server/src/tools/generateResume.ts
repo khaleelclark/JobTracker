@@ -7,7 +7,6 @@ const GENERATED_RESUME_DIR =
 
 const inputSchema = z.object({
   resume: z.record(z.unknown()),
-  file_name: z.string().min(1).max(160).optional(),
 });
 
 export async function generateResume(input: unknown) {
@@ -17,7 +16,7 @@ export async function generateResume(input: unknown) {
   }
 
   const fileName = ensurePdfExtension(
-    sanitizeFileName(parsed.data.file_name ?? defaultFileName(parsed.data.resume))
+    sanitizeFileName(defaultFileName(parsed.data.resume)),
   );
   const outputPdfPath = path.join(GENERATED_RESUME_DIR, fileName);
   const result = await generateResumePdf(parsed.data.resume, { outputPdfPath });

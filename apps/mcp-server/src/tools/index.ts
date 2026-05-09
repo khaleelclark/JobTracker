@@ -165,21 +165,84 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   {
     name: "generate_resume",
     description:
-      "Generate a PDF resume from an AI-tailored resume JSON object and save it to /home/khaleel/Generated Resumes.",
+      "Generate a PDF resume from an AI-tailored resume JSON object and save it to /home/khaleel/Generated Resumes. You must provide the resume property for this tool to work.",
     inputSchema: {
       type: "object",
       properties: {
         resume: {
           type: "object",
-          description:
-            "Resume JSON in the master resume format after tailoring/reordering for the target position.",
+          description: `a verbose JSON Resume in the master resume format after tailoring/reordering for the target position. Ex. {
+  "name": "Example",
+  "location": "Example",
+  "email": "example@example.com",
+  "phone": "Example",
+  "links": {
+    "linkedin": "https://linkedin.com/in/example",
+    "github": "https://github.com/example",
+    "portfolio": "https://example.com"
+  },
+
+  "sections": [
+    {
+      "name": "Technical Skills",
+      "type": "grouped",
+      "items": [
+        {
+          "title": "Programming Languages",
+          "bullets": ["Example", "Example"]
         },
-        file_name: {
-          type: "string",
-          minLength: 1,
-          maxLength: 160,
-          description:
-            "Optional PDF file name. Invalid filename characters are sanitized.",
+        {
+          "title": "Frameworks",
+          "bullets": ["Example", "Example"]
+        }
+      ]
+    },
+
+    {
+      "name": "Experience",
+      "type": "timeline",
+      "items": [
+        {
+          "title": "Example Company",
+          "sub_title": "Example Location",
+          "position": "Example Role",
+          "start_date": "YYYY",
+          "end_date": "YYYY",
+          "bullets": ["Example", "Example"]
+        }
+      ]
+    },
+
+    {
+      "name": "Education",
+      "type": "timeline",
+      "items": [
+        {
+          "title": "Example University",
+          "sub_title": "Example Location",
+          "start_date": "YYYY",
+          "end_date": "YYYY",
+          "bullets": ["Example Degree"]
+        }
+      ]
+    },
+
+    {
+      "name": "Projects",
+      "type": "timeline",
+      "items": [
+        {
+          "title": "Example Project",
+          "sub_title": "Tech Stack Example",
+          "link": "https://example.com",
+          "start_date": "YYYY",
+          "end_date": "YYYY",
+          "bullets": ["Example", "Example"]
+        }
+      ]
+    }
+  ]
+}`,
         },
       },
       required: ["resume"],
