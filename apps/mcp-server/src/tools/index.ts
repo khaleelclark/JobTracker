@@ -171,78 +171,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
       properties: {
         resume: {
           type: "object",
-          description: `a verbose JSON Resume in the master resume format after tailoring/reordering for the target position. Ex. {
-  "name": "Example",
-  "location": "Example",
-  "email": "example@example.com",
-  "phone": "Example",
-  "links": {
-    "linkedin": "https://linkedin.com/in/example",
-    "github": "https://github.com/example",
-    "portfolio": "https://example.com"
-  },
-
-  "sections": [
-    {
-      "name": "Technical Skills",
-      "type": "grouped",
-      "items": [
-        {
-          "title": "Programming Languages",
-          "bullets": ["Example", "Example"]
-        },
-        {
-          "title": "Frameworks",
-          "bullets": ["Example", "Example"]
-        }
-      ]
-    },
-
-    {
-      "name": "Experience",
-      "type": "timeline",
-      "items": [
-        {
-          "title": "Example Company",
-          "sub_title": "Example Location",
-          "position": "Example Role",
-          "start_date": "YYYY",
-          "end_date": "YYYY",
-          "bullets": ["Example", "Example"]
-        }
-      ]
-    },
-
-    {
-      "name": "Education",
-      "type": "timeline",
-      "items": [
-        {
-          "title": "Example University",
-          "sub_title": "Example Location",
-          "start_date": "YYYY",
-          "end_date": "YYYY",
-          "bullets": ["Example Degree"]
-        }
-      ]
-    },
-
-    {
-      "name": "Projects",
-      "type": "timeline",
-      "items": [
-        {
-          "title": "Example Project",
-          "sub_title": "Tech Stack Example",
-          "link": "https://example.com",
-          "start_date": "YYYY",
-          "end_date": "YYYY",
-          "bullets": ["Example", "Example"]
-        }
-      ]
-    }
-  ]
-}`,
+          description: `a verbose JSON Resume in the master resume format after tailoring/reordering for the target position.`,
         },
       },
       required: ["resume"],
