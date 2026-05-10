@@ -10,7 +10,7 @@
 
   "sections": [
     {
-      "name": "Technical Skills (new)",
+      "name": "Technical Skills",
       "items": [
         {
           "title": "Programming Languages",
@@ -21,7 +21,8 @@
             "C#",
             "Python",
             "HTML",
-            "CSS"
+            "CSS",
+            "SQL"
           ]
         },
         {
@@ -29,11 +30,18 @@
           "bullets": [
             "ASP.NET",
             "Node.js",
+            "Next.js",
             "Entity Framework",
             "Room",
+            "Material UI (MUI)",
             "React",
             "JavaFX",
-            "Express"
+            "Express",
+            "Streamlit",
+            "Pandas",
+            "Plotly",
+            "NumPy",
+            "Zod"
           ]
         },
         {
@@ -48,7 +56,11 @@
             "Nginx",
             "OData",
             "RabbitMQ",
-            "Authentik"
+            "Authentik",
+            "Git LFS",
+            "Salesforce",
+            "AS400",
+            "Bash"
           ]
         },
         {
@@ -57,6 +69,7 @@
             "Jira",
             "Confluence",
             "Git",
+            "pnpm",
             "Swagger",
             "Asana",
             "Jenkins"
@@ -69,7 +82,6 @@
         {
           "title": "Automation & Business Systems",
           "bullets": [
-            "Workflow automation",
             "Process improvement",
             "Requirements gathering",
             "User support",
@@ -79,17 +91,36 @@
           ]
         },
         {
-          "title": "Additional Knowledge",
+          "title": "Architecture & Systems Design",
           "bullets": [
-            "RESTful APIs",
-            "OIDC",
+            "Microservices Architecture",
+            "RESTful API Design",
+            "Role-Based Access Control (RBAC)",
             "Authentication & Authorization",
-            "Agile Development",
-            "Azure fundamentals",
-            "PowerShell",
-            "Bash",
-            "SEO"
+            "OIDC",
+            "Workflow Automation",
+            "ETL Pipelines",
+            "Data Transformation",
+            "Event-Driven Architecture"
           ]
+        },
+        {
+          "title": "Product & Collaboration Skills",
+          "bullets": [
+            "Product Thinking & User-Centered Design",
+            "Requirements Gathering & Feature Definition",
+            "Cross-Functional Team Collaboration",
+            "Stakeholder Communication",
+            "Technical Documentation",
+            "Issue Prioritization & Product Feedback Loops",
+            "Workflow & Process Optimization",
+            "User Experience (UX) Awareness",
+            "Agile Development"
+          ]
+        },
+        {
+          "title": "Additional Knowledge",
+          "bullets": ["Azure Fundamentals", "PowerShell", "SEO", "Kotlin"]
         }
       ]
     },
@@ -101,7 +132,8 @@
           "sub_title": "Orlando, FL",
           "end_date": "May 2026",
           "bullets": [
-            "**Bachelor of Applied Science in Computing Technology & Software Development**"
+            "**Bachelor of Applied Science in Computing Technology & Software Development**",
+            "Earned May 2026"
           ]
         }
       ]
@@ -116,13 +148,11 @@
           "start_date": "Mar 2025",
           "end_date": "Sep 2025",
           "bullets": [
-            "Utilized multiple software systems simultaneously including Salesforce and AS400 to manage hotel reservations, membership programs, and payment transactions, demonstrating strong technical proficiency and adaptability in a fast-paced environment.",
-            "Supported high-volume transaction and account workflows across multiple enterprise systems.",
-            "Resolved user and system-related issues through structured troubleshooting and cross-team coordination.",
-            "Maintained accuracy across financial and account-related processes while ensuring clear user communication.",
-            "Provided technical and informational support to customers over the phone, resolving issues, educating users on program functionality, and handling inquiries with clarity and professionalism.",
-            "Collaborated with cross-functional internal teams (e.g., membership support, portfolio services) to resolve member issues efficiently, showcasing communication, coordination, and systems-level thinking.",
-            "Executed secure financial transactions including loan payments, club assessments, and rental agreements, underscoring attention to detail and comfort with digital tools and secure data handling."
+            "Managed hotel reservations, membership programs, and payment transactions simultaneously across Salesforce and AS400 in a high-volume remote environment.",
+            "Executed secure financial transactions including loan payments, club assessments, and rental agreements with accuracy and strict attention to compliance.",
+            "Resolved member issues through structured troubleshooting and cross-functional coordination with membership support and portfolio services teams.",
+            "Provided phone-based member support, educating users on program functionality and resolving inquiries across membership and account workflows.",
+            "Maintained accuracy across financial and account-related processes while managing high transaction volumes under time pressure."
           ]
         },
         {
@@ -132,15 +162,13 @@
           "start_date": "Jan 2022",
           "end_date": "Dec 2022",
           "bullets": [
-            "Acted as a frontline interface between users and product systems, resolving 50+ daily investor inquiries while identifying recurring friction points and usability gaps.",
             "Provided Tier 2 support for enterprise investor management systems, troubleshooting account access, MFA resets, and system-related issues.",
             "Triaged and resolved 50+ daily investor inquiries within SLA targets, escalating complex issues to product and engineering teams.",
-            "Partnered with product and engineering teams to escalate system issues and support improvements to account access flows, authentication, and platform reliability.",
+            "Conducted direct 1-on-1 investor sessions via phone and Zoom, providing personalized support on account setup, troubleshooting, and general platform questions.",
+            "Managed complex investor account workflows including account setup, ownership transfers, and commercial real estate transaction support across the platform.",
             "Analyzed trends in user-reported issues to identify workflow inefficiencies and recommend product or process improvements.",
-            "Created structured documentation and onboarding materials to improve support consistency and reduce user confusion.",
-            "Facilitated weekly operational syncs to improve cross-team communication, issue visibility, and stakeholder alignment.",
-            "Collaborated cross-functionally with product and technical teams to support enhancements and system updates.",
-            "Translated user pain points into actionable insights for technical teams, supporting continuous product and process improvement."
+            "Translated user pain points into actionable insights for technical teams, bridging the gap between investor experience and platform reliability.",
+            "Created structured documentation and onboarding materials to improve support consistency and reduce user confusion."
           ]
         },
         {
@@ -150,13 +178,10 @@
           "start_date": "Jun 2023",
           "end_date": "Aug 2024",
           "bullets": [
-            "Provided technical support across various platforms, troubleshooting and resolving agent issues.",
-            "Led virtual onboarding sessions and maintained third-party platform integrations.",
+            "Provided technical support across platforms, troubleshooting and resolving agent issues with system access, configuration, and integrations.",
             "Conducted weekly virtual orientation sessions for new agents, ensuring smooth onboarding and team integration.",
             "Onboarded and trained non-technical users on systems and workflows, improving adoption and reducing operational errors.",
-            "Supported platform integrations and assisted users with system access, configuration, and issue resolution.",
-            "Identified recurring issues and contributed to process improvements through documentation and user guidance.",
-            "Acted as a bridge between users and systems, ensuring effective use of tools and workflows in daily operations."
+            "Identified recurring issues and contributed to process improvements through documentation and user guidance."
           ]
         },
         {
@@ -169,7 +194,6 @@
             "Managed end-to-end referral workflows within enterprise healthcare systems, ensuring accurate documentation and compliance.",
             "Coordinated with physicians, insurance providers, and internal departments to resolve operational bottlenecks.",
             "Maintained data accuracy across systems and identified inconsistencies impacting patient processing timelines.",
-            "Assisted in improving referral processing workflows to enhance efficiency and reduce delays.",
             "Operated within strict regulatory and compliance standards in a HIPAA-aligned environment."
           ]
         }
@@ -181,58 +205,64 @@
         {
           "title": "Novus Guild Website",
           "link": "https://novus.dpdns.org/",
-          "sub_title": "ASP.NET Core, React, TypeScript, SQL Server, RabbitMQ, Authentik",
-          "position": "Volunteer Developer & Maintainer",
+          "sub_title": "ASP.NET Core, React, TypeScript, SQL Server, RabbitMQ, Authentik, MUI, MUI DataGrid, rsbuild, Docker Compose",
+          "position": "Founder & Open Source Developer",
           "start_date": "Dec 2025",
           "end_date": "Present",
           "bullets": [
-            "Complete elimination of manual workflow resulting in a 99.99%+ reduction in processing time and 120 hours of labor saved annually.",
+            "Eliminated a fully manual workflow, saving the guild 120+ hours of administrative labor annually through end-to-end automation.",
             "Gathered and translated business requirements into structured system workflows across dashboards, user management, and administrative tooling.",
-            "Built user-facing interfaces and backend services supporting real-time data handling and workflow execution.",
-            "Implemented reusable React components and shared UI patterns, managing application state with React hooks to maintain consistency across administrative and public-facing views.",
-            "Designed and implemented responsive React interfaces including dashboards, leaderboards, profiles, and admin tooling with REST API integration and asynchronous data handling.",
-            "Integrated authentication and authorization using OIDC-based workflows.",
+            "Designed and implemented responsive React interfaces: dashboards, leaderboards, profiles, and admin tooling, built from reusable components with React hooks managing shared application state.",
             "Implemented role-based access and authentication workflows to ensure secure and controlled system usage.",
-            "Followed Agile sprint cycles, translating user stories into working software components."
+            "Managed development iteratively, prioritizing features based on active user feedback and community needs.",
+            "Architected and launched an open-source guild management platform with 52 active users and growing, currently being adopted by external guilds, demonstrating real-world product viability and community traction beyond the original use case.",
+            "Structured the .NET backend using a DTO and service layer pattern, separating data contracts from business logic to support clean API design and long-term maintainability.",
+            "Designed and implemented a parameterized leaderboard API supporting date-range filtering across multiple entity types enabling flexible, data-driven reporting from a single backend."
           ]
         },
         {
-          "title": "AI-Powered Job Intelligence & Workflow Automation Platform",
+          "title": "Job Search Intelligence Platform",
+          "sub_title": "MCP, React, TypeScript, Prisma, OAuth, Next.js, Zod, monorepo architecture",
+          "position": "Independent Developer",
+          "start_date": "Mar 2026",
+          "end_date": "Present",
           "bullets": [
-            "Designed and deployed a SQL-backed operational analytics system integrating multi-source workflow and job tracking data.",
-            "Built automated data ingestion and transformation pipelines to normalize unstructured inputs into structured reporting datasets.",
-            "Developed reusable SQL query logic to calculate performance metrics, operational trends, and tracking KPIs.",
-            "Automated previously manual reporting processes, significantly reducing repetitive administrative workload.",
-            "Implemented structured validation rules to ensure reporting accuracy across multiple integrated systems.",
-            "Designed modular connectors to enable scalable integration of additional data sources."
+            "Designed a structured Prisma schema tracking the full job-search lifecycle: applications, interviews, follow-ups, emails, events, and reflections — as a local-first SQLite database with no external data exposure.",
+            "Built a master skills inventory system with canonical skill tracking and resume-skill linking, enabling structured comparison between tailored resumes and a single source-of-truth skills record.",
+            "Structured the codebase as a pnpm workspaces monorepo with three packages: web app, MCP server, and shared types, enforcing clean separation between UI, API, and validation layers.",
+            "Defined shared Zod schemas in a dedicated package consumed across both the web app and MCP server, ensuring type-safe validation at every system boundary without duplication.",
+            "Exposed read-only MCP tool endpoints covering: applications, interviews, reflections, email logs, follow-ups, resumes, and skills with bearer token protection and SSE transport as a structured API surface for AI agent consumption.",
+            "Integrated a local LLM worker via LM Studio using an OpenAI-compatible interface, enabling AI-assisted workflows without sending sensitive job-search data to external APIs.",
+            "Designed the system around explicit AI boundaries: the local LLM worker is restricted to generating UI output only, the MCP server is strictly read-only, and all reasoning and decisions flow through the user, reflecting deliberate thinking about safe, auditable AI system design.",
+            "Implemented MCP-integrated resume generation tools allowing GPT to retrieve a master resume JSON, apply role-specific tailoring, and render a formatted PDF via headless Chromium, fully automating a previously manual process.",
+            "Implemented automated SQLite backup with scheduled pruning of backups older than 30 days, ensuring data durability without manual maintenance overhead."
           ]
         },
         {
           "title": "Airport Operations Analytics Dashboard",
-          "sub_title": "Python, SQLite, Pandas, Streamlit, FAA APIs",
+          "sub_title": "Python, SQLite, Pandas, Streamlit, Plotly, FAA / ADSB.lol / AirLabs APIs",
+          "start_date": "Feb 2026",
+          "end_date": "Present",
           "bullets": [
-            "Engineered a live data ingestion pipeline integrating FAA operational restriction data into structured relational storage.",
-            "Built automated ETL-style workflows using Python (Pandas) to cleanse, normalize, and transform incoming datasets.",
             "Designed KPI logic to analyze operational disruption patterns and performance trends.",
-            "Developed interactive dashboards to visualize operational metrics and support data-driven decision-making.",
-            "Implemented data validation processes to ensure consistency and reliability of reporting outputs."
+            "Integrated three independent live data sources: FAA (airspace restrictions), ADSB.lol (real-time traffic snapshots), and AirLabs (airline delays, cancellations, and diversions) into a unified SQLite data model for cross-source analysis.",
+            "Wrote an automated test suite using pytest covering data parsing and scoring logic, enabling safe iteration on collection and analysis code without manual validation.",
+            "Deployed a cron-based automated collection pipeline running every 10 minutes, using flock to prevent overlapping runs and shell script wrappers to ensure consistent execution in production.",
+            "Framed the project around a testable analytical question (whether MCO underperforms DEN when normalized for traffic volume) and built the dashboard KPIs and visualizations to directly answer it.",
+            "Implemented custom API throttling logic with persistent state tracking to respect rate limits across collection windows, preventing quota exhaustion without sacrificing data freshness.",
+            "Designed and deployed the full application on a self-hosted Linux environment, configuring process management, scheduled collection, and a reverse-proxy-ready server architecture for production reliability.",
+            "Authored comprehensive technical documentation covering the full deployment lifecycle — runtime model, environment configuration, database initialization, cron setup, and a structured operational troubleshooting guide."
           ]
         },
         {
           "title": "Portfolio Website",
           "link": "https://khaleelclark.com/",
           "sub_title": "React, TypeScript",
+          "start_date": "Jan 2025",
+          "end_date": "Present",
           "bullets": [
             "Designed and developed a responsive portfolio with an emphasis on visual hierarchy, layout consistency, and user experience.",
             "Created reusable UI components and flexible page layouts to enable efficient iteration and future content updates."
-          ]
-        },
-        {
-          "title": "Inventory Management System",
-          "sub_title": "Java, SQLite, JavaFX",
-          "bullets": [
-            "Built a desktop inventory management application using Java, JavaFX, and OOP principles, featuring dynamic product updates, inventory search, and data persistence.",
-            "Configured and packaged the system into a runnable JAR, integrating JavaFX runtime modules for smooth deployment."
           ]
         }
       ]
