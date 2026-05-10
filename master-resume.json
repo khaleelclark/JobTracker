@@ -188,13 +188,25 @@
           "title": "AdventHealth",
           "sub_title": "Orlando, FL",
           "position": "Referral Specialist",
-          "start_date": "Jan 2021",
+          "start_date": "Jun 2021",
           "end_date": "Mar 2022",
           "bullets": [
+            "Recognized as one of the top agents for call quality scores by maintaining deep knowledge of AdventHealth policies and processes to achieve one-call resolution.",
             "Managed end-to-end referral workflows within enterprise healthcare systems, ensuring accurate documentation and compliance.",
             "Coordinated with physicians, insurance providers, and internal departments to resolve operational bottlenecks.",
             "Maintained data accuracy across systems and identified inconsistencies impacting patient processing timelines.",
             "Operated within strict regulatory and compliance standards in a HIPAA-aligned environment."
+          ]
+        },
+        {
+          "title": "Costco (Logistics)",
+          "sub_title": "Winter Park, FL",
+          "position": "Processing Clerk",
+          "start_date": "Oct 2020",
+          "end_date": "Jun 2021",
+          "bullets": [
+            "Assisted the IT team in deploying and configuring workstations, distributing equipment, and managing hardware inventory across the facility.",
+            "Managed 70+ daily member interactions, handling escalations, follow-ups, and concurrent service tasks to ensure consistent member satisfaction."
           ]
         }
       ]
@@ -203,7 +215,7 @@
       "name": "Project Experience",
       "items": [
         {
-          "title": "Novus Guild Website",
+          "title": "Wynncraft Guild Website",
           "link": "https://novus.dpdns.org/",
           "sub_title": "ASP.NET Core, React, TypeScript, SQL Server, RabbitMQ, Authentik, MUI, MUI DataGrid, rsbuild, Docker Compose",
           "position": "Founder & Open Source Developer",
