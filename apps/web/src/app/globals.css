@@ -511,6 +511,12 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.dashboard-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
 .metric-card {
   display: grid;
   gap: 0.15rem;
@@ -528,6 +534,15 @@ button:disabled {
 
 .metric-card strong {
   font-size: 1.14rem;
+}
+
+.dashboard-metric {
+  min-height: 106px;
+  align-content: center;
+}
+
+.dashboard-metric strong {
+  font-size: 1.75rem;
 }
 
 .empty-state {

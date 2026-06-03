@@ -32,11 +32,13 @@ export function AppNav() {
           Job Tracker
         </Link>
         <div className="nav-links">
-          {LINKS.map((link) => (
+          {LINKS.map(link => (
             <Link
               key={link.href}
               href={link.href}
-              className={isActive(pathname, link.href) ? "nav-link active" : "nav-link"}
+              className={
+                isActive(pathname, link.href) ? "nav-link active" : "nav-link"
+              }
             >
               {link.label}
             </Link>

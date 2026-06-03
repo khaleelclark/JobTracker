@@ -139,8 +139,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   },
   {
     name: "get_resume",
-    description:
-      "Get one resume by id, including linked applications.",
+    description: "Get one resume by id, including linked applications.",
     inputSchema: {
       type: "object",
       properties: {
@@ -162,7 +161,8 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
           minLength: 1,
           maxLength: 80,
           pattern: "^[a-zA-Z0-9_-]+$",
-          description: "Optional managed master resume owner, for example 'Patrick'.",
+          description:
+            "Optional managed master resume owner, for example 'Patrick'.",
         },
       },
       additionalProperties: false,

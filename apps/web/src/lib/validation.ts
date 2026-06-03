@@ -4,8 +4,11 @@ const experienceYearsSchema = z
   .number()
   .min(0)
   .max(60)
-  .refine((value) => Number.isFinite(value), "must be a finite number")
-  .refine((value) => Number((value * 2).toFixed(0)) === value * 2, "must be in 0.5 year increments");
+  .refine(value => Number.isFinite(value), "must be a finite number")
+  .refine(
+    value => Number((value * 2).toFixed(0)) === value * 2,
+    "must be in 0.5 year increments",
+  );
 
 export const createApplicationSchema = z.object({
   companyName: z.string().min(1).max(200),
@@ -56,14 +59,18 @@ export const createEmailLogSchema = emailLogPayloadSchema
     companyName: z.string().min(1).max(200).optional(),
   })
   .superRefine((data, context) => {
-    const targetCount = Number(Boolean(data.applicationId))
-      + Number(Array.isArray(data.applicationIds) && data.applicationIds.length > 0)
-      + Number(Boolean(data.companyName?.trim()));
+    const targetCount =
+      Number(Boolean(data.applicationId)) +
+      Number(
+        Array.isArray(data.applicationIds) && data.applicationIds.length > 0,
+      ) +
+      Number(Boolean(data.companyName?.trim()));
 
     if (targetCount !== 1) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Provide exactly one target: applicationId, applicationIds, or companyName.",
+        message:
+          "Provide exactly one target: applicationId, applicationIds, or companyName.",
         path: ["applicationId"],
       });
     }
@@ -76,13 +83,17 @@ export const updateEmailLogSchema = emailLogPayloadSchema
     companyName: z.string().min(1).max(200).optional(),
   })
   .superRefine((data, context) => {
-    const targetCount = Number(Boolean(data.applicationId))
-      + Number(Array.isArray(data.applicationIds) && data.applicationIds.length > 0)
-      + Number(Boolean(data.companyName?.trim()));
+    const targetCount =
+      Number(Boolean(data.applicationId)) +
+      Number(
+        Array.isArray(data.applicationIds) && data.applicationIds.length > 0,
+      ) +
+      Number(Boolean(data.companyName?.trim()));
     if (targetCount !== 1) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Provide exactly one target: applicationId, applicationIds, or companyName.",
+        message:
+          "Provide exactly one target: applicationId, applicationIds, or companyName.",
         path: ["applicationId"],
       });
     }
@@ -100,7 +111,12 @@ export const createFollowupResultSchema = z.object({
   followupAttemptId: z.string().uuid(),
   resultStatus: z.enum(["pending", "resolved", "expired_no_response"]),
   responseType: z
-    .enum(["human_reply", "rejection_reply", "screen_scheduled", "interview_scheduled"])
+    .enum([
+      "human_reply",
+      "rejection_reply",
+      "screen_scheduled",
+      "interview_scheduled",
+    ])
     .optional()
     .nullable(),
   resolvedAt: z.coerce.date().optional().nullable(),
@@ -155,14 +171,16 @@ export const createMasterResumeSchema = z.object({
     .string()
     .min(1)
     .max(80)
-    .regex(/^[a-zA-Z0-9_-]+$/, "owner may only contain letters, numbers, underscores, and hyphens"),
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "owner may only contain letters, numbers, underscores, and hyphens",
+    ),
   resume: masterResumeJsonSchema,
 });
 
 export const updateApplicationResumeLinksSchema = z.object({
   linkedResumeIds: z.array(z.string().uuid()).default([]),
 });
-
 
 export const goalsProfileSchema = z.object({
   missionStatement: z.string().max(8000),
@@ -177,7 +195,15 @@ export const goalsProfileSchema = z.object({
 export const listApplicationsQuerySchema = z.object({
   query: z.string().max(200).optional(),
   genericStatus: z
-    .enum(["applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived"])
+    .enum([
+      "applied",
+      "under_review",
+      "interviewing",
+      "offered",
+      "rejected",
+      "withdrawn",
+      "archived",
+    ])
     .optional(),
   limit: z.number().int().min(1).max(100).default(50),
 });

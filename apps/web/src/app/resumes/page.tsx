@@ -24,7 +24,9 @@ export default async function ResumesPage() {
     <section className="stack-xl">
       <header className="page-header">
         <h1>Resumes</h1>
-        <p className="muted">Store resume files and link them to applications.</p>
+        <p className="muted">
+          Store resume files and link them to applications.
+        </p>
       </header>
 
       <div className="layout-split">
@@ -32,12 +34,14 @@ export default async function ResumesPage() {
         <div className="card stack-md">
           <h2 className="no-margin">Resume Library</h2>
           <ResumeLibrary
-            resumes={resumes.map((resume) => ({
+            resumes={resumes.map(resume => ({
               id: resume.id,
               name: resume.name,
               filePath: resume.filePath,
               extractedText: resume.extractedText,
-              linkedApplicationIds: resume.applications.map((entry) => entry.applicationId),
+              linkedApplicationIds: resume.applications.map(
+                entry => entry.applicationId,
+              ),
             }))}
             applications={applications}
           />
@@ -46,4 +50,3 @@ export default async function ResumesPage() {
     </section>
   );
 }
-

@@ -24,7 +24,10 @@ export async function POST(request: Request) {
   const parsed = createResumeSchema.safeParse(payload);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   let filePath = parsed.data.filePath;
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
       filePath,
       extractedText: parsed.data.extractedText,
       applications: {
-        create: parsed.data.linkedApplicationIds.map((applicationId) => ({
+        create: parsed.data.linkedApplicationIds.map(applicationId => ({
           application: { connect: { id: applicationId } },
         })),
       },

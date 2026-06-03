@@ -52,7 +52,9 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
     const form = event.currentTarget;
     const data = new FormData(form);
 
-    const selectedIds = data.getAll("linkedApplicationIds").map((value) => String(value));
+    const selectedIds = data
+      .getAll("linkedApplicationIds")
+      .map(value => String(value));
 
     const payload: {
       name: string;
@@ -85,8 +87,12 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        throw new Error(typeof body.error === "string" ? body.error : "Unable to save resume");
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: unknown;
+        };
+        throw new Error(
+          typeof body.error === "string" ? body.error : "Unable to save resume",
+        );
       }
 
       form.reset();
@@ -94,7 +100,8 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
       setSuccess("Resume saved.");
       router.refresh();
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Unknown error";
+      const message =
+        submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
     } finally {
       setSubmitting(false);
@@ -105,30 +112,50 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
     <form className="form-card" onSubmit={handleSubmit}>
       <div className="form-header">
         <h2>Add Resume</h2>
-        <p className="muted">Upload file content or provide an existing file path.</p>
+        <p className="muted">
+          Upload file content or provide an existing file path.
+        </p>
       </div>
 
       <div className="form-grid form-grid-2">
         <label>
           Display Name
-          <input name="name" required maxLength={200} placeholder="Resume - Product - Jan 2026" />
+          <input
+            name="name"
+            required
+            maxLength={200}
+            placeholder="Resume - Product - Jan 2026"
+          />
         </label>
 
         <label>
           Existing File Path (optional)
-          <input name="filePath" maxLength={1000} placeholder="C:\\resumes\\pm.pdf" />
+          <input
+            name="filePath"
+            maxLength={1000}
+            placeholder="C:\\resumes\\pm.pdf"
+          />
         </label>
       </div>
 
       <label>
         Upload File (optional)
-        <input name="file" type="file" accept=".pdf,.doc,.docx,.txt,.md" onChange={onFileChange} />
+        <input
+          name="file"
+          type="file"
+          accept=".pdf,.doc,.docx,.txt,.md"
+          onChange={onFileChange}
+        />
       </label>
 
       <label>
         Link to Applications
-        <select name="linkedApplicationIds" multiple size={Math.min(8, Math.max(3, applications.length))}>
-          {applications.map((application) => (
+        <select
+          name="linkedApplicationIds"
+          multiple
+          size={Math.min(8, Math.max(3, applications.length))}
+        >
+          {applications.map(application => (
             <option key={application.id} value={application.id}>
               {application.companyName} - {application.roleTitle}
             </option>
@@ -138,13 +165,26 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
 
       <label>
         Extracted Text (optional)
-        <textarea name="extractedText" rows={5} maxLength={50000} placeholder="Optional extracted text for search context" />
+        <textarea
+          name="extractedText"
+          rows={5}
+          maxLength={50000}
+          placeholder="Optional extracted text for search context"
+        />
       </label>
 
       <div className="form-actions">
         <button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+          {submitting ? (
+            "Saving..."
+          ) : (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+              }}
+            >
               Save Resume
               <SaveIcon sx={{ fontSize: "1rem" }} />
             </span>

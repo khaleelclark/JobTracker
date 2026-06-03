@@ -2,7 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
@@ -50,7 +57,9 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         name: String(data.get("name") ?? "").trim(),
         filePath: String(data.get("filePath") ?? "").trim(),
         extractedText: String(data.get("extractedText") ?? "").trim() || null,
-        linkedApplicationIds: data.getAll("linkedApplicationIds").map((value) => String(value)),
+        linkedApplicationIds: data
+          .getAll("linkedApplicationIds")
+          .map(value => String(value)),
       };
 
       const response = await fetch(`/api/resumes/${editingResume.id}`, {
@@ -60,15 +69,22 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        const message = typeof body.error === "string" ? body.error : `Unable to update resume (${response.status})`;
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: unknown;
+        };
+        const message =
+          typeof body.error === "string"
+            ? body.error
+            : `Unable to update resume (${response.status})`;
         throw new Error(message);
       }
 
       setEditingResume(null);
       router.refresh();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unknown error");
+      setError(
+        submitError instanceof Error ? submitError.message : "Unknown error",
+      );
     } finally {
       setSaving(false);
     }
@@ -88,15 +104,22 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        const message = typeof body.error === "string" ? body.error : `Unable to delete resume (${response.status})`;
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: unknown;
+        };
+        const message =
+          typeof body.error === "string"
+            ? body.error
+            : `Unable to delete resume (${response.status})`;
         throw new Error(message);
       }
 
       setDeleteResume(null);
       router.refresh();
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Unknown error");
+      setError(
+        deleteError instanceof Error ? deleteError.message : "Unknown error",
+      );
       setDeleting(false);
     }
   }
@@ -108,13 +131,15 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
   return (
     <>
       <ul className="clean-list">
-        {resumes.map((resume) => (
+        {resumes.map(resume => (
           <li key={resume.id} className="list-row">
             <div>
               <strong>{resume.name}</strong>
               <div className="muted">{resume.filePath}</div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}
+            >
               <IconButton
                 size="small"
                 aria-label={`Download resume ${resume.name}`}
@@ -160,14 +185,28 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         <DialogTitle>Edit Resume</DialogTitle>
         <DialogContent>
           {editingResume ? (
-            <form id="edit-resume-form" className="form-card" onSubmit={handleEditSubmit}>
+            <form
+              id="edit-resume-form"
+              className="form-card"
+              onSubmit={handleEditSubmit}
+            >
               <label>
                 Display Name
-                <input name="name" maxLength={200} required defaultValue={editingResume.name} />
+                <input
+                  name="name"
+                  maxLength={200}
+                  required
+                  defaultValue={editingResume.name}
+                />
               </label>
               <label>
                 File Path
-                <input name="filePath" maxLength={1000} required defaultValue={editingResume.filePath} />
+                <input
+                  name="filePath"
+                  maxLength={1000}
+                  required
+                  defaultValue={editingResume.filePath}
+                />
               </label>
               <label>
                 Link to Applications
@@ -177,7 +216,7 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
                   defaultValue={editingResume.linkedApplicationIds}
                   size={Math.min(8, Math.max(3, applications.length))}
                 >
-                  {applications.map((application) => (
+                  {applications.map(application => (
                     <option key={application.id} value={application.id}>
                       {application.companyName} - {application.roleTitle}
                     </option>
@@ -186,7 +225,12 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
               </label>
               <label>
                 Extracted Text (optional)
-                <textarea name="extractedText" rows={5} maxLength={50000} defaultValue={editingResume.extractedText ?? ""} />
+                <textarea
+                  name="extractedText"
+                  rows={5}
+                  maxLength={50000}
+                  defaultValue={editingResume.extractedText ?? ""}
+                />
               </label>
             </form>
           ) : null}
@@ -196,7 +240,12 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
           <Button onClick={() => setEditingResume(null)} disabled={saving}>
             Cancel
           </Button>
-          <Button type="submit" form="edit-resume-form" disabled={saving} endIcon={<SaveIcon sx={{ fontSize: "1rem" }} />}>
+          <Button
+            type="submit"
+            form="edit-resume-form"
+            disabled={saving}
+            endIcon={<SaveIcon sx={{ fontSize: "1rem" }} />}
+          >
             {saving ? "Saving..." : "Save Changes"}
           </Button>
         </DialogActions>
@@ -216,14 +265,19 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
       >
         <DialogTitle>Delete Resume?</DialogTitle>
         <DialogContent>
-          Delete <strong>{deleteResume?.name}</strong> and remove its links from applications and skills?
+          Delete <strong>{deleteResume?.name}</strong> and remove its links from
+          applications and skills?
           {error ? <p className="error-text">{error}</p> : null}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteResume(null)} disabled={deleting}>
             Cancel
           </Button>
-          <Button onClick={() => void handleDeleteConfirmed()} disabled={deleting} endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}>
+          <Button
+            onClick={() => void handleDeleteConfirmed()}
+            disabled={deleting}
+            endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}
+          >
             {deleting ? "Deleting..." : "Confirm Delete"}
           </Button>
         </DialogActions>

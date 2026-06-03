@@ -16,7 +16,10 @@ export async function PATCH(request: Request, context: RouteContext) {
   const parsed = updateResumeSchema.safeParse(payload);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const existing = await prisma.resume.findUnique({
@@ -43,7 +46,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       extractedText: parsed.data.extractedText,
       applications: {
         deleteMany: {},
-        create: parsed.data.linkedApplicationIds.map((applicationId) => ({
+        create: parsed.data.linkedApplicationIds.map(applicationId => ({
           application: { connect: { id: applicationId } },
         })),
       },
@@ -59,7 +62,10 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(_: Request, context: RouteContext) {
   const { id } = await context.params;
-  const existing = await prisma.resume.findUnique({ where: { id }, select: { id: true } });
+  const existing = await prisma.resume.findUnique({
+    where: { id },
+    select: { id: true },
+  });
   if (!existing) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
