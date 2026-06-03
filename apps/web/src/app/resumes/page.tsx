@@ -5,25 +5,18 @@ import { ResumeCreateForm } from "@/components/forms/ResumeCreateForm";
 import { ResumeLibrary } from "@/components/ResumeLibrary";
 
 export default async function ResumesPage() {
-  const [resumes, applications, masterSkills] = await Promise.all([
+  const [resumes, applications] = await Promise.all([
     prisma.resume.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         applications: {
           include: { application: true },
         },
-        masterSkills: {
-          include: { masterSkill: true },
-        },
       },
     }),
     prisma.application.findMany({
       orderBy: { updatedAt: "desc" },
       select: { id: true, companyName: true, roleTitle: true },
-    }),
-    prisma.masterSkill.findMany({
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, category: true },
     }),
   ]);
 
@@ -35,7 +28,7 @@ export default async function ResumesPage() {
       </header>
 
       <div className="layout-split">
-        <ResumeCreateForm applications={applications} skills={masterSkills} />
+        <ResumeCreateForm applications={applications} />
         <div className="card stack-md">
           <h2 className="no-margin">Resume Library</h2>
           <ResumeLibrary
@@ -45,10 +38,8 @@ export default async function ResumesPage() {
               filePath: resume.filePath,
               extractedText: resume.extractedText,
               linkedApplicationIds: resume.applications.map((entry) => entry.applicationId),
-              linkedSkillIds: resume.masterSkills.map((entry) => entry.masterSkillId),
             }))}
             applications={applications}
-            skills={masterSkills}
           />
         </div>
       </div>

@@ -9,7 +9,6 @@ import { listEmailLogs } from "./listEmailLogs";
 import { listEngagementEvents } from "./listEngagementEvents";
 import { listFollowupAttempts } from "./listFollowupAttempts";
 import { listInterviews } from "./listInterviews";
-import { listMasterSkills } from "./listMasterSkills";
 import { searchApplications } from "./searchApplications";
 
 export const toolHandlers: Record<
@@ -26,7 +25,6 @@ export const toolHandlers: Record<
   get_resume: getResume,
   get_master_resume: getMasterResume,
   generate_resume: generateResume,
-  list_master_skills: listMasterSkills,
   get_control_file: getControlFile,
   get_full_context_dump: getFullContextDump,
 };
@@ -142,7 +140,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   {
     name: "get_resume",
     description:
-      "Get one resume by id, including linked applications and master skills.",
+      "Get one resume by id, including linked applications.",
     inputSchema: {
       type: "object",
       properties: {
@@ -183,20 +181,6 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
         },
       },
       required: ["resume"],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "list_master_skills",
-    description:
-      "List master skills (canonical skill inventory), optionally filtered by query/category.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        query: { type: "string" },
-        category: { type: "string" },
-        limit: { type: "integer", minimum: 1, maximum: 300 },
-      },
       additionalProperties: false,
     },
   },

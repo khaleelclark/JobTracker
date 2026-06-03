@@ -14,7 +14,6 @@ interface ResumeOption {
   filePath: string;
   extractedText: string | null;
   linkedApplicationIds: string[];
-  linkedSkillIds: string[];
 }
 
 interface ApplicationOption {
@@ -23,19 +22,12 @@ interface ApplicationOption {
   roleTitle: string;
 }
 
-interface SkillOption {
-  id: string;
-  name: string;
-  category: string | null;
-}
-
 interface ResumeLibraryProps {
   resumes: ResumeOption[];
   applications: ApplicationOption[];
-  skills: SkillOption[];
 }
 
-export function ResumeLibrary({ resumes, applications, skills }: ResumeLibraryProps) {
+export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
   const router = useRouter();
   const [editingResume, setEditingResume] = useState<ResumeOption | null>(null);
   const [deleteResume, setDeleteResume] = useState<ResumeOption | null>(null);
@@ -52,16 +44,15 @@ export function ResumeLibrary({ resumes, applications, skills }: ResumeLibraryPr
     setSaving(true);
     setError(null);
 
-    const data = new FormData(event.currentTarget);
-    const payload = {
-      name: String(data.get("name") ?? "").trim(),
-      filePath: String(data.get("filePath") ?? "").trim(),
-      extractedText: String(data.get("extractedText") ?? "").trim() || null,
-      linkedApplicationIds: data.getAll("linkedApplicationIds").map((value) => String(value)),
-      linkedSkillIds: data.getAll("linkedSkillIds").map((value) => String(value)),
-    };
-
     try {
+      const data = new FormData(event.currentTarget);
+      const payload = {
+        name: String(data.get("name") ?? "").trim(),
+        filePath: String(data.get("filePath") ?? "").trim(),
+        extractedText: String(data.get("extractedText") ?? "").trim() || null,
+        linkedApplicationIds: data.getAll("linkedApplicationIds").map((value) => String(value)),
+      };
+
       const response = await fetch(`/api/resumes/${editingResume.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -189,22 +180,6 @@ export function ResumeLibrary({ resumes, applications, skills }: ResumeLibraryPr
                   {applications.map((application) => (
                     <option key={application.id} value={application.id}>
                       {application.companyName} - {application.roleTitle}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Link to Master Skills
-                <select
-                  name="linkedSkillIds"
-                  multiple
-                  defaultValue={editingResume.linkedSkillIds}
-                  size={Math.min(8, Math.max(3, skills.length))}
-                >
-                  {skills.map((skill) => (
-                    <option key={skill.id} value={skill.id}>
-                      {skill.name}
-                      {skill.category ? ` (${skill.category})` : ""}
                     </option>
                   ))}
                 </select>

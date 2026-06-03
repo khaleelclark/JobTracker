@@ -150,8 +150,6 @@ export async function getFullContextDump(input: unknown) {
   const [
     applications,
     resumes,
-    masterSkills,
-    resumeMasterSkills,
     applicationResumes,
     interviews,
     interviewReflections,
@@ -169,15 +167,6 @@ export async function getFullContextDump(input: unknown) {
       where: applySinceFilter(since, "createdAt"),
       orderBy: { createdAt: "desc" },
       take: limitPerTable,
-    }),
-    prisma.masterSkill.findMany({
-      where: applySinceFilter(since, "updatedAt"),
-      orderBy: [{ name: "asc" }, { updatedAt: "desc" }],
-      take: limitPerTable,
-    }),
-    prisma.resumeMasterSkill.findMany({
-      take: limitPerTable,
-      orderBy: [{ resumeId: "asc" }, { masterSkillId: "asc" }],
     }),
     prisma.applicationResume.findMany({
       take: limitPerTable,
@@ -220,8 +209,6 @@ export async function getFullContextDump(input: unknown) {
   const data = {
     applications,
     resumes: resumesWithContent,
-    master_skills: masterSkills,
-    resume_master_skills: resumeMasterSkills,
     application_resumes: applicationResumes,
     interviews,
     interview_reflections: interviewReflections,

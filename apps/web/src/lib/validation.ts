@@ -134,7 +134,6 @@ export const createResumeSchema = z.object({
   fileName: z.string().max(200).optional(),
   extractedText: z.string().max(50000).optional().nullable(),
   linkedApplicationIds: z.array(z.string().uuid()).default([]),
-  linkedSkillIds: z.array(z.string().uuid()).default([]),
 });
 
 export const updateResumeSchema = z.object({
@@ -142,7 +141,6 @@ export const updateResumeSchema = z.object({
   filePath: z.string().min(1).max(1000),
   extractedText: z.string().max(50000).optional().nullable(),
   linkedApplicationIds: z.array(z.string().uuid()).default([]),
-  linkedSkillIds: z.array(z.string().uuid()).default([]),
 });
 
 const masterResumeJsonSchema = z
@@ -165,45 +163,6 @@ export const updateApplicationResumeLinksSchema = z.object({
   linkedResumeIds: z.array(z.string().uuid()).default([]),
 });
 
-export const createMasterSkillSchema = z.object({
-  name: z.string().min(1).max(120),
-  category: z.string().max(120).optional().nullable(),
-  experienceYears: experienceYearsSchema.optional().nullable(),
-  notes: z.string().max(2000).optional().nullable(),
-  linkedResumeIds: z.array(z.string().uuid()).default([]),
-});
-
-export const updateMasterSkillSchema = createMasterSkillSchema;
-export const deleteAllMasterSkillsSchema = z.object({
-  confirmDeleteAll: z.literal(true),
-});
-
-export const listMasterSkillsQuerySchema = z.object({
-  query: z.string().max(120).optional(),
-  category: z.string().max(120).optional(),
-  limit: z.number().int().min(1).max(300).default(200),
-});
-
-export const generateMasterSkillsFromResumeSchema = z
-  .object({
-    resumeId: z.string().uuid().optional(),
-    resumeText: z.string().max(100000).optional(),
-    linkResumeId: z.string().uuid().optional(),
-    uploadedFileName: z.string().max(255).optional(),
-    uploadedFileBase64: z.string().max(20_000_000).optional(),
-  })
-  .refine((data) => Boolean(data.resumeId || data.resumeText?.trim() || data.uploadedFileBase64), {
-    message: "resumeId, resumeText, or uploaded file is required",
-    path: ["resumeText"],
-  })
-  .refine(
-    (data) =>
-      Boolean((data.uploadedFileName && data.uploadedFileBase64) || (!data.uploadedFileName && !data.uploadedFileBase64)),
-    {
-      message: "uploadedFileName and uploadedFileBase64 must be provided together",
-      path: ["uploadedFileName"],
-    },
-  );
 
 export const goalsProfileSchema = z.object({
   missionStatement: z.string().max(8000),

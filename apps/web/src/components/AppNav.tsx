@@ -10,7 +10,6 @@ const LINKS = [
   { href: "/interviews", label: "Interviews" },
   { href: "/emails", label: "Communication" },
   { href: "/goals", label: "Goals" },
-  { href: "/skills", label: "Skills" },
   { href: "/resumes", label: "Resumes" },
   { href: "/settings", label: "Settings" },
 ];

@@ -158,20 +158,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
       DELETE: (_: Request, context: { params: Promise<{ id: string }> }) => Promise<Response>;
     }>("apps/web/src/app/api/engagement-events/[id]/route.ts");
 
-    const masterSkillsRoute = await importRoute<{
-      GET: (request: Request) => Promise<Response>;
-      POST: (request: Request) => Promise<Response>;
-      DELETE: (request: Request) => Promise<Response>;
-    }>("apps/web/src/app/api/master-skills/route.ts");
-    const masterSkillByIdRoute = await importRoute<{
-      GET: (_: Request, context: { params: Promise<{ id: string }> }) => Promise<Response>;
-      PATCH: (request: Request, context: { params: Promise<{ id: string }> }) => Promise<Response>;
-      DELETE: (_: Request, context: { params: Promise<{ id: string }> }) => Promise<Response>;
-    }>("apps/web/src/app/api/master-skills/[id]/route.ts");
-    const generateMasterSkillsRoute = await importRoute<{
-      POST: (request: Request) => Promise<Response>;
-    }>("apps/web/src/app/api/master-skills/generate-from-resume/route.ts");
-
     const goalsProfileRoute = await importRoute<{
       GET: () => Promise<Response>;
       PUT: (request: Request) => Promise<Response>;
@@ -227,7 +213,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
         fileName: "resume-a.txt",
         extractedText: "TypeScript Node.js SQL",
         linkedApplicationIds: [applicationId],
-        linkedSkillIds: [],
       }),
     );
     assert.equal(createResumeResponse.status, 201);
@@ -271,56 +256,12 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
     );
     assert.equal(updateApplicationLinksResponse.status, 200);
 
-    const createSkillResponse = await masterSkillsRoute.POST(
-      buildJsonRequest("http://localhost/api/master-skills", "POST", {
-        name: "TypeScript",
-        category: "language",
-        experienceYears: 4,
-        notes: "Strong",
-        linkedResumeIds: [resumeId],
-      }),
-    );
-    assert.equal(createSkillResponse.status, 201);
-    const createSkillBody = (await createSkillResponse.json()) as { skill: { id: string } };
-    const skillId = createSkillBody.skill.id;
-
-    const listSkillsResponse = await masterSkillsRoute.GET(new Request("http://localhost/api/master-skills?limit=20"));
-    assert.equal(listSkillsResponse.status, 200);
-    const listSkillsBody = (await listSkillsResponse.json()) as { skills: Array<{ id: string }> };
-    assert.ok(listSkillsBody.skills.some((item) => item.id === skillId));
-
-    const getSkillResponse = await masterSkillByIdRoute.GET(new Request("http://localhost"), buildContext(skillId));
-    assert.equal(getSkillResponse.status, 200);
-
-    const updateSkillResponse = await masterSkillByIdRoute.PATCH(
-      buildJsonRequest(`http://localhost/api/master-skills/${skillId}`, "PATCH", {
-        name: "TypeScript",
-        category: "language",
-        experienceYears: 5,
-        notes: "Very strong",
-        linkedResumeIds: [resumeId],
-      }),
-      buildContext(skillId),
-    );
-    assert.equal(updateSkillResponse.status, 200);
-
-    const generateSkillsResponse = await generateMasterSkillsRoute.POST(
-      buildJsonRequest("http://localhost/api/master-skills/generate-from-resume", "POST", {
-        resumeText: "Skills: TypeScript, Node.js, PostgreSQL, React",
-        linkResumeId: resumeId,
-      }),
-    );
-    assert.equal(generateSkillsResponse.status, 200);
-    const generateSkillsBody = (await generateSkillsResponse.json()) as { candidates?: unknown[] };
-    assert.ok(Array.isArray(generateSkillsBody.candidates));
-
     const updateResumeResponse = await resumeByIdRoute.PATCH(
       buildJsonRequest(`http://localhost/api/resumes/${resumeId}`, "PATCH", {
         name: "Resume A Updated",
         filePath: resumePath,
         extractedText: "Updated text",
         linkedApplicationIds: [applicationId],
-        linkedSkillIds: [skillId],
       }),
       buildContext(resumeId),
     );
@@ -659,14 +600,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
 
     const deleteInterviewResponse = await interviewByIdRoute.DELETE(new Request("http://localhost"), buildContext(interviewId));
     assert.equal(deleteInterviewResponse.status, 200);
-
-    const deleteSkillResponse = await masterSkillByIdRoute.DELETE(new Request("http://localhost"), buildContext(skillId));
-    assert.equal(deleteSkillResponse.status, 200);
-
-    const deleteAllSkillsResponse = await masterSkillsRoute.DELETE(
-      buildJsonRequest("http://localhost/api/master-skills", "DELETE", { confirmDeleteAll: true }),
-    );
-    assert.equal(deleteAllSkillsResponse.status, 200);
 
     const deleteResumeResponse = await resumeByIdRoute.DELETE(new Request("http://localhost"), buildContext(resumeId));
     assert.equal(deleteResumeResponse.status, 200);

@@ -47,16 +47,9 @@ export async function PATCH(request: Request, context: RouteContext) {
           application: { connect: { id: applicationId } },
         })),
       },
-      masterSkills: {
-        deleteMany: {},
-        create: parsed.data.linkedSkillIds.map((skillId) => ({
-          masterSkill: { connect: { id: skillId } },
-        })),
-      },
     },
     include: {
       applications: true,
-      masterSkills: true,
     },
   });
 

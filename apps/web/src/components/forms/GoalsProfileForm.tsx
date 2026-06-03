@@ -139,9 +139,6 @@ export function GoalsProfileForm({ initialProfile }: GoalsProfileFormProps) {
           <p>
             <Link href="/resumes">Go to Resumes</Link>
           </p>
-          <p>
-            <Link href="/skills">Go to Skills</Link>
-          </p>
         </div>
       </div>
 

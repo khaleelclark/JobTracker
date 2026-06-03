@@ -13,9 +13,6 @@ export async function GET() {
       applications: {
         include: { application: true },
       },
-      masterSkills: {
-        include: { masterSkill: true },
-      },
     },
   });
 
@@ -61,15 +58,9 @@ export async function POST(request: Request) {
           application: { connect: { id: applicationId } },
         })),
       },
-      masterSkills: {
-        create: parsed.data.linkedSkillIds.map((skillId) => ({
-          masterSkill: { connect: { id: skillId } },
-        })),
-      },
     },
     include: {
       applications: true,
-      masterSkills: true,
     },
   });
 
