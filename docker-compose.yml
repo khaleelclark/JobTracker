@@ -46,7 +46,7 @@ services:
       DATABASE_URL: file:/data/job-tracker.sqlite
       MCP_HOST: 0.0.0.0
       MCP_PORT: "7331"
-      MASTER_RESUME_PATH: /app/master-resume.json
+      MASTER_RESUME_PATH: /app/khaleel-master-resume.json
       GENERATED_RESUME_DIR: /home/khaleel/Generated Resumes
       CHROME_PATH: chromium
     extra_hosts:
@@ -55,7 +55,8 @@ services:
       - "7331:7331"
     volumes:
       - job-tracker-data:/data
-      - ./master-resume.json:/app/master-resume.json:ro
+      - ./khaleel-master-resume.json:/app/khaleel-master-resume.json:ro
+      - ./patrick-master-resume.json:/app/patrick-master-resume.json:ro
       - /home/khaleel/Generated Resumes:/home/khaleel/Generated Resumes
 
 volumes:

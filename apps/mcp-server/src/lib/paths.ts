@@ -36,3 +36,7 @@ export function resolveControlFilePath(): string {
 export function resolveOauthStorePath(): string {
   return path.join(resolveDataDir(), "oauth_tokens.json");
 }
+
+export function resolveMasterResumeDir(): string {
+  return path.join(resolveDataDir(), "master-resumes");
+}

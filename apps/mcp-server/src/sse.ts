@@ -50,6 +50,8 @@ When the user requests a resume for a specific position:
 
 2. Call 'get_master_resume'.
    - 'get_master_resume' is the canonical source resume for all tailored resume generation tasks.
+   - Omit owner for Khaleel's resume.
+   - If the user asks for Patrick's resume, call it with { "owner": "Patrick" }.
    - Do not generate resumes from memory when the tool is available.
 
 3. Generate a new tailored resume JSON object using the same schema structure as the master resume.

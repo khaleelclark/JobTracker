@@ -180,6 +180,8 @@ Notes:
 - `PATCH /api/resumes/[id]` - Update resume details and links.
 - `DELETE /api/resumes/[id]` - Delete resume.
 - `GET /api/resumes/[id]/download` - Download resume file with correct content-type.
+- `GET /api/master-resumes` - List managed master resume JSON files.
+- `POST /api/master-resumes` - Store a managed master resume JSON by owner for MCP resume generation.
 - `GET /api/master-skills` - List master skills with optional query/category filtering.
 - `POST /api/master-skills` - Create master skill with resume links.
 - `GET /api/master-skills/[id]` - Get master skill with resume links.
@@ -249,7 +251,7 @@ The MCP server provides read-only access to job tracking data via OAuth-protecte
 #### Resume & Skill Tools
 
 - `get_resume` - Get resume with linked applications and master skills.
-- `get_master_resume` - Get master resume JSON from master-resume.json (use as source for AI-tailored resumes).
+- `get_master_resume` - Get Khaleel's default or owner-specific master resume JSON, including Patrick's file (use as source for AI-tailored resumes).
 - `generate_resume` - Generate PDF resume from AI-tailored resume JSON.
 - `list_master_skills` - List master skills with optional query/category filter.
 

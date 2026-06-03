@@ -50,6 +50,14 @@ async function importFullContextTool() {
   }>;
 }
 
+async function importGetMasterResumeTool() {
+  const absolute = path.join(repoRoot, "apps/mcp-server/src/tools/getMasterResume.ts");
+  const href = `${pathToFileURL(absolute).href}?t=${Date.now()}-${Math.random()}`;
+  return import(href) as Promise<{
+    getMasterResume: (input: unknown) => Promise<Record<string, unknown>>;
+  }>;
+}
+
 test("mcp full-context dump includes warning, filters, truncation, and stays read-only", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "job-tracker-mcp-full-context-"));
   const dbPath = path.join(tempDir, "mcp-full-context.sqlite");
@@ -132,6 +140,44 @@ test("mcp full-context dump includes warning, filters, truncation, and stays rea
     assert.doesNotMatch(source, mutationPattern);
   } finally {
     await prisma.$disconnect();
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("mcp get_master_resume reads owner-specific managed master resume", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "job-tracker-mcp-master-resume-"));
+  const dataDir = path.join(tempDir, "data");
+  const masterResumeDir = path.join(dataDir, "master-resumes");
+
+  try {
+    process.env.JOBTRACKER_DATA_DIR = dataDir;
+    await fs.mkdir(masterResumeDir, { recursive: true });
+    await fs.writeFile(
+      path.join(masterResumeDir, "Alex.json"),
+      JSON.stringify({
+        name: "Alex Resume",
+        sections: [{ name: "Experience", type: "timeline", items: [] }],
+      }),
+      "utf8",
+    );
+
+    const { getMasterResume } = await importGetMasterResumeTool();
+    const defaultResult = await getMasterResume({});
+    assert.equal(defaultResult.owner, "default");
+    assert.match(String(defaultResult.path ?? ""), /khaleel-master-resume\.json$/);
+    assert.equal((defaultResult.master_resume as { name?: string }).name, "Khaleel Zindel Clark");
+
+    const patrickResult = await getMasterResume({ owner: "Patrick" });
+    assert.equal(patrickResult.owner, "Patrick");
+    assert.match(String(patrickResult.path ?? ""), /patrick-master-resume\.json$/);
+    assert.equal((patrickResult.master_resume as { name?: string }).name, "Patrick Michael Tobey");
+
+    const managedResult = await getMasterResume({ owner: "Alex" });
+    assert.equal(managedResult.owner, "Alex");
+    assert.match(String(managedResult.path ?? ""), /Alex\.json$/);
+    assert.equal((managedResult.master_resume as { name?: string }).name, "Alex Resume");
+  } finally {
+    delete process.env.JOBTRACKER_DATA_DIR;
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 });

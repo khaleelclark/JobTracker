@@ -155,10 +155,18 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   {
     name: "get_master_resume",
     description:
-      "Return the master resume JSON from /home/khaleel/Projects/Job App/master-resume.json. Use this as the source resume when creating a tailored resume for a job position.",
+      "Return a master resume JSON for AI-tailored resume generation. Omit owner for Khaleel's default khaleel-master-resume.json, or pass an owner such as 'Patrick' for patrick-master-resume.json or a managed master resume stored through /api/master-resumes.",
     inputSchema: {
       type: "object",
-      properties: {},
+      properties: {
+        owner: {
+          type: "string",
+          minLength: 1,
+          maxLength: 80,
+          pattern: "^[a-zA-Z0-9_-]+$",
+          description: "Optional managed master resume owner, for example 'Patrick'.",
+        },
+      },
       additionalProperties: false,
     },
   },

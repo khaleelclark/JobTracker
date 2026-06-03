@@ -1,0 +1,344 @@
+{
+  "name": "Patrick Michael Tobey",
+  "location": "Orlando, FL",
+  "phone": "(816) 384-1085",
+  "email": "patmictob@gmail.com",
+  "linkedin": "https://www.linkedin.com/in/patrick-tobey-202349229/",
+  "github": "https://github.com/ptobey",
+  "portfolio": "",
+  "citizenship": "U.S. Citizen – Eligible for Security Clearance",
+  "sections": [
+    {
+      "name": "Technical Skills",
+      "items": [
+        {
+          "title": "Languages",
+          "bullets": [
+            "JavaScript",
+            "TypeScript",
+            "HTML",
+            "CSS",
+            "SQL",
+            "Java",
+            "C#",
+            "Python",
+            "PLSQL",
+            "XML",
+            "C",
+            "PHP"
+          ]
+        },
+        {
+          "title": "Frameworks & Libraries",
+          "bullets": [
+            "React",
+            ".NET",
+            "MUI",
+            "Room",
+            "EF Core",
+            "Hibernate",
+            "JPA",
+            "JUnit",
+            "Bukkit",
+            "Paper"
+          ]
+        },
+        {
+          "title": "Web Development Tools",
+          "bullets": [
+            "Webpack",
+            "RSPack",
+            "REST APIs",
+            "Swagger",
+            "OData",
+            "Node.js",
+            "Babel"
+          ]
+        },
+        {
+          "title": "Databases",
+          "bullets": [
+            "MySQL",
+            "SQLite",
+            "SQL Server",
+            "Oracle DB",
+            "Access",
+            "ChromaDB"
+          ]
+        },
+        {
+          "title": "Tools & Infrastructure",
+          "bullets": [
+            "Docker",
+            "Kubernetes",
+            "Azure",
+            "Jenkins",
+            "Maven",
+            "Gradle",
+            "Apache",
+            "Git",
+            "PowerShell",
+            "JProfiler"
+          ]
+        },
+        {
+          "title": "Operating Systems",
+          "bullets": ["Windows", "Linux", "MacOS", "Android"]
+        },
+        {
+          "title": "AI & MCP",
+          "bullets": [
+            "Model Context Protocol (MCP)",
+            "RAG (Retrieval-Augmented Generation)",
+            "ChromaDB",
+            "LLM integration",
+            "AI determinism systems",
+            "OData + AI querying",
+            "Prompt engineering",
+            "Local AI deployment",
+            "sentence-transformers"
+          ]
+        },
+        {
+          "title": "Architecture & Design",
+          "bullets": [
+            "Microfrontend architecture",
+            "Module Federation",
+            "RESTful API design",
+            "SOAP to REST migration",
+            "Database virtualization",
+            "Event-driven architecture",
+            "SDK design"
+          ]
+        },
+        {
+          "title": "Certifications",
+          "bullets": ["TestOut IT Fundamentals Pro"]
+        }
+      ]
+    },
+    {
+      "name": "Education",
+      "items": [
+        {
+          "title": "Valencia College",
+          "sub_title": "Orlando, FL",
+          "start_date": "Jan 2023",
+          "end_date": "Dec 2024",
+          "bullets": [
+            "Bachelor of Applied Science, Computer Technology & Software Development",
+            "Cumulative GPA: 4.0/4.0"
+          ]
+        },
+        {
+          "title": "University of Central Florida",
+          "sub_title": "Orlando, FL",
+          "start_date": "Aug 2022",
+          "end_date": "Dec 2023",
+          "bullets": ["Associate of Arts Degree"]
+        },
+        {
+          "title": "Missouri Western State University",
+          "sub_title": "Saint Joseph, MO",
+          "start_date": "Aug 2020",
+          "end_date": "May 2022",
+          "bullets": [
+            "B.S., Computer Science (transferred prior to completion)",
+            "Cumulative GPA: 3.94/4.0",
+            "2020-2021 Gold Student Leader LEADS Pin",
+            "3x President's List"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Professional Experience",
+      "items": [
+        {
+          "title": "Leidos",
+          "sub_title": "Remote, USA",
+          "position": "Software Engineer",
+          "start_date": "Dec 2024",
+          "end_date": "Present",
+          "bullets": [
+            "Engineered a sophisticated input data scoping system (React/TypeScript) for automatic, by-value data transfer between components, rapidly adapting it within one day to meet revised specifications after a requirements miscommunication, earning praise for accurately fulfilling complex functionality.",
+            "Contributed to optimizing the RSPack-based build system by refining its integration and developing a comprehensive demonstration that successfully showcased a full Webpack-to-RSPack replacement for a core project area.",
+            "Developed custom backend API endpoints and defined new data types (leveraging .NET C# and a virtualized database architecture) to deliver core functionalities for a monthly project status review application and a dynamic component input scoping system.",
+            "Led migration of a critical HR sync from SOAP to REST (PowerShell, C#) after the vendor sunsetted SOAP support, completing ahead of schedule; inherited a broken integration, stabilized it, and received high praise from HR event teams upon delivery.",
+            "Became the primary owner and leader of the Cvent Active Directory sync, maintaining and improving the integration that keeps employee records current across enterprise systems.",
+            "Remediating Log4j vulnerabilities across legacy Java integration API repositories and contributing to the planning of their broader modernization effort.",
+            "On loan to the EHS team to help deliver a critical API integration; identified an opportunity to leverage the main team's internal API hosting platform as a solution, turning the engagement into a win-win for both teams.",
+            "Building a reusable Node.js SDK to bridge the EHS integration with the main team's API platform, while guiding a colleague building a parallel Python SDK.",
+            "Designed and built from scratch a deterministic AI output system with hallucination markers that provide verifiable signals for whether AI-generated content was fabricated — entirely original architecture, currently in active development.",
+            "Developed a Python proof-of-concept demonstrating how OData can be used to enable AI to query structured databases, shared with upper management as part of broader AI capability exploration.",
+            "Serve as the team's local AI expert, advising the tech lead on AI architecture decisions and bringing hands-on MCP experience to internal AI tooling and integration workflows.",
+            "Built and maintain custom MCP servers locally, applying hands-on MCP architecture expertise to internal AI tooling decisions at Leidos."
+          ]
+        },
+        {
+          "title": "Leidos",
+          "sub_title": "Remote, USA",
+          "position": "Full Stack Developer Intern",
+          "start_date": "May 2023",
+          "end_date": "Dec 2024",
+          "bullets": [
+            "Spearheaded year-long research into Module Federation for a microfrontend architecture, diagnosing Webpack compatibility issues; subsequently identified and championed RSPack as a solution, developing demos that led to its adoption, significantly faster build times, and a streamlined development workflow.",
+            "Conceptualized and designed a novel database virtualization system for flexible, user-creatable 'virtual' tables within a rigid SQL structure; this design was subsequently adopted and fully implemented by project leadership using EF Core.",
+            "Contributed a large share of development to a major project progress visualization portal, including: engineering backend logic for status review entries; defining new data types for tracking monthly project progress using a self-designed virtualized table system; and developing 12 key data visualizations."
+          ]
+        },
+        {
+          "title": "Missouri Western State University",
+          "sub_title": "Saint Joseph, MO",
+          "position": "Volunteer Full Stack Developer",
+          "start_date": "Aug 2021",
+          "end_date": "Apr 2022",
+          "bullets": [
+            "Led a team of three students that designed and developed a website and database for biological specimens found during a school biology research project.",
+            "Presented the website and database at the 2022 Conference of Applied Learning in Higher Education."
+          ]
+        },
+        {
+          "title": "Freelance",
+          "sub_title": "Remote, USA",
+          "position": "Commissioned Software Developer",
+          "start_date": "May 2021",
+          "end_date": "Sep 2021",
+          "bullets": [
+            "Commissioned for $500 to design and develop a Discord bot in Java that interfaced with Wynncraft's API to track player looting patterns across server worlds, helping users identify unlooted worlds for high-value item (mythic) farming.",
+            "Designed and developed additional plugins for Minecraft servers in Java."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Project Experience",
+      "items": [
+        {
+          "title": "local-memory-mcp",
+          "link": "https://github.com/ptobey/local-memory-mcp",
+          "sub_title": "Python, ChromaDB, MCP, Docker, SSE, sentence-transformers",
+          "position": "Founder & Open Source Developer",
+          "start_date": "2026",
+          "end_date": "Present",
+          "bullets": [
+            "Designed and shipped a local-first personal RAG memory system for AI assistants, exposing MCP tools (store, search, update, delete, version chains) over both stdio and SSE transports.",
+            "Implemented versioned update chains with soft-delete, deprecation flags, and conflict logging so memory history is preserved rather than destructively overwritten.",
+            "Built heuristic reconciliation and warning-first write responses with structured self-heal hints, enabling AI agents to self-correct risky writes without human intervention.",
+            "Architected around an AIX (AI eXperience) philosophy — prioritizing text-first chunks with minimal metadata over rigid schemas, optimizing for practical LLM retrieval quality.",
+            "Shipped full Docker Compose support, optional bearer/OAuth auth modes, health checks, and backup/restore — production-ready for self-hosted personal and team deployments.",
+            "Released as MIT open source with 4 stars; includes full documentation covering setup, architecture, integrations (ChatGPT + Claude Desktop), and a public roadmap."
+          ]
+        },
+        {
+          "title": "Food Oasis",
+          "link": "https://github.com/ptobey/Food-Oasis-Website",
+          "sub_title": "TypeScript, JavaScript, CSS",
+          "position": "Tech Lead",
+          "start_date": "Aug 2024",
+          "end_date": "Dec 2024",
+          "bullets": [
+            "Served as tech lead on a 5-person team, taking point on architecture and technical decisions given my experience level relative to teammates.",
+            "Built a web application to combat food deserts in the Orlando area, allowing users to search for healthy recipes with allergy/dietary filters, view nearby grocery stores on an interactive map, and discover local farmers markets.",
+            "Gained practical experience leading a collaborative team project from design through implementation across a full TypeScript/JS stack."
+          ]
+        },
+        {
+          "title": "Devoria",
+          "link": "https://github.com/ptobey/Devoria",
+          "sub_title": "Java, Paper, Bukkit, Model Engine",
+          "position": "Founder & Lead Developer",
+          "start_date": "2021",
+          "end_date": "Present",
+          "bullets": [
+            "Founded and lead development of Devoria, a Minecraft MMORPG built in Java on the Paper server framework.",
+            "Designed and implemented a custom item and damage system using custom item stats.",
+            "Designed and developed a custom mob system using Model Engine."
+          ]
+        },
+        {
+          "title": "Library Management System",
+          "link": "https://github.com/ptobey/Tobey_Patrick_LMS",
+          "sub_title": "Java",
+          "position": "Solo Developer",
+          "start_date": "2023",
+          "end_date": "2023",
+          "bullets": [
+            "Built a Java library management system with a GUI frontend and Java backend as a school project."
+          ]
+        },
+        {
+          "title": "Wynncraft Command Block Content",
+          "sub_title": "Minecraft Command Blocks",
+          "position": "Command Block Content Team Member (Volunteer)",
+          "start_date": "2019",
+          "end_date": "2021",
+          "bullets": [
+            "Built command block puzzles and cutscenes for the 1.19 Silent Expanse update.",
+            "Fixed command block-related bugs and collaborated with Grian on a community video task."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extracurricular Activities",
+      "items": [
+        {
+          "title": "Scouts BSA",
+          "sub_title": "Lee's Summit, MO",
+          "position": "Senior Patrol Leader, Guide, and Member",
+          "start_date": "Aug 2008",
+          "end_date": "Apr 2019",
+          "bullets": [
+            "Achieved Eagle Scout rank with 5 Eagle Palms.",
+            "Completed National Youth Leadership Training.",
+            "Led over 60 scouts as Senior Patrol Leader.",
+            "Brotherhood Member of the Order of the Arrow (Scouts BSA honor society).",
+            "Participated in approximately 100 hours of community service."
+          ]
+        },
+        {
+          "title": "Missouri Western State University Valorant Club",
+          "sub_title": "Saint Joseph, MO",
+          "position": "Club President, Vice President, and Member",
+          "start_date": "Aug 2020",
+          "end_date": "May 2022",
+          "bullets": [
+            "Directed club meetings and registered club teams into tournaments.",
+            "Participated in and led 3 hours of community service."
+          ]
+        },
+        {
+          "title": "Missouri Western State University Esports",
+          "sub_title": "Saint Joseph, MO",
+          "position": "Discord Moderator",
+          "start_date": "Aug 2020",
+          "end_date": "May 2021",
+          "bullets": [
+            "Moderated the Esports Discord server, planned game-related events, and executed them."
+          ]
+        },
+        {
+          "title": "Missouri Western State University ACM Club",
+          "sub_title": "Saint Joseph, MO",
+          "position": "Member",
+          "start_date": "Aug 2020",
+          "end_date": "Aug 2021",
+          "bullets": [
+            "Participated in club meetings and attended the ICPC virtual coding competition."
+          ]
+        },
+        {
+          "title": "Missouri Western State University Psychology Club",
+          "sub_title": "Saint Joseph, MO",
+          "position": "Member",
+          "start_date": "Aug 2020",
+          "end_date": "Aug 2021",
+          "bullets": [
+            "Participated in club meetings and completed community service hours."
+          ]
+        }
+      ]
+    }
+  ]
+}

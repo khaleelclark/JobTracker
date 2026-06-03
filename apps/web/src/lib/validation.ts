@@ -145,6 +145,22 @@ export const updateResumeSchema = z.object({
   linkedSkillIds: z.array(z.string().uuid()).default([]),
 });
 
+const masterResumeJsonSchema = z
+  .object({
+    name: z.string().min(1).max(200),
+    sections: z.array(z.unknown()).min(1),
+  })
+  .passthrough();
+
+export const createMasterResumeSchema = z.object({
+  owner: z
+    .string()
+    .min(1)
+    .max(80)
+    .regex(/^[a-zA-Z0-9_-]+$/, "owner may only contain letters, numbers, underscores, and hyphens"),
+  resume: masterResumeJsonSchema,
+});
+
 export const updateApplicationResumeLinksSchema = z.object({
   linkedResumeIds: z.array(z.string().uuid()).default([]),
 });

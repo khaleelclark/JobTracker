@@ -99,6 +99,10 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
       GET: () => Promise<Response>;
       POST: (request: Request) => Promise<Response>;
     }>("apps/web/src/app/api/resumes/route.ts");
+    const masterResumesRoute = await importRoute<{
+      GET: () => Promise<Response>;
+      POST: (request: Request) => Promise<Response>;
+    }>("apps/web/src/app/api/master-resumes/route.ts");
     const resumeByIdRoute = await importRoute<{
       PATCH: (request: Request, context: { params: Promise<{ id: string }> }) => Promise<Response>;
       DELETE: (_: Request, context: { params: Promise<{ id: string }> }) => Promise<Response>;
@@ -235,6 +239,29 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
     assert.equal(listResumesResponse.status, 200);
     const listResumesBody = (await listResumesResponse.json()) as { resumes: Array<{ id: string }> };
     assert.ok(listResumesBody.resumes.some((item) => item.id === resumeId));
+
+    const createMasterResumeResponse = await masterResumesRoute.POST(
+      buildJsonRequest("http://localhost/api/master-resumes", "POST", {
+        owner: "Patrick",
+        resume: {
+          name: "Patrick Resume",
+          sections: [{ name: "Experience", type: "timeline", items: [] }],
+        },
+      }),
+    );
+    assert.equal(createMasterResumeResponse.status, 201);
+    const createMasterResumeBody = (await createMasterResumeResponse.json()) as {
+      masterResume: { owner: string; path: string };
+    };
+    assert.equal(createMasterResumeBody.masterResume.owner, "Patrick");
+    assert.match(createMasterResumeBody.masterResume.path, /Patrick\.json$/);
+
+    const listMasterResumesResponse = await masterResumesRoute.GET();
+    assert.equal(listMasterResumesResponse.status, 200);
+    const listMasterResumesBody = (await listMasterResumesResponse.json()) as {
+      masterResumes: Array<{ owner: string }>;
+    };
+    assert.ok(listMasterResumesBody.masterResumes.some((item) => item.owner === "Patrick"));
 
     const updateApplicationLinksResponse = await applicationResumesRoute.PATCH(
       buildJsonRequest(`http://localhost/api/applications/${applicationId}/resumes`, "PATCH", {
