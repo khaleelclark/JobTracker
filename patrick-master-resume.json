@@ -113,7 +113,10 @@
         },
         {
           "title": "Certifications",
-          "bullets": ["TestOut IT Fundamentals Pro"]
+          "bullets": [
+            "TestOut CyberDefense Pro (Dec 2023)",
+            "TestOut IT Fundamentals Pro"
+          ]
         }
       ]
     },
