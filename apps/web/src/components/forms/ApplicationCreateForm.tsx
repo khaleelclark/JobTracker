@@ -28,6 +28,15 @@ interface ResumeOption {
   name: string;
 }
 
+interface ApplicationAutocompleteOptions {
+  companies: string[];
+  roleTitles: string[];
+  careersPageUrls: string[];
+  roleFamilies: string[];
+  roleLevels: string[];
+  compensations: string[];
+}
+
 function toIsoFromDateInput(raw: string): string {
   if (!raw) {
     return new Date().toISOString();
@@ -48,9 +57,13 @@ function normalizedCareersPageUrl(value: FormDataEntryValue | null): string | nu
 
 interface ApplicationCreateFormProps {
   resumes: ResumeOption[];
+  autocompleteOptions: ApplicationAutocompleteOptions;
 }
 
-export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
+export function ApplicationCreateForm({
+  resumes,
+  autocompleteOptions,
+}: ApplicationCreateFormProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -163,12 +176,44 @@ export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
             </div>
 
             <div className="form-grid form-grid-2">
+              <datalist id="application-company-options">
+                {autocompleteOptions.companies.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+              <datalist id="application-role-title-options">
+                {autocompleteOptions.roleTitles.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+              <datalist id="application-careers-page-options">
+                {autocompleteOptions.careersPageUrls.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+              <datalist id="application-role-family-options">
+                {autocompleteOptions.roleFamilies.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+              <datalist id="application-role-level-options">
+                {autocompleteOptions.roleLevels.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+              <datalist id="application-compensation-options">
+                {autocompleteOptions.compensations.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+
               <label>
                 Company
                 <input
                   name="companyName"
                   required
                   maxLength={200}
+                  list="application-company-options"
                   placeholder="Acme Corp"
                 />
               </label>
@@ -179,6 +224,7 @@ export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
                   name="roleTitle"
                   required
                   maxLength={200}
+                  list="application-role-title-options"
                   placeholder="Product Manager"
                 />
               </label>
@@ -188,6 +234,7 @@ export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
                 <input
                   name="careersPageUrl"
                   maxLength={1000}
+                  list="application-careers-page-options"
                   placeholder="https://jobs.company.com/roles/123"
                 />
               </label>
@@ -213,13 +260,19 @@ export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
                 <input
                   name="roleFamily"
                   maxLength={120}
+                  list="application-role-family-options"
                   placeholder="Engineering"
                 />
               </label>
 
               <label>
                 Role Level
-                <input name="roleLevel" maxLength={120} placeholder="Mid" />
+                <input
+                  name="roleLevel"
+                  maxLength={120}
+                  list="application-role-level-options"
+                  placeholder="Mid"
+                />
               </label>
 
               <label>
@@ -227,6 +280,7 @@ export function ApplicationCreateForm({ resumes }: ApplicationCreateFormProps) {
                 <input
                   name="compensation"
                   maxLength={300}
+                  list="application-compensation-options"
                   placeholder="$140k-$170k base + bonus/equity"
                 />
               </label>

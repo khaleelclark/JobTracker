@@ -573,6 +573,60 @@ button:disabled {
   background: rgba(255, 255, 255, 0.75);
 }
 
+.resume-library-text {
+  min-width: 0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.resume-library-path {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.text-link-button {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.text-link-button:hover:not(:disabled) {
+  background: transparent;
+  color: var(--brand-strong);
+}
+
+.resume-preview-frame {
+  width: 100%;
+  height: min(68vh, 760px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.resume-preview-text {
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0.5rem 0 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f7fbff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+}
+
 .section-head {
   display: flex;
   align-items: baseline;

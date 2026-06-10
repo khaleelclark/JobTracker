@@ -112,6 +112,12 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
         context: { params: Promise<{ id: string }> },
       ) => Promise<Response>;
     }>("apps/web/src/app/api/applications/[id]/resumes/route.ts");
+    const duplicateApplicationRoute = await importRoute<{
+      POST: (
+        request: Request,
+        context: { params: Promise<{ id: string }> },
+      ) => Promise<Response>;
+    }>("apps/web/src/app/api/applications/[id]/duplicate/route.ts");
 
     const resumesRoute = await importRoute<{
       GET: () => Promise<Response>;
@@ -368,6 +374,43 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
       buildContext(applicationId),
     );
     assert.equal(updateApplicationResponse.status, 200);
+
+    const duplicateApplicationResponse =
+      await duplicateApplicationRoute.POST(
+        new Request(
+          `http://localhost/api/applications/${applicationId}/duplicate`,
+          { method: "POST" },
+        ),
+        buildContext(applicationId),
+      );
+    assert.equal(duplicateApplicationResponse.status, 201);
+    const duplicateApplicationBody =
+      (await duplicateApplicationResponse.json()) as {
+        application: { id: string };
+      };
+    assert.notEqual(duplicateApplicationBody.application.id, applicationId);
+    const duplicateApplication = await prisma.application.findUnique({
+      where: { id: duplicateApplicationBody.application.id },
+      include: { resumes: true },
+    });
+    assert.ok(duplicateApplication);
+    assert.equal(duplicateApplication.companyName, "Acme Corp");
+    assert.equal(duplicateApplication.roleTitle, "Backend Engineer II");
+    assert.equal(
+      duplicateApplication.careersPageUrl,
+      "https://careers.acme.com/jobs/backend-engineer-ii",
+    );
+    assert.equal(duplicateApplication.postingDetails, "Role details updated");
+    assert.equal(duplicateApplication.compensation, "$160k");
+    assert.equal(duplicateApplication.genericStatus, "under_review");
+    assert.equal(duplicateApplication.preciseStatus, "screening");
+    assert.equal(duplicateApplication.roleFamily, "Engineering");
+    assert.equal(duplicateApplication.roleLevel, "Mid");
+    assert.equal(duplicateApplication.notes, "Updated app");
+    assert.deepEqual(
+      duplicateApplication.resumes.map((entry) => entry.resumeId),
+      [resumeId],
+    );
 
     const getApplicationResponse = await applicationByIdRoute.GET(
       new Request("http://localhost"),

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import {
   DataGrid,
@@ -17,6 +18,7 @@ import {
   useTheme,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
 import { toTitleCaseLabel } from "@/lib/format";
@@ -29,20 +31,52 @@ interface ApplicationRow {
   appliedAt: string;
 }
 
+interface ApplicationAutocompleteOptions {
+  companies: string[];
+  roleTitles: string[];
+  careersPageUrls: string[];
+  roleFamilies: string[];
+  roleLevels: string[];
+  compensations: string[];
+}
+
 interface ApplicationTableProps {
   applications: ApplicationRow[];
   resumes: Array<{ id: string; name: string }>;
+  autocompleteOptions: ApplicationAutocompleteOptions;
   title?: string;
 }
 
 export function ApplicationTable({
   applications,
   resumes,
+  autocompleteOptions,
   title = "Application Records",
 }: ApplicationTableProps) {
+  const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+
+  async function handleDuplicate(application: ApplicationRow) {
+    const response = await fetch(`/api/applications/${application.id}/duplicate`, {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as {
+        error?: unknown;
+      };
+      window.alert(
+        typeof body.error === "string"
+          ? body.error
+          : "Unable to duplicate application",
+      );
+      return;
+    }
+
+    router.refresh();
+  }
 
   const columns = useMemo<GridColDef<ApplicationRow>[]>(
     () => [
@@ -144,20 +178,48 @@ export function ApplicationTable({
         headerName: "Actions",
         sortable: false,
         filterable: false,
-        width: 120,
+        width: isMobile ? 112 : 136,
         headerAlign: "center",
         align: "center",
-        renderCell: (params: GridRenderCellParams<ApplicationRow>) => (
-          <IconButton
-            size={isMobile ? "small" : "medium"}
-            aria-label={`Edit application ${params.row.companyName} ${params.row.roleTitle}`}
-            title="Edit"
-            component={Link}
-            href={`/applications/${params.row.id}`}
-          >
-            <EditIcon sx={{ fontSize: "1rem" }} />
-          </IconButton>
-        ),
+        renderCell: (params: GridRenderCellParams<ApplicationRow>) => {
+          const label = `${params.row.companyName} ${params.row.roleTitle}`;
+          return (
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 0.5,
+              }}
+            >
+              <IconButton
+                size={isMobile ? "small" : "medium"}
+                aria-label={`Duplicate application ${label}`}
+                title="Duplicate"
+                onClick={() => void handleDuplicate(params.row)}
+                sx={{
+                  backgroundColor: "transparent",
+                  border: 0,
+                  boxShadow: "none",
+                  "&:hover": { backgroundColor: "transparent" },
+                }}
+              >
+                <ContentCopyIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
+              <IconButton
+                size={isMobile ? "small" : "medium"}
+                aria-label={`Edit application ${label}`}
+                title="Edit"
+                component={Link}
+                href={`/applications/${params.row.id}`}
+              >
+                <EditIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
+            </Box>
+          );
+        },
       },
     ],
     [isMobile],
@@ -202,7 +264,10 @@ export function ApplicationTable({
       <div className="stack-md">
         <div className="section-head">
           <h2 className="no-margin">{title}</h2>
-          <ApplicationCreateForm resumes={resumes} />
+          <ApplicationCreateForm
+            resumes={resumes}
+            autocompleteOptions={autocompleteOptions}
+          />
         </div>
         <p className="muted">No applications logged yet.</p>
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -218,7 +283,10 @@ export function ApplicationTable({
     <div className="stack-md">
       <div className="section-head">
         <h2 className="no-margin">{title}</h2>
-        <ApplicationCreateForm resumes={resumes} />
+        <ApplicationCreateForm
+          resumes={resumes}
+          autocompleteOptions={autocompleteOptions}
+        />
       </div>
       <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
         <DataGrid
@@ -244,6 +312,11 @@ export function ApplicationTable({
               {
                 px: isMobile ? 1 : 2,
               },
+            "& .MuiDataGrid-cell[data-field='actions']": {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            },
           }}
         />
       </Box>

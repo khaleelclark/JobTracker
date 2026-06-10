@@ -23,7 +23,7 @@ export default async function ApplicationDetailPage({
 }: ApplicationDetailPageProps) {
   const { id } = await params;
 
-  const [application, resumes] = await Promise.all([
+  const [application, resumes, applicationOptions] = await Promise.all([
     prisma.application.findUnique({
     where: { id },
     include: {
@@ -47,6 +47,17 @@ export default async function ApplicationDetailPage({
       orderBy: { createdAt: "desc" },
       select: { id: true, name: true },
     }),
+    prisma.application.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        companyName: true,
+        roleTitle: true,
+        careersPageUrl: true,
+        roleFamily: true,
+        roleLevel: true,
+        compensation: true,
+      },
+    }),
   ]);
 
   if (!application) {
@@ -57,6 +68,20 @@ export default async function ApplicationDetailPage({
     application.followups.length > 0
       ? Math.max(...application.followups.map(item => item.attemptIndex)) + 1
       : 1;
+
+  const uniqueValues = (values: Array<string | null>) =>
+    Array.from(
+      new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]),
+    ).sort((a, b) => a.localeCompare(b));
+
+  const autocompleteOptions = {
+    companies: uniqueValues(applicationOptions.map((item) => item.companyName)),
+    roleTitles: uniqueValues(applicationOptions.map((item) => item.roleTitle)),
+    careersPageUrls: uniqueValues(applicationOptions.map((item) => item.careersPageUrl)),
+    roleFamilies: uniqueValues(applicationOptions.map((item) => item.roleFamily)),
+    roleLevels: uniqueValues(applicationOptions.map((item) => item.roleLevel)),
+    compensations: uniqueValues(applicationOptions.map((item) => item.compensation)),
+  };
 
   return (
     <section className="stack-xl">
@@ -140,6 +165,7 @@ export default async function ApplicationDetailPage({
           linkedResumeIds: application.resumes.map((entry) => entry.resumeId),
         }}
         resumes={resumes}
+        autocompleteOptions={autocompleteOptions}
       />
 
       <ApplicationDetailActivityPanel

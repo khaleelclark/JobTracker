@@ -43,6 +43,20 @@ export default async function ApplicationsPage() {
     return b.appliedAt.getTime() - a.appliedAt.getTime();
   });
 
+  const uniqueValues = (values: Array<string | null>) =>
+    Array.from(
+      new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]),
+    ).sort((a, b) => a.localeCompare(b));
+
+  const autocompleteOptions = {
+    companies: uniqueValues(applications.map((application) => application.companyName)),
+    roleTitles: uniqueValues(applications.map((application) => application.roleTitle)),
+    careersPageUrls: uniqueValues(applications.map((application) => application.careersPageUrl)),
+    roleFamilies: uniqueValues(applications.map((application) => application.roleFamily)),
+    roleLevels: uniqueValues(applications.map((application) => application.roleLevel)),
+    compensations: uniqueValues(applications.map((application) => application.compensation)),
+  };
+
   return (
     <section className="stack-xl">
       <header className="page-header">
@@ -71,6 +85,7 @@ export default async function ApplicationsPage() {
             appliedAt: application.appliedAt.toISOString(),
           }))}
           resumes={resumes}
+          autocompleteOptions={autocompleteOptions}
         />
       </div>
     </section>

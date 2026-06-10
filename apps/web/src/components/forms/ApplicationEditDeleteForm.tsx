@@ -40,6 +40,14 @@ interface ApplicationEditDeleteFormProps {
     linkedResumeIds: string[];
   };
   resumes: Array<{ id: string; name: string }>;
+  autocompleteOptions: {
+    companies: string[];
+    roleTitles: string[];
+    careersPageUrls: string[];
+    roleFamilies: string[];
+    roleLevels: string[];
+    compensations: string[];
+  };
 }
 
 function toDateInputValue(iso: string): string {
@@ -71,6 +79,7 @@ function normalizedCareersPageUrl(value: FormDataEntryValue | null): string | nu
 export function ApplicationEditDeleteForm({
   application,
   resumes,
+  autocompleteOptions,
 }: ApplicationEditDeleteFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -200,12 +209,44 @@ export function ApplicationEditDeleteForm({
       <h2>Edit Application</h2>
 
       <div className="form-grid form-grid-2">
+        <datalist id="edit-application-company-options">
+          {autocompleteOptions.companies.map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+        <datalist id="edit-application-role-title-options">
+          {autocompleteOptions.roleTitles.map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+        <datalist id="edit-application-careers-page-options">
+          {autocompleteOptions.careersPageUrls.map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+        <datalist id="edit-application-role-family-options">
+          {autocompleteOptions.roleFamilies.map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+        <datalist id="edit-application-role-level-options">
+          {autocompleteOptions.roleLevels.map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+        <datalist id="edit-application-compensation-options">
+          {autocompleteOptions.compensations.map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+
         <label>
           Company
           <input
             name="companyName"
             required
             maxLength={200}
+            list="edit-application-company-options"
             defaultValue={application.companyName}
           />
         </label>
@@ -216,6 +257,7 @@ export function ApplicationEditDeleteForm({
             name="roleTitle"
             required
             maxLength={200}
+            list="edit-application-role-title-options"
             defaultValue={application.roleTitle}
           />
         </label>
@@ -225,6 +267,7 @@ export function ApplicationEditDeleteForm({
           <input
             name="careersPageUrl"
             maxLength={1000}
+            list="edit-application-careers-page-options"
             defaultValue={application.careersPageUrl ?? ""}
           />
         </label>
@@ -254,6 +297,7 @@ export function ApplicationEditDeleteForm({
           <input
             name="roleFamily"
             maxLength={120}
+            list="edit-application-role-family-options"
             defaultValue={application.roleFamily ?? ""}
           />
         </label>
@@ -263,6 +307,7 @@ export function ApplicationEditDeleteForm({
           <input
             name="roleLevel"
             maxLength={120}
+            list="edit-application-role-level-options"
             defaultValue={application.roleLevel ?? ""}
           />
         </label>
@@ -272,6 +317,7 @@ export function ApplicationEditDeleteForm({
           <input
             name="compensation"
             maxLength={300}
+            list="edit-application-compensation-options"
             defaultValue={application.compensation ?? ""}
           />
         </label>

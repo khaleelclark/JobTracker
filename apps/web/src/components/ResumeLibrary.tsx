@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, WheelEvent, useRef, useState } from "react";
 import {
   Button,
   Dialog,
@@ -36,8 +36,10 @@ interface ResumeLibraryProps {
 
 export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
   const router = useRouter();
+  const previewFrameRef = useRef<HTMLIFrameElement | null>(null);
   const [editingResume, setEditingResume] = useState<ResumeOption | null>(null);
   const [deleteResume, setDeleteResume] = useState<ResumeOption | null>(null);
+  const [previewResume, setPreviewResume] = useState<ResumeOption | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +126,20 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
     }
   }
 
+  function handlePreviewWheel(event: WheelEvent<HTMLDivElement>) {
+    const frameWindow = previewFrameRef.current?.contentWindow;
+    if (!frameWindow) {
+      return;
+    }
+
+    event.preventDefault();
+    frameWindow.scrollBy({
+      top: event.deltaY,
+      left: event.deltaX,
+      behavior: "auto",
+    });
+  }
+
   if (resumes.length === 0) {
     return <p className="muted">No resumes uploaded yet.</p>;
   }
@@ -133,12 +149,23 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
       <ul className="clean-list">
         {resumes.map(resume => (
           <li key={resume.id} className="list-row">
-            <div>
-              <strong>{resume.name}</strong>
-              <div className="muted">{resume.filePath}</div>
+            <div className="resume-library-text">
+              <button
+                type="button"
+                className="text-link-button"
+                onClick={() => setPreviewResume(resume)}
+              >
+                <strong>{resume.name}</strong>
+              </button>
+              <div className="muted resume-library-path">{resume.filePath}</div>
             </div>
             <div
-              style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                flexShrink: 0,
+                gap: "0.35rem",
+              }}
             >
               <IconButton
                 size="small"
@@ -169,6 +196,49 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
           </li>
         ))}
       </ul>
+
+      <Dialog
+        open={Boolean(previewResume)}
+        onClose={() => setPreviewResume(null)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>{previewResume?.name}</DialogTitle>
+        <DialogContent onWheel={handlePreviewWheel}>
+          {previewResume ? (
+            <div className="stack-md">
+              <iframe
+                ref={previewFrameRef}
+                title={`Preview ${previewResume.name}`}
+                src={`/api/resumes/${previewResume.id}/preview`}
+                className="resume-preview-frame"
+              />
+              <div>
+                <h3>Extracted Text</h3>
+                {previewResume.extractedText ? (
+                  <pre className="resume-preview-text">
+                    {previewResume.extractedText}
+                  </pre>
+                ) : (
+                  <p className="muted">No extracted text stored.</p>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          {previewResume ? (
+            <Button
+              component="a"
+              href={`/api/resumes/${previewResume.id}/download`}
+              endIcon={<DownloadIcon sx={{ fontSize: "1rem" }} />}
+            >
+              Download
+            </Button>
+          ) : null}
+          <Button onClick={() => setPreviewResume(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={Boolean(editingResume)}
