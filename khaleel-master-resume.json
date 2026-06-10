@@ -68,7 +68,9 @@
             "Hubspot",
             "ServiceNow",
             "Zendesk",
-            "Amazon Connect"
+            "Amazon Connect",
+            "Office 365",
+            "Google Workspace"
           ]
         },
         {
