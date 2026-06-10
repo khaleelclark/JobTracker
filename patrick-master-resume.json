@@ -164,12 +164,12 @@
             "Engineered an input data scoping system (React/TypeScript) for automatic, by-value data transfer between components, and adapted it within one day to meet revised specifications after a requirements miscommunication.",
             "Refined the RSPack build integration and built a demonstration showcasing a full Webpack to RSPack replacement for a core project area.",
             "Developed custom backend API endpoints and defined new data types (using .NET C# and a virtualized database architecture) to build core functionality for an internal monthly project status review application and a dynamic component input scoping system.",
-            "Led migration of a critical HR sync from SOAP to REST (PowerShell, C#) after the vendor sunsetted SOAP support; inherited a broken integration, stabilized it, and delivered the working migration to the HR event teams.",
+            "Led migration of a critical HR sync from SOAP to REST (PowerShell, C#) ahead of the vendor's January 1 SOAP sunset; inherited a broken integration, stabilized it, and delivered the working migration to the HR event teams.",
             "Primary owner of the Cvent Active Directory sync, a nightly integration that reconciles 40,000 to 60,000 contact records against Active Directory to keep employee data current across enterprise systems.",
             "Remediating Log4j vulnerabilities across legacy Java integration API repositories and contributing to the planning of their broader modernization effort.",
             "On loan to the EHS team to help deliver a critical API integration; identified an opportunity to leverage the main team's internal API hosting platform as the solution, benefiting both teams.",
             "Building a reusable Node.js SDK to bridge the EHS integration with the main team's API platform, while guiding a colleague building a parallel Python SDK.",
-            "Designing a deterministic AI output system with hallucination markers that signal whether AI-generated content may be fabricated; currently in active development.",
+            "Designing a deterministic AI output system with hallucination markers that signal whether AI-generated content may be fabricated; currently demoing it internally.",
             "Developed a Python proof-of-concept demonstrating how OData can enable AI to query structured databases, shared with upper management as part of broader AI capability exploration.",
             "Advise the team's tech lead on AI architecture decisions and contribute hands-on MCP experience to internal AI tooling and integration workflows.",
             "Built and maintain custom MCP servers locally, applying hands-on MCP architecture experience to internal AI tooling decisions at Leidos."
@@ -183,7 +183,7 @@
           "end_date": "Dec 2024",
           "bullets": [
             "Researched Module Federation for a microfrontend architecture over roughly a year, diagnosing Webpack compatibility issues, then identified and championed RSPack as the fix; it was the only configuration that got Hot Module Replacement working across our remotes, with noticeably faster builds as a secondary benefit.",
-            "Designed a database virtualization approach for flexible, user-creatable 'virtual' tables within a rigid SQL structure; the design was later implemented on the project using EF Core.",
+            "Designed a database virtualization approach for flexible, user-creatable 'virtual' tables within a rigid SQL structure; the design was adopted and built into the project using EF Core.",
             "Built significant functionality for an internal project-progress visualization application (demo), including backend logic for status-review entries, new data types for tracking monthly progress on a self-designed virtualized-table system, and 12 data visualizations."
           ]
         },
