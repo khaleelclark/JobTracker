@@ -82,8 +82,8 @@
           ]
         },
         {
-          "title": "Operating Systems",
-          "bullets": ["Windows", "Linux", "MacOS", "Android"]
+          "title": "Networking & Security",
+          "bullets": ["Rasopberry Pi", "Port-forwarding", "DNS records", "SSL certificates", "Firewall configuration"]
         },
         {
           "title": "AI & MCP",
@@ -181,7 +181,7 @@
         {
           "title": "Leidos",
           "sub_title": "Remote, USA",
-          "position": "Full Stack Developer Intern",
+          "position": "IT Intern",
           "start_date": "May 2023",
           "end_date": "Dec 2024",
           "bullets": [
@@ -252,7 +252,7 @@
           "sub_title": "Java, Paper, Bukkit, Model Engine",
           "position": "Founder & Lead Developer",
           "start_date": "2021",
-          "end_date": "Present",
+          "end_date": "Mar 2023",
           "bullets": [
             "Founded and lead development of Devoria, a Minecraft MMORPG built in Java on the Paper server framework.",
             "Designed and implemented a custom item and damage system using custom item stats.",

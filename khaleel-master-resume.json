@@ -137,6 +137,15 @@
           ]
         },
         {
+          "title": "Networking & Security",
+          "bullets": [
+            "Raspberry Pi",
+            "Port-forwarding",
+            "DNS records",
+            "SSL certificates"
+          ]
+        },
+        {
           "title": "Additional Knowledge",
           "bullets": ["Azure Fundamentals", "PowerShell", "SEO", "Kotlin"]
         }
@@ -255,7 +264,7 @@
         },
         {
           "title": "National Park Companion App",
-          "link": "https://www.figma.com/design/tEaTJzFKoQadMc8cKCgETh/National-Park-Companion-App?node-id=0-1&t=GzTkmFzw6NCItJiU-1",
+          "link": "https://www.figma.com/design/tEaTJzFKoQadMc8cKCgETh/National-Park-Companion-App?node-id=0-1&t=h2Fv5Bll9y6Ekfgx-0",
           "sub_title": "Figma, UX Research, Interaction Design",
           "position": "Solo Designer",
           "start_date": "Feb 2026",
@@ -279,8 +288,6 @@
             "Structured the codebase as a pnpm workspaces monorepo with three packages: web app, MCP server, and shared types, enforcing clean separation between UI, API, and validation layers.",
             "Defined shared Zod schemas in a dedicated package consumed across both the web app and MCP server, ensuring type-safe validation at every system boundary without duplication.",
             "Exposed read-only MCP tool endpoints covering: applications, interviews, reflections, email logs, follow-ups, resumes, and skills with bearer token protection and SSE transport as a structured API surface for AI agent consumption.",
-            "Integrated a local LLM worker via LM Studio using an OpenAI-compatible interface, enabling AI-assisted workflows without sending sensitive job-search data to external APIs.",
-            "Designed the system around explicit AI boundaries: the local LLM worker is restricted to generating UI output only, the MCP server is strictly read-only, and all reasoning and decisions flow through the user, reflecting deliberate thinking about safe, auditable AI system design.",
             "Implemented MCP-integrated resume generation tools allowing GPT to retrieve a master resume JSON, apply role-specific tailoring, and render a formatted PDF via headless Chromium, fully automating a previously manual process.",
             "Implemented automated SQLite backup with scheduled pruning of backups older than 30 days, ensuring data durability without manual maintenance overhead."
           ]
@@ -309,8 +316,10 @@
           "start_date": "Jan 2025",
           "end_date": "Present",
           "bullets": [
+            "Self-hosted on Raspberry Pi, configured port-forwarding, DNS records, SSL certificates, and firewall rules to securely expose the site to the internet",
             "Designed and developed a responsive portfolio with an emphasis on visual hierarchy, layout consistency, and user experience.",
-            "Created reusable UI components and flexible page layouts to enable efficient iteration and future content updates."
+            "Created reusable UI components and flexible page layouts to enable efficient iteration and future content updates.",
+            "Monitored and analyzed incoming traffic to identify access patterns and potential security issues"
           ]
         }
       ]
