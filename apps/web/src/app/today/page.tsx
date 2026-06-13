@@ -217,7 +217,7 @@ export default async function TodayPage() {
                 id: interview.id,
                 applicationCompany: interview.application.companyName,
                 roundLabel: interview.roundLabel,
-                scheduledAt: interview.scheduledAt,
+                scheduledAtIso: interview.scheduledAt.toISOString(),
                 status: interview.status,
               }))}
             />

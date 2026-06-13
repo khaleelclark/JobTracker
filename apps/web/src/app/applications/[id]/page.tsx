@@ -9,7 +9,7 @@ import { ApplicationCommunicationSection } from "@/components/ApplicationCommuni
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
 import { FollowupsCrudTable } from "@/components/FollowupsCrudTable";
 import { EngagementEventsCrudTable } from "@/components/EngagementEventsCrudTable";
-import { InterviewsCrudTable } from "@/components/InterviewsCrudTable";
+import { InterviewsSection } from "@/components/InterviewsSection";
 import { ApplicationResumeLinksManager } from "@/components/ApplicationResumeLinksManager";
 import { ApplicationStatusPill } from "@/components/ApplicationStatusPill";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -250,19 +250,19 @@ export default async function ApplicationDetailPage({
         />
       </div>
 
-      <div className="card">
-        <h2>Interviews</h2>
-        <InterviewsCrudTable
-          interviews={application.interviews.map((interview) => ({
-            id: interview.id,
-            applicationId: interview.applicationId,
-            roundIndex: interview.roundIndex,
-            roundLabel: interview.roundLabel,
-            status: interview.status,
-            scheduledAtIso: interview.scheduledAt.toISOString(),
-          }))}
-        />
-      </div>
+      <InterviewsSection
+        applications={[{ id: application.id, companyName: application.companyName, roleTitle: application.roleTitle }]}
+        defaultApplicationId={application.id}
+        interviews={application.interviews.map((interview) => ({
+          id: interview.id,
+          applicationId: interview.applicationId,
+          companyName: application.companyName,
+          roundIndex: interview.roundIndex,
+          roundLabel: interview.roundLabel,
+          status: interview.status,
+          scheduledAtIso: interview.scheduledAt.toISOString(),
+        }))}
+      />
     </section>
   );
 }

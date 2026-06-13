@@ -14,6 +14,8 @@ interface ApplicationOption {
 interface InterviewCreateFormProps {
   applications: ApplicationOption[];
   defaultApplicationId?: string;
+  hideHeader?: boolean;
+  onSaved?: () => void;
 }
 
 const INTERVIEW_STATUS_OPTIONS = ["scheduled", "completed", "cancelled"] as const;
@@ -26,7 +28,7 @@ function toIsoFromDateTime(raw: string): string {
   return new Date(raw).toISOString();
 }
 
-export function InterviewCreateForm({ applications, defaultApplicationId }: InterviewCreateFormProps) {
+export function InterviewCreateForm({ applications, defaultApplicationId, hideHeader, onSaved }: InterviewCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +81,7 @@ export function InterviewCreateForm({ applications, defaultApplicationId }: Inte
       }
       setSuccess("Interview logged.");
       router.refresh();
+      onSaved?.();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
@@ -89,10 +92,12 @@ export function InterviewCreateForm({ applications, defaultApplicationId }: Inte
 
   return (
     <form className="form-card" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h2>Log Interview</h2>
-        <p className="muted">Track each round and status as factual events.</p>
-      </div>
+      {!hideHeader && (
+        <div className="form-header">
+          <h2>Log Interview</h2>
+          <p className="muted">Track each round and status as factual events.</p>
+        </div>
+      )}
 
       <div className="form-grid form-grid-2">
         <label>
