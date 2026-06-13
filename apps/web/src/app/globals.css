@@ -733,3 +733,34 @@ button:disabled {
     transition: none;
   }
 }
+
+/* ── Database nav badge ── */
+
+.nav-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.db-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.db-mode-badge--test {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.db-mode-badge--nav {
+  padding: 0.18rem 0.55rem;
+  font-size: 0.72rem;
+}

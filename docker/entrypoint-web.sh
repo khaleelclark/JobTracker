@@ -26,6 +26,12 @@ SYSTEM NOTES
 EOF
 fi
 
+# If the user picked a custom DB path via the Settings UI, honour it.
+active_db_file="${data_dir}/active-db.txt"
+if [ -f "${active_db_file}" ]; then
+  export DATABASE_URL="$(cat "${active_db_file}")"
+fi
+
 /app/apps/web/node_modules/.bin/prisma migrate deploy --schema /app/apps/web/prisma/schema.prisma
 
 export HOSTNAME=0.0.0.0

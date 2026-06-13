@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Sora, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
+import path from "node:path";
 import { AppNav } from "@/components/AppNav";
 import { MuiProvider } from "@/components/MuiProvider";
 
@@ -26,12 +27,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const dbUrl = process.env.DATABASE_URL ?? "";
+  const dbFile = path.basename(dbUrl.replace(/^file:/, ""));
+  const dbLabel = dbFile && dbFile !== "job-tracker.sqlite" ? dbFile : null;
+
   return (
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body>
         <MuiProvider>
           <div className="bg-layer" aria-hidden />
-          <AppNav />
+          <AppNav dbLabel={dbLabel} />
           <main className="page-shell">{children}</main>
         </MuiProvider>
       </body>
