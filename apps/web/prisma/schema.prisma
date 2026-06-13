@@ -124,6 +124,7 @@ model Interview {
   roundLabel  String                @map("round_label")
   scheduledAt DateTime              @map("scheduled_at")
   status      InterviewStatus
+  notes       String?
   createdAt   DateTime              @default(now()) @map("created_at")
   reflection  InterviewReflection?
 

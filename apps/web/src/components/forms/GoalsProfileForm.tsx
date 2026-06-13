@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 interface GoalsProfileFormProps {
@@ -130,18 +129,6 @@ export function GoalsProfileForm({ initialProfile }: GoalsProfileFormProps) {
 
   return (
     <div className="stack-xl">
-      <div className="grid grid-2">
-        <div className="card">
-          <h2>Resources</h2>
-          <p className="muted">
-            Keep your resumes and skills aligned with your priorities.
-          </p>
-          <p>
-            <Link href="/resumes">Go to Resumes</Link>
-          </p>
-        </div>
-      </div>
-
       <form className="form-card" onSubmit={handleSubmit}>
         <div className="form-header">
           <h2>Goal & Mission Statement</h2>

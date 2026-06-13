@@ -236,6 +236,7 @@ export default async function ApplicationDetailPage({
           roundLabel: interview.roundLabel,
           status: interview.status,
           scheduledAtIso: interview.scheduledAt.toISOString(),
+          notes: interview.notes ?? null,
         }))}
       />
     </section>

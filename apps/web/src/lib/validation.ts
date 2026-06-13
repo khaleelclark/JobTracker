@@ -41,6 +41,7 @@ export const createInterviewSchema = z.object({
   roundLabel: z.string().min(1).max(100),
   scheduledAt: z.coerce.date(),
   status: z.enum(["scheduled", "completed", "cancelled"]),
+  notes: z.string().max(4000).optional().nullable(),
 });
 
 const emailLogPayloadSchema = z.object({

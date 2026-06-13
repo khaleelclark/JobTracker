@@ -37,6 +37,7 @@ export default async function InterviewsPage() {
           roundLabel: interview.roundLabel,
           scheduledAtIso: interview.scheduledAt.toISOString(),
           status: interview.status as "scheduled" | "completed" | "cancelled",
+          notes: interview.notes ?? null,
         }))}
       />
     </section>

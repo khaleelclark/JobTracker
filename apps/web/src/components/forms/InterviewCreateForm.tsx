@@ -62,6 +62,7 @@ export function InterviewCreateForm({ applications, defaultApplicationId, hideHe
       roundLabel: String(data.get("roundLabel") ?? "").trim(),
       scheduledAt: toIsoFromDateTime(String(data.get("scheduledAt") ?? "")),
       status: String(data.get("status") ?? "scheduled"),
+      notes: String(data.get("notes") ?? "").trim() || null,
     };
 
     try {
@@ -139,6 +140,11 @@ export function InterviewCreateForm({ applications, defaultApplicationId, hideHe
       <label>
         Scheduled At
         <input name="scheduledAt" type="datetime-local" required />
+      </label>
+
+      <label>
+        Notes
+        <textarea name="notes" rows={3} maxLength={4000} placeholder="Meeting link, interviewer name, prep notes…" />
       </label>
 
       <div className="form-actions">

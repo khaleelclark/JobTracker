@@ -24,6 +24,7 @@ export interface InterviewRow {
   roundLabel: string;
   scheduledAtIso: string;
   status: "scheduled" | "completed" | "cancelled";
+  notes: string | null;
 }
 
 interface InterviewsCrudTableProps {
@@ -83,6 +84,7 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
       roundLabel: String(data.get("roundLabel") ?? "").trim(),
       scheduledAt: new Date(String(data.get("scheduledAt") ?? "")).toISOString(),
       status: String(data.get("status") ?? "scheduled"),
+      notes: String(data.get("notes") ?? "").trim() || null,
     };
 
     try {
@@ -155,6 +157,14 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
       headerAlign: "center",
       align: "center",
       valueGetter: (_value, row) => fmtTime(row.scheduledAtIso),
+    },
+    {
+      field: "notes",
+      headerName: "Notes",
+      flex: 1.5,
+      minWidth: 120,
+      sortable: false,
+      valueGetter: (_value, row) => row.notes ?? "",
     },
     {
       field: "actions",
@@ -236,6 +246,10 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
                     <option key={s} value={s}>{toTitleCaseLabel(s)}</option>
                   ))}
                 </select>
+              </label>
+              <label>
+                Notes
+                <textarea name="notes" rows={3} maxLength={4000} defaultValue={editingInterview.notes ?? ""} placeholder="Meeting link, interviewer name, prep notes…" />
               </label>
             </form>
           ) : null}
