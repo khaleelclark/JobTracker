@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   DataGrid,
   GridColDef,
@@ -57,6 +57,12 @@ export function ApplicationTable({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+  const [showArchived, setShowArchived] = useState(false);
+
+  const archivedCount = applications.filter((a) => a.genericStatus === "archived").length;
+  const visibleApplications = showArchived
+    ? applications
+    : applications.filter((a) => a.genericStatus !== "archived");
 
   async function handleDuplicate(application: ApplicationRow) {
     const response = await fetch(`/api/applications/${application.id}/duplicate`, {
@@ -237,7 +243,7 @@ export function ApplicationTable({
 
   function handleExportCsv() {
     const header = ["Company", "Role", "Status", "Applied Date"];
-    const rows = applications.map(row => [
+    const rows = visibleApplications.map(row => [
       row.companyName,
       row.roleTitle,
       toTitleCaseLabel(row.genericStatus),
@@ -259,17 +265,28 @@ export function ApplicationTable({
     URL.revokeObjectURL(url);
   }
 
-  if (applications.length === 0) {
+  const header = (
+    <div className="section-head">
+      <h2 className="no-margin">{title}</h2>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {archivedCount > 0 && (
+          <Button size="small" variant="text" onClick={() => setShowArchived((v) => !v)}>
+            {showArchived ? "Hide Archived" : `Show Archived (${archivedCount})`}
+          </Button>
+        )}
+        <ApplicationCreateForm
+          resumes={resumes}
+          autocompleteOptions={autocompleteOptions}
+        />
+      </Box>
+    </div>
+  );
+
+  if (visibleApplications.length === 0) {
     return (
       <div className="stack-md">
-        <div className="section-head">
-          <h2 className="no-margin">{title}</h2>
-          <ApplicationCreateForm
-            resumes={resumes}
-            autocompleteOptions={autocompleteOptions}
-          />
-        </div>
-        <p className="muted">No applications logged yet.</p>
+        {header}
+        <p className="muted">{showArchived ? "No applications logged yet." : "No active applications."}</p>
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button onClick={handleExportCsv} disabled>
             Export Applications
@@ -281,16 +298,10 @@ export function ApplicationTable({
 
   return (
     <div className="stack-md">
-      <div className="section-head">
-        <h2 className="no-margin">{title}</h2>
-        <ApplicationCreateForm
-          resumes={resumes}
-          autocompleteOptions={autocompleteOptions}
-        />
-      </div>
+      {header}
       <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
         <DataGrid
-          rows={applications}
+          rows={visibleApplications}
           columns={columns}
           autoHeight
           getRowId={(row: ApplicationRow): GridRowId => row.id}
