@@ -6,10 +6,9 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton }
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import { toTitleCaseLabel } from "@/lib/format";
 
-interface EventRow {
+export interface EventRow {
   id: string;
   applicationId: string;
   eventType: "recruiter_reply" | "phone_screen" | "interview_round" | "offer" | "rejection_automated" | "rejection_human" | "rejection";
@@ -47,7 +46,6 @@ function toIsoFromDateInput(raw: string): string {
 
 export function EngagementEventsCrudTable({ events }: EngagementEventsCrudTableProps) {
   const router = useRouter();
-  const [viewingEvent, setViewingEvent] = useState<EventRow | null>(null);
   const [editingEvent, setEditingEvent] = useState<EventRow | null>(null);
   const [deleteEvent, setDeleteEvent] = useState<EventRow | null>(null);
   const [saving, setSaving] = useState(false);
@@ -147,9 +145,6 @@ export function EngagementEventsCrudTable({ events }: EngagementEventsCrudTableP
               <td>{new Date(item.occurredAtIso).toLocaleString()}</td>
               <td>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                  <IconButton size="small" title="View" onClick={() => setViewingEvent(item)}>
-                    <VisibilityIcon sx={{ fontSize: "1rem" }} />
-                  </IconButton>
                   <IconButton size="small" title="Edit" onClick={() => setEditingEvent(item)}>
                     <EditIcon sx={{ fontSize: "1rem" }} />
                   </IconButton>
@@ -162,31 +157,6 @@ export function EngagementEventsCrudTable({ events }: EngagementEventsCrudTableP
           ))}
         </tbody>
       </table>
-
-      <Dialog
-        open={Boolean(viewingEvent)}
-        onClose={(_event, reason) => {
-          if (reason === "backdropClick") {
-            return;
-          }
-          setViewingEvent(null);
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Engagement Event Details</DialogTitle>
-        <DialogContent>
-          {viewingEvent ? (
-            <div className="stack-md">
-              <p><strong>Event Type:</strong> {toTitleCaseLabel(viewingEvent.eventType)}</p>
-              <p><strong>Occurred At:</strong> {new Date(viewingEvent.occurredAtIso).toLocaleString()}</p>
-            </div>
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setViewingEvent(null)}>Close</Button>
-        </DialogActions>
-      </Dialog>
 
       <Dialog
         open={Boolean(editingEvent)}

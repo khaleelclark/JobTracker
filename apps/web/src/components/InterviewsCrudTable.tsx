@@ -7,7 +7,6 @@ import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, I
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import CloseIcon from "@mui/icons-material/Close";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -55,7 +54,6 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [viewingInterview, setViewingInterview] = useState<InterviewRow | null>(null);
   const [editingInterview, setEditingInterview] = useState<InterviewRow | null>(null);
   const [deleteInterview, setDeleteInterview] = useState<InterviewRow | null>(null);
   const [saving, setSaving] = useState(false);
@@ -130,20 +128,6 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
 
   const columns: GridColDef<InterviewRow>[] = [
     {
-      field: "view",
-      headerName: "",
-      sortable: false,
-      filterable: false,
-      width: 48,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params: GridRenderCellParams<InterviewRow>) => (
-        <IconButton size="small" title="View" onClick={() => { setViewingInterview(params.row); setError(null); }}>
-          <VisibilityIcon sx={{ fontSize: "1rem" }} />
-        </IconButton>
-      ),
-    },
-    {
       field: "companyName",
       headerName: "Company",
       flex: 1,
@@ -216,41 +200,6 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
           sx={{ backgroundColor: "#fff", width: "100%" }}
         />
       </Box>
-
-      {/* View */}
-      <Dialog
-        open={Boolean(viewingInterview)}
-        onClose={(_e, r) => { if (r !== "backdropClick") setViewingInterview(null); }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
-          Interview Details
-          <IconButton size="small" onClick={() => setViewingInterview(null)}>
-            <CloseIcon sx={{ fontSize: "1rem" }} />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          {viewingInterview ? (
-            <Box sx={{ display: "grid", gap: 2, pt: 0.5 }}>
-              <Box>
-                <Typography variant="overline" sx={{ color: "text.secondary" }}>
-                  {viewingInterview.companyName}
-                </Typography>
-                <Typography variant="h6">{viewingInterview.roundLabel}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                <Chip size="small" label={`Round ${viewingInterview.roundIndex}`} />
-                <Chip size="small" label={toTitleCaseLabel(viewingInterview.status)} />
-                <Chip size="small" variant="outlined" label={fmtTime(viewingInterview.scheduledAtIso)} />
-              </Box>
-            </Box>
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setViewingInterview(null)}>Close</Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Edit */}
       <Dialog

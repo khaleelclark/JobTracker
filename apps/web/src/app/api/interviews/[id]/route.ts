@@ -32,10 +32,12 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const existing = await prisma.interview.findUnique({ where: { id }, select: { id: true } });
+  const existing = await prisma.interview.findUnique({ where: { id }, select: { id: true, status: true, applicationId: true } });
   if (!existing) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
+
+  const completingNow = parsed.data.status === "completed" && existing.status !== "completed";
 
   try {
     const interview = await prisma.$transaction(async (tx) => {
@@ -49,6 +51,16 @@ export async function PATCH(request: Request, context: RouteContext) {
         where: { id: parsed.data.applicationId },
         data: { genericStatus: "interviewing" },
       });
+
+      if (completingNow) {
+        await tx.engagementEvent.create({
+          data: {
+            applicationId: existing.applicationId,
+            eventType: "interview_round",
+            occurredAt: new Date(),
+          },
+        });
+      }
 
       return updated;
     });

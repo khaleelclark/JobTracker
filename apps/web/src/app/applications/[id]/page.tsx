@@ -4,11 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MarkdownContent } from "@/components/MarkdownContent";
-import { ApplicationDetailActivityPanel } from "@/components/ApplicationDetailActivityPanel";
 import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
-import { FollowupsCrudTable } from "@/components/FollowupsCrudTable";
-import { EngagementEventsCrudTable } from "@/components/EngagementEventsCrudTable";
+import { ActivitySection } from "@/components/ActivitySection";
 import { InterviewsSection } from "@/components/InterviewsSection";
 import { ApplicationResumeLinksManager } from "@/components/ApplicationResumeLinksManager";
 import { ApplicationStatusPill } from "@/components/ApplicationStatusPill";
@@ -168,52 +166,26 @@ export default async function ApplicationDetailPage({
         autocompleteOptions={autocompleteOptions}
       />
 
-      <ApplicationDetailActivityPanel
-        application={{
-          id: application.id,
-          companyName: application.companyName,
-          roleTitle: application.roleTitle,
-        }}
-        interviews={application.interviews.map(interview => ({
-          id: interview.id,
-          roundLabel: interview.roundLabel,
-          scheduledAtIso: interview.scheduledAt.toISOString(),
-        }))}
-        followups={application.followups.map(followup => ({
+      <ActivitySection
+        applicationId={application.id}
+        followups={application.followups.map((followup) => ({
           id: followup.id,
+          applicationId: followup.applicationId,
           attemptIndex: followup.attemptIndex,
+          channel: followup.channel,
           sentAtIso: followup.sentAt.toISOString(),
+          resultStatus: followup.result?.resultStatus ?? "pending",
+          responseType: followup.result?.responseType ?? null,
+          resolvedAtIso: followup.result?.resolvedAt?.toISOString() ?? null,
+        }))}
+        events={application.events.map((event) => ({
+          id: event.id,
+          applicationId: event.applicationId,
+          eventType: event.eventType,
+          occurredAtIso: event.occurredAt.toISOString(),
         }))}
         nextFollowupAttemptIndex={nextFollowupAttemptIndex}
       />
-
-      <div className="grid grid-2">
-        <div className="card">
-          <h2>Follow-ups</h2>
-          <FollowupsCrudTable
-            followups={application.followups.map((followup) => ({
-              id: followup.id,
-              applicationId: followup.applicationId,
-              attemptIndex: followup.attemptIndex,
-              channel: followup.channel,
-              sentAtIso: followup.sentAt.toISOString(),
-              resultStatus: followup.result?.resultStatus ?? "pending",
-            }))}
-          />
-        </div>
-
-        <div className="card">
-          <h2>Engagement Events</h2>
-          <EngagementEventsCrudTable
-            events={application.events.map((event) => ({
-              id: event.id,
-              applicationId: event.applicationId,
-              eventType: event.eventType,
-              occurredAtIso: event.occurredAt.toISOString(),
-            }))}
-          />
-        </div>
-      </div>
 
       <ApplicationCommunicationSection
         applications={[

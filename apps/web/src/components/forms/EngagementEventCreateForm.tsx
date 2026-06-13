@@ -7,12 +7,12 @@ import { toTitleCaseLabel } from "@/lib/format";
 
 interface EngagementEventCreateFormProps {
   applicationId: string;
+  hideHeader?: boolean;
+  onSaved?: () => void;
 }
 
 const EVENT_TYPE_OPTIONS = [
   "recruiter_reply",
-  "phone_screen",
-  "interview_round",
   "offer",
   "rejection_automated",
   "rejection_human",
@@ -41,7 +41,7 @@ function notifyRejectedStatus(applicationId: string) {
   );
 }
 
-export function EngagementEventCreateForm({ applicationId }: EngagementEventCreateFormProps) {
+export function EngagementEventCreateForm({ applicationId, hideHeader, onSaved }: EngagementEventCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,12 +89,11 @@ export function EngagementEventCreateForm({ applicationId }: EngagementEventCrea
 
       form.reset();
       setSuccess("Engagement event logged.");
-
+      onSaved?.();
       if (isRejectionEventType(payload.eventType)) {
         notifyRejectedStatus(applicationId);
-      } else {
-        router.refresh();
       }
+      router.refresh();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
@@ -105,9 +104,11 @@ export function EngagementEventCreateForm({ applicationId }: EngagementEventCrea
 
   return (
     <form className="form-card compact" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h3>Log Engagement Event</h3>
-      </div>
+      {!hideHeader && (
+        <div className="form-header">
+          <h3>Log Engagement Event</h3>
+        </div>
+      )}
 
       <div className="form-grid form-grid-2">
         <label>

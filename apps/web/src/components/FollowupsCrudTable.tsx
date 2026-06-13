@@ -6,16 +6,17 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton }
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import { toTitleCaseLabel } from "@/lib/format";
 
-interface FollowupRow {
+export interface FollowupRow {
   id: string;
   applicationId: string;
   attemptIndex: number;
   channel: "email" | "linkedin" | "portal" | "other";
   sentAtIso: string;
   resultStatus: string;
+  responseType: string | null;
+  resolvedAtIso: string | null;
 }
 
 interface FollowupsCrudTableProps {
@@ -23,6 +24,14 @@ interface FollowupsCrudTableProps {
 }
 
 const FOLLOWUP_CHANNELS = ["email", "linkedin", "portal", "other"] as const;
+const RESULT_STATUS_OPTIONS = ["pending", "resolved", "expired_no_response"] as const;
+const RESPONSE_TYPE_OPTIONS = ["human_reply", "rejection_reply", "screen_scheduled", "interview_scheduled"] as const;
+
+function notifyRejectedStatus(applicationId: string) {
+  window.dispatchEvent(
+    new CustomEvent("application-status-updated", { detail: { applicationId, status: "rejected" } }),
+  );
+}
 
 function toDateInputValue(iso: string): string {
   const date = new Date(iso);
@@ -42,7 +51,6 @@ function toIsoFromDateInput(raw: string): string {
 
 export function FollowupsCrudTable({ followups }: FollowupsCrudTableProps) {
   const router = useRouter();
-  const [viewingFollowup, setViewingFollowup] = useState<FollowupRow | null>(null);
   const [editingFollowup, setEditingFollowup] = useState<FollowupRow | null>(null);
   const [deleteFollowup, setDeleteFollowup] = useState<FollowupRow | null>(null);
   const [saving, setSaving] = useState(false);
@@ -73,28 +81,48 @@ export function FollowupsCrudTable({ followups }: FollowupsCrudTableProps) {
     setSuccess(null);
 
     const data = new FormData(event.currentTarget);
-    const payload = {
+    const followupPayload = {
       applicationId: editingFollowup.applicationId,
       attemptIndex: Number(data.get("attemptIndex")),
       channel: String(data.get("channel") ?? "email"),
       sentAt: toIsoFromDateInput(String(data.get("sentAt") ?? "")),
     };
+    const responseType = String(data.get("responseType") ?? "").trim() || null;
+    const resolvedAtRaw = String(data.get("resolvedAt") ?? "").trim();
+    const resultPayload = {
+      followupAttemptId: editingFollowup.id,
+      resultStatus: String(data.get("resultStatus") ?? "pending"),
+      responseType,
+      resolvedAt: resolvedAtRaw ? new Date(`${resolvedAtRaw}T12:00:00`).toISOString() : null,
+    };
 
     try {
-      const response = await fetch(`/api/followups/${editingFollowup.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const [followupRes, resultRes] = await Promise.all([
+        fetch(`/api/followups/${editingFollowup.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(followupPayload),
+        }),
+        fetch("/api/followup-results", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(resultPayload),
+        }),
+      ]);
 
-      if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { detail?: unknown; error?: unknown };
-        const detail = typeof body.detail === "string" ? body.detail : null;
-        throw new Error(detail ?? "Unable to update follow-up");
+      if (!followupRes.ok) {
+        const body = (await followupRes.json().catch(() => ({}))) as { detail?: unknown };
+        throw new Error(typeof body.detail === "string" ? body.detail : "Unable to update follow-up");
+      }
+      if (!resultRes.ok) {
+        throw new Error("Unable to save follow-up result");
       }
 
       setEditingFollowup(null);
       setSuccess("Follow-up updated.");
+      if (responseType === "rejection_reply") {
+        notifyRejectedStatus(editingFollowup.applicationId);
+      }
       router.refresh();
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Unknown error");
@@ -155,9 +183,6 @@ export function FollowupsCrudTable({ followups }: FollowupsCrudTableProps) {
               <td>{toTitleCaseLabel(followup.resultStatus)}</td>
               <td>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                  <IconButton size="small" title="View" onClick={() => setViewingFollowup(followup)}>
-                    <VisibilityIcon sx={{ fontSize: "1rem" }} />
-                  </IconButton>
                   <IconButton size="small" title="Edit" onClick={() => setEditingFollowup(followup)}>
                     <EditIcon sx={{ fontSize: "1rem" }} />
                   </IconButton>
@@ -170,33 +195,6 @@ export function FollowupsCrudTable({ followups }: FollowupsCrudTableProps) {
           ))}
         </tbody>
       </table>
-
-      <Dialog
-        open={Boolean(viewingFollowup)}
-        onClose={(_event, reason) => {
-          if (reason === "backdropClick") {
-            return;
-          }
-          setViewingFollowup(null);
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Follow-up Details</DialogTitle>
-        <DialogContent>
-          {viewingFollowup ? (
-            <div className="stack-md">
-              <p><strong>Attempt Index:</strong> {viewingFollowup.attemptIndex}</p>
-              <p><strong>Channel:</strong> {toTitleCaseLabel(viewingFollowup.channel)}</p>
-              <p><strong>Sent At:</strong> {new Date(viewingFollowup.sentAtIso).toLocaleString()}</p>
-              <p><strong>Result:</strong> {toTitleCaseLabel(viewingFollowup.resultStatus)}</p>
-            </div>
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setViewingFollowup(null)}>Close</Button>
-        </DialogActions>
-      </Dialog>
 
       <Dialog
         open={Boolean(editingFollowup)}
@@ -214,31 +212,48 @@ export function FollowupsCrudTable({ followups }: FollowupsCrudTableProps) {
         <DialogContent>
           {editingFollowup ? (
             <form id="edit-followup-form" className="form-card" onSubmit={handleEditSubmit}>
-              <label>
-                Attempt Index
-                <input
-                  name="attemptIndex"
-                  type="number"
-                  min={1}
-                  max={20}
-                  required
-                  defaultValue={editingFollowup.attemptIndex}
-                />
-              </label>
-              <label>
-                Channel
-                <select name="channel" defaultValue={editingFollowup.channel}>
-                  {FOLLOWUP_CHANNELS.map((channel) => (
-                    <option key={channel} value={channel}>
-                      {toTitleCaseLabel(channel)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="form-grid form-grid-2">
+                <label>
+                  Attempt Index
+                  <input name="attemptIndex" type="number" min={1} max={20} required defaultValue={editingFollowup.attemptIndex} />
+                </label>
+                <label>
+                  Channel
+                  <select name="channel" defaultValue={editingFollowup.channel}>
+                    {FOLLOWUP_CHANNELS.map((ch) => (
+                      <option key={ch} value={ch}>{toTitleCaseLabel(ch)}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               <label>
                 Sent Date
                 <input name="sentAt" type="date" required defaultValue={toDateInputValue(editingFollowup.sentAtIso)} />
               </label>
+              <p className="muted" style={{ fontSize: "0.8rem", margin: "0.75rem 0 0.25rem" }}>Result</p>
+              <div className="form-grid form-grid-2">
+                <label>
+                  Status
+                  <select name="resultStatus" defaultValue={editingFollowup.resultStatus}>
+                    {RESULT_STATUS_OPTIONS.map((s) => (
+                      <option key={s} value={s}>{toTitleCaseLabel(s)}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Response Type
+                  <select name="responseType" defaultValue={editingFollowup.responseType ?? ""}>
+                    <option value="">None</option>
+                    {RESPONSE_TYPE_OPTIONS.map((r) => (
+                      <option key={r} value={r}>{toTitleCaseLabel(r)}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Resolved Date
+                  <input name="resolvedAt" type="date" defaultValue={editingFollowup.resolvedAtIso ? toDateInputValue(editingFollowup.resolvedAtIso) : ""} />
+                </label>
+              </div>
             </form>
           ) : null}
           {error ? <p className="error-text">{error}</p> : null}

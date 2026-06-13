@@ -34,10 +34,18 @@ export async function POST(request: Request) {
 
     await tx.application.update({
       where: { id: parsed.data.applicationId },
-      data: {
-        genericStatus: "interviewing",
-      },
+      data: { genericStatus: "interviewing" },
     });
+
+    if (parsed.data.status === "completed") {
+      await tx.engagementEvent.create({
+        data: {
+          applicationId: parsed.data.applicationId,
+          eventType: "interview_round",
+          occurredAt: new Date(),
+        },
+      });
+    }
 
     return createdInterview;
   });

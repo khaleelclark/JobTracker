@@ -8,6 +8,8 @@ import { toTitleCaseLabel } from "@/lib/format";
 interface FollowupCreateFormProps {
   applicationId: string;
   defaultAttemptIndex: number;
+  hideHeader?: boolean;
+  onSaved?: () => void;
 }
 
 const FOLLOWUP_CHANNEL_OPTIONS = ["email", "linkedin", "portal", "other"] as const;
@@ -20,7 +22,7 @@ function toIsoFromDate(raw: string): string {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-export function FollowupCreateForm({ applicationId, defaultAttemptIndex }: FollowupCreateFormProps) {
+export function FollowupCreateForm({ applicationId, defaultAttemptIndex, hideHeader, onSaved }: FollowupCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +75,7 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex }: Follo
       }
       setSuccess("Follow-up logged.");
       router.refresh();
+      onSaved?.();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
@@ -83,9 +86,11 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex }: Follo
 
   return (
     <form className="form-card compact" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h3>Log Follow-up</h3>
-      </div>
+      {!hideHeader && (
+        <div className="form-header">
+          <h3>Log Follow-up</h3>
+        </div>
+      )}
 
       <div className="form-grid form-grid-2">
         <label>
