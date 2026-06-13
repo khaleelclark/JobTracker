@@ -1,7 +1,10 @@
+import Link from "next/link";
+
 interface TimelineEntry {
   id: string;
   label: string;
   occurredAt: Date;
+  applicationId?: string;
 }
 
 interface TimelineProps {
@@ -17,9 +20,18 @@ export function Timeline({ entries }: TimelineProps) {
     <div className="card">
       <ul className="clean-list">
         {entries.map((entry) => (
-          <li key={entry.id} className="list-row">
-            <span>{entry.label}</span>
-            <span className="muted">{entry.occurredAt.toLocaleString()}</span>
+          <li key={entry.id} className={entry.applicationId ? "list-row list-row-link" : "list-row"}>
+            {entry.applicationId ? (
+              <Link href={`/applications/${entry.applicationId}`} className="list-row-inner">
+                <span>{entry.label}</span>
+                <span className="muted">{entry.occurredAt.toLocaleString()}</span>
+              </Link>
+            ) : (
+              <>
+                <span>{entry.label}</span>
+                <span className="muted">{entry.occurredAt.toLocaleString()}</span>
+              </>
+            )}
           </li>
         ))}
       </ul>

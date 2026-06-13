@@ -4,7 +4,12 @@ import { ApplicationTable } from "@/components/ApplicationTable";
 import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
 
-export default async function ApplicationsPage() {
+export default async function ApplicationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status: initialStatus } = await searchParams;
   const [applications, resumes] = await Promise.all([
     prisma.application.findMany({
       orderBy: { appliedAt: "desc" },
@@ -86,6 +91,7 @@ export default async function ApplicationsPage() {
           }))}
           resumes={resumes}
           autocompleteOptions={autocompleteOptions}
+          initialStatusFilter={initialStatus}
         />
       </div>
     </section>

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { InterviewList } from "@/components/InterviewList";
 import { Timeline } from "@/components/Timeline";
 import { prisma } from "@/lib/db";
@@ -163,21 +164,25 @@ export default async function TodayPage() {
       id: `application_${application.id}_${application.updatedAt.toISOString()}`,
       label: `${application.companyName}: application updated (${application.roleTitle}, ${toTitleCaseLabel(application.genericStatus)})`,
       occurredAt: application.updatedAt,
+      applicationId: application.id,
     })),
     ...engagementEvents.map((event) => ({
       id: `event_${event.id}`,
       label: `${event.application.companyName}: ${event.eventType}`,
       occurredAt: event.occurredAt,
+      applicationId: event.applicationId,
     })),
     ...followups.map((followup) => ({
       id: `followup_${followup.id}`,
       label: `${followup.application.companyName}: follow-up via ${followup.channel}`,
       occurredAt: followup.sentAt,
+      applicationId: followup.applicationId,
     })),
     ...emails.map((email) => ({
       id: `email_${email.id}`,
       label: `${email.companyName ?? email.application?.companyName ?? "Unknown Company"}: ${email.direction} ${email.channel} communication (${email.subject})`,
       occurredAt: email.createdAt,
+      applicationId: email.applicationId ?? undefined,
     })),
   ]
     .sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime())
@@ -215,6 +220,7 @@ export default async function TodayPage() {
             <InterviewList
               interviews={interviews.map((interview) => ({
                 id: interview.id,
+                applicationId: interview.applicationId,
                 applicationCompany: interview.application.companyName,
                 roundLabel: interview.roundLabel,
                 scheduledAtIso: interview.scheduledAt.toISOString(),
@@ -236,9 +242,11 @@ export default async function TodayPage() {
               {statusCounts.length > 0 ? (
                 <ul className="clean-list">
                   {statusCounts.map((item) => (
-                    <li key={item.status} className="list-row">
-                      <span>{toTitleCaseLabel(item.status)}</span>
-                      <strong>{item.count}</strong>
+                    <li key={item.status} className="list-row list-row-link">
+                      <Link href={`/applications?status=${item.status}`} className="list-row-inner">
+                        <span>{toTitleCaseLabel(item.status)}</span>
+                        <strong>{item.count}</strong>
+                      </Link>
                     </li>
                   ))}
                 </ul>

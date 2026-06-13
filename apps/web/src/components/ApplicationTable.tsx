@@ -45,6 +45,7 @@ interface ApplicationTableProps {
   resumes: Array<{ id: string; name: string }>;
   autocompleteOptions: ApplicationAutocompleteOptions;
   title?: string;
+  initialStatusFilter?: string;
 }
 
 export function ApplicationTable({
@@ -52,12 +53,13 @@ export function ApplicationTable({
   resumes,
   autocompleteOptions,
   title = "Application Records",
+  initialStatusFilter,
 }: ApplicationTableProps) {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
-  const [showArchived, setShowArchived] = useState(false);
+  const [showArchived, setShowArchived] = useState(initialStatusFilter === "archived");
 
   const archivedCount = applications.filter((a) => a.genericStatus === "archived").length;
   const visibleApplications = showArchived
@@ -314,6 +316,11 @@ export function ApplicationTable({
           pageSizeOptions={isMobile ? [5, 10, 25] : [10, 25, 50]}
           initialState={{
             pagination: { paginationModel },
+            filter: initialStatusFilter ? {
+              filterModel: {
+                items: [{ field: "genericStatus", operator: "equals", value: initialStatusFilter }],
+              },
+            } : undefined,
           }}
           sx={{
             backgroundColor: "#fff",
