@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MarkdownContent } from "@/components/MarkdownContent";
+import { cleanPostingText } from "@/lib/format";
 import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
 import { ActivitySection } from "@/components/ActivitySection";
@@ -134,7 +135,9 @@ export default async function ApplicationDetailPage({
         ) : null}
         <h3>Posting Details</h3>
         {application.postingDetails ? (
-          <MarkdownContent markdown={application.postingDetails} />
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6, fontSize: "0.9rem" }}>
+            {cleanPostingText(application.postingDetails)}
+          </p>
         ) : (
           <p className="muted">No posting details.</p>
         )}

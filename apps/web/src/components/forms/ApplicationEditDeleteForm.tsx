@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
-import { toTitleCaseLabel } from "@/lib/format";
+import { cleanPostingText, toTitleCaseLabel } from "@/lib/format";
 
 const STATUS_OPTIONS = [
   "applied",
@@ -114,7 +114,7 @@ export function ApplicationEditDeleteForm({
       companyName: String(data.get("companyName") ?? "").trim(),
       roleTitle: String(data.get("roleTitle") ?? "").trim(),
       careersPageUrl: normalizedCareersPageUrl(data.get("careersPageUrl")),
-      postingDetails: String(data.get("postingDetails") ?? "").trim() || null,
+      postingDetails: (() => { const v = String(data.get("postingDetails") ?? "").trim(); return v ? cleanPostingText(v) : null; })(),
       compensation: String(data.get("compensation") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
       preciseStatus: String(data.get("preciseStatus") ?? "").trim() || null,
