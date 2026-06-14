@@ -49,7 +49,6 @@ services:
       MCP_PORT: "7331"
       MASTER_RESUME_PATH: /app/khaleel-master-resume.json
       GENERATED_RESUME_DIR: /resumes
-      APP_BASE_URL: http://localhost:3000
       CHROME_PATH: chromium
     extra_hosts:
       - "host.docker.internal:host-gateway"

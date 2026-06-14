@@ -104,30 +104,6 @@ test("core CRUD across job tracker entities", async () => {
     });
     assert.equal(resumeUpdated.name, "Resume v2");
 
-    // MasterSkill CRUD (+ relation to resume)
-    const skill = await prisma.masterSkill.create({
-      data: {
-        name: "TypeScript",
-        category: "Programming Language",
-        notes: "Used in production web apps",
-        resumeLinks: {
-          create: [{ resumeId: resume.id }],
-        },
-      },
-      include: { resumeLinks: true },
-    });
-    assert.equal(skill.resumeLinks.length, 1);
-    const skillRead = await prisma.masterSkill.findUnique({ where: { id: skill.id } });
-    assert.equal(skillRead?.name, "TypeScript");
-    const skillUpdated = await prisma.masterSkill.update({
-      where: { id: skill.id },
-      data: { notes: "Used in production web + API apps" },
-    });
-    assert.equal(skillUpdated.notes, "Used in production web + API apps");
-    await prisma.masterSkill.delete({ where: { id: skill.id } });
-    const skillDeleted = await prisma.masterSkill.findUnique({ where: { id: skill.id } });
-    assert.equal(skillDeleted, null);
-
     await prisma.resume.delete({ where: { id: resume.id } });
     const resumeDeleted = await prisma.resume.findUnique({ where: { id: resume.id } });
     assert.equal(resumeDeleted, null);

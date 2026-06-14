@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { updateEngagementEventSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 function isRejectionEventType(eventType: string): boolean {
   return eventType === "rejection_automated" || eventType === "rejection_human" || eventType === "rejection";
@@ -58,7 +57,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     return updated;
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ event });
 }
 
@@ -71,6 +69,5 @@ export async function DELETE(_: Request, context: RouteContext) {
   }
 
   await prisma.engagementEvent.delete({ where: { id } });
-  await triggerWorkerFromWrite();
   return NextResponse.json({ ok: true });
 }

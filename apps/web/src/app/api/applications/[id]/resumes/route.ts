@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { updateApplicationResumeLinksSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -36,6 +35,5 @@ export async function PATCH(request: Request, context: RouteContext) {
     include: { resumes: { include: { resume: true } } },
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ application });
 }

@@ -60,7 +60,6 @@ Copy `.env.example` to `.env`. Most defaults work out of the box.
 |----------|---------|-------------|
 | `JOBTRACKER_DATA_DIR` | auto | Override data root directory |
 | `DATABASE_URL` | auto | Override SQLite path |
-| `APP_BASE_URL` | `http://localhost:3000` | Used to build resume download links |
 | `RESUME_OUTPUT_DIR` | `~/Documents/Job App Resumes` | Where generated PDF resumes are saved on your machine |
 | `MCP_PORT` | `7331` | MCP server port |
 | `MCP_BASE_URL` | — | Optional public HTTPS URL if exposing MCP externally |
@@ -86,7 +85,6 @@ Claude can generate tailored PDF resumes via the `generate_resume` MCP tool:
 2. Claude calls `get_master_resume` to load your source resume JSON, tailors it, then calls `generate_resume`.
 3. The PDF is saved automatically to `~/Documents/Job App Resumes` on your machine.
 4. Claude reports the filename — open that folder to find it.
-5. A time-limited download link (`http://localhost:3000/api/resumes/generated/<id>`) is also returned for browser download, valid for 24 hours.
 
 To use a named master resume (e.g. for another person), upload it via `POST /api/master-resumes` and call `get_master_resume` with the `owner` parameter.
 
@@ -168,17 +166,8 @@ All tools are read-only except `generate_resume`, which writes a PDF to disk onl
 - `PATCH /api/resumes/[id]` — Update resume.
 - `DELETE /api/resumes/[id]` — Delete resume.
 - `GET /api/resumes/[id]/download` — Download file.
-- `GET /api/resumes/generated/[id]` — Download a generated PDF by token (24h TTL).
 - `GET /api/master-resumes` — List managed master resume JSON files.
 - `POST /api/master-resumes` — Store a master resume JSON by owner name.
-- `GET /api/master-skills` — List skills (optional query/category filter).
-- `POST /api/master-skills` — Create skill with resume links.
-- `GET /api/master-skills/[id]` — Get skill.
-- `PATCH /api/master-skills/[id]` — Update skill and links.
-- `DELETE /api/master-skills` — Bulk delete all skills.
-- `DELETE /api/master-skills/[id]` — Delete single skill.
-- `POST /api/master-skills/generate-from-resume` — Extract and import skills from a resume.
-
 ### Configuration & Utilities
 
 - `GET /api/goals-profile` — Get goals profile and control file path.
@@ -202,11 +191,7 @@ All tools are read-only except `generate_resume`, which writes a PDF to disk onl
 
 **EngagementEvent** — eventType, occurredAt. Relation: application.
 
-**Resume** — name, filePath, extractedText. Relations: applications, masterSkills.
-
-**MasterSkill** — name, category, experienceYears, notes. Relations: resumes.
-
-**GeneratedResumeDownload** — fileName, filePath, expiresAt. Tracks generated PDF tokens for download endpoint.
+**Resume** — name, filePath, extractedText. Relations: applications.
 
 ### Automatic Behaviors
 

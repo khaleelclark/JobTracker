@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isPathWithinResumeDir, saveResumeFile } from "@/lib/fileStore";
 import { createResumeSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 export async function GET() {
   const resumes = await prisma.resume.findMany({
@@ -67,6 +66,5 @@ export async function POST(request: Request) {
     },
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ resume }, { status: 201 });
 }

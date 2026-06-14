@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { updateEmailLogSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -102,7 +101,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
-    await triggerWorkerFromWrite();
     return NextResponse.json({ emailLog });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -131,6 +129,5 @@ export async function DELETE(_: Request, context: RouteContext) {
   }
 
   await prisma.emailLog.delete({ where: { id } });
-  await triggerWorkerFromWrite();
   return NextResponse.json({ ok: true });
 }

@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { createEmailLogSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -54,7 +53,6 @@ export async function POST(request: Request) {
         },
       });
 
-      await triggerWorkerFromWrite();
       return NextResponse.json({ emailLog }, { status: 201 });
     }
 
@@ -86,7 +84,6 @@ export async function POST(request: Request) {
       ),
     );
 
-    await triggerWorkerFromWrite();
     if (emailLogs.length === 1) {
       return NextResponse.json({ emailLog: emailLogs[0] }, { status: 201 });
     }

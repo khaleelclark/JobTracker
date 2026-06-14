@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { updateFollowupSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -44,7 +43,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       include: { result: true, application: true },
     });
 
-    await triggerWorkerFromWrite();
     return NextResponse.json({ followup });
   } catch (error) {
     const detail = error instanceof Error ? error.message : "unknown_error";
@@ -61,6 +59,5 @@ export async function DELETE(_: Request, context: RouteContext) {
   }
 
   await prisma.followupAttempt.delete({ where: { id } });
-  await triggerWorkerFromWrite();
   return NextResponse.json({ ok: true });
 }

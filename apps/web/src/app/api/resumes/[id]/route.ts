@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isPathWithinResumeDir } from "@/lib/fileStore";
 import { updateResumeSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -56,7 +55,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     },
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ resume });
 }
 
@@ -71,6 +69,5 @@ export async function DELETE(_: Request, context: RouteContext) {
   }
 
   await prisma.resume.delete({ where: { id } });
-  await triggerWorkerFromWrite();
   return NextResponse.json({ ok: true });
 }

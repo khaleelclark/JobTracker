@@ -50,8 +50,8 @@ When the user requests a resume for a specific position:
 
 2. Call 'get_master_resume'.
    - 'get_master_resume' is the canonical source resume for all tailored resume generation tasks.
-   - Omit owner for Khaleel's resume.
-   - If the user asks for Patrick's resume, call it with { "owner": "Patrick" }.
+   - Omit owner to load the default master resume.
+   - Pass { "owner": "Name" } to load a specific person's master resume (e.g. "Patrick").
    - Do not generate resumes from memory when the tool is available.
 
 3. Generate a new tailored resume JSON object using the same schema structure as the master resume.
@@ -86,7 +86,7 @@ When the user requests a resume for a specific position:
    - 'generate_resume' is the canonical and preferred method for all resume generation tasks.
    - Do not use manual document generation methods (python/docx/etc.) unless explicitly requested by the user.
    - Always pass a descriptive 'file_name' parameter. Format: '{Full Name} - {Role} - {Company}.pdf'.
-     Example: 'Khaleel Clark - Senior Engineer - Acme Corp.pdf'
+     Example: 'Jane Smith - Senior Engineer - Acme Corp.pdf'
      Use the actual role title and company name from the job description.
 
       Ex. {
@@ -94,11 +94,9 @@ When the user requests a resume for a specific position:
   "location": "Example",
   "email": "example@example.com",
   "phone": "Example",
-  "links": {
-    "linkedin": "https://linkedin.com/in/example",
-    "github": "https://github.com/example",
-    "portfolio": "https://example.com"
-  },
+  "linkedin": "https://linkedin.com/in/example",
+  "github": "https://github.com/example",
+  "portfolio": "https://example.com",
 
   "sections": [
     {

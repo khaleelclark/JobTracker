@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -41,6 +40,5 @@ export async function POST(_: Request, context: RouteContext) {
     },
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ application }, { status: 201 });
 }

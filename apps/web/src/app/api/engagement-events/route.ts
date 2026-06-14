@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createEngagementEventSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 function isRejectionEventType(eventType: string): boolean {
   return eventType === "rejection_automated" || eventType === "rejection_human" || eventType === "rejection";
@@ -45,6 +44,5 @@ export async function POST(request: Request) {
     return created;
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ event }, { status: 201 });
 }

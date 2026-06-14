@@ -133,16 +133,6 @@ model Interview {
   @@map("interviews")
 }
 
-model GeneratedResumeDownload {
-  id        String   @id @default(uuid())
-  fileName  String   @map("file_name")
-  filePath  String   @map("file_path")
-  createdAt DateTime @default(now()) @map("created_at")
-  expiresAt DateTime @map("expires_at")
-
-  @@map("generated_resume_downloads")
-}
-
 model InterviewReflection {
   id          String            @id @default(uuid())
   interviewId String            @unique @map("interview_id")

@@ -10,11 +10,6 @@ const PROJECT_ROOT = path.resolve(__dirname, "../../../..");
 const MASTER_RESUME_PATH =
   process.env.MASTER_RESUME_PATH ?? path.join(PROJECT_ROOT, "khaleel-master-resume.json");
 
-const PROJECT_MASTER_RESUME_FILES: Record<string, string> = {
-  khaleel: MASTER_RESUME_PATH,
-  patrick: path.join(PROJECT_ROOT, "patrick-master-resume.json"),
-};
-
 const inputSchema = z.object({
   owner: z
     .string()
@@ -47,9 +42,10 @@ async function resolveMasterResumePath(owner: string | undefined): Promise<strin
     return MASTER_RESUME_PATH;
   }
 
-  const projectFile = PROJECT_MASTER_RESUME_FILES[owner.toLowerCase()];
-  if (projectFile && (await fileExists(projectFile))) {
-    return projectFile;
+  // Check project root for a bundled <name>-master-resume.json (e.g. patrick-master-resume.json)
+  const bundledPath = path.join(PROJECT_ROOT, `${owner.toLowerCase()}-master-resume.json`);
+  if (await fileExists(bundledPath)) {
+    return bundledPath;
   }
 
   return path.join(resolveMasterResumeDir(), `${owner}.json`);

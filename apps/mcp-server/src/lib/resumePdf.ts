@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck — intentionally untyped: pure HTML-rendering logic with no external type dependencies
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";

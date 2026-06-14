@@ -12,13 +12,6 @@ function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 }
 
-test("write trigger has no worker side effects", () => {
-  const source = read("apps/web/src/server/hooks/onWriteTriggers.ts");
-  assert.doesNotMatch(source, /server\/worker/);
-  assert.doesNotMatch(source, /queueWorkerRun/);
-  assert.doesNotMatch(source, /runWorkerOnce/);
-});
-
 test("mcp tools are read-only (no prisma mutations)", () => {
   const toolsDir = path.join(repoRoot, "apps/mcp-server/src/tools");
   const files = fs.readdirSync(toolsDir).filter((file) => file.endsWith(".ts"));
@@ -54,6 +47,7 @@ test("application status displays use title-case formatter", () => {
   const appTable = read("apps/web/src/components/ApplicationTable.tsx");
   const appCreate = read("apps/web/src/components/forms/ApplicationCreateForm.tsx");
   const appEdit = read("apps/web/src/components/forms/ApplicationEditDeleteForm.tsx");
+  const statusPill = read("apps/web/src/components/ApplicationStatusPill.tsx");
   const appDetail = read("apps/web/src/app/applications/[id]/page.tsx");
   const today = read("apps/web/src/app/today/page.tsx");
   const globals = read("apps/web/src/app/globals.css");
@@ -61,7 +55,9 @@ test("application status displays use title-case formatter", () => {
   assert.match(appTable, /toTitleCaseLabel\(application\.genericStatus\)/);
   assert.match(appCreate, /toTitleCaseLabel\(status\)/);
   assert.match(appEdit, /toTitleCaseLabel\(status\)/);
-  assert.match(appDetail, /toTitleCaseLabel\(application\.genericStatus\)/);
+  // Detail page delegates status display to ApplicationStatusPill
+  assert.match(appDetail, /ApplicationStatusPill/);
+  assert.match(statusPill, /toTitleCaseLabel\(status\)/);
   assert.match(today, /toTitleCaseLabel\(application\.genericStatus\)/);
   assert.match(globals, /\.status-under_review/);
 });

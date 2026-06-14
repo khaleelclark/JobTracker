@@ -171,7 +171,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   {
     name: "generate_resume",
     description:
-      "Generate a PDF resume from an AI-tailored resume JSON object. Saves the PDF directly to the user's local machine and returns the file name and path. Always provide a descriptive file_name like 'Khaleel Clark - Role - Company.pdf'. Tell the user the file was saved and give them the file name.",
+      "Generate a PDF resume from an AI-tailored resume JSON object. Saves the PDF directly to the user's local machine and returns the file name and path. Always provide a descriptive file_name like 'Full Name - Role - Company.pdf'. Tell the user the file was saved and give them the file name.",
     inputSchema: {
       type: "object",
       properties: {
@@ -182,7 +182,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
         file_name: {
           type: "string",
           maxLength: 200,
-          description: "Descriptive file name for the PDF, e.g. 'Khaleel Clark - Senior Engineer - Acme.pdf'. Do not include a path. Extension is optional.",
+          description: "Descriptive file name for the PDF, e.g. 'Jane Smith - Senior Engineer - Acme.pdf'. Do not include a path. Extension is optional.",
         },
       },
       required: ["resume", "file_name"],
