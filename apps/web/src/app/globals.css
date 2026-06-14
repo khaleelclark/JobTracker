@@ -185,20 +185,6 @@ p {
   gap: 1rem;
 }
 
-.hero {
-  padding: clamp(1.1rem, 3vw, 1.9rem);
-  border-radius: 22px;
-  border: 1px solid rgba(15, 74, 134, 0.2);
-  background: linear-gradient(135deg, rgba(12, 74, 110, 0.94) 0%, rgba(15, 118, 110, 0.9) 55%, rgba(245, 158, 11, 0.85) 100%);
-  color: #f5fbff;
-  box-shadow: var(--shadow);
-}
-
-.hero p {
-  margin-top: 0.75rem;
-  max-width: 64ch;
-  color: rgba(245, 251, 255, 0.92);
-}
 
 .stack-xl {
   display: grid;
@@ -220,13 +206,6 @@ p {
   gap: 1rem;
 }
 
-.grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
-.grid-3 {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
 
 .layout-split {
   display: grid;
