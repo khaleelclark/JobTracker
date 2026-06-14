@@ -1,386 +1,249 @@
 # Job Tracker
 
-Local-first monorepo for passive job-search record keeping.
+Local-first monorepo for passive job-search record keeping. Runs entirely on your machine via Docker. No cloud dependencies.
 
 ## Philosophy
 
-- Store and display factual records only.
-- Keep strategy and decision-making outside the app.
-- MCP service is read-only.
+- Store and display factual records only — no AI-generated rankings or suggestions embedded in the app.
+- Strategy and decision-making happen outside the app via human reasoning and AI analysis through MCP.
+- MCP server is read-only: it observes data, never mutates it.
 
 ## Monorepo Layout
 
-- `apps/web`: Next.js UI, API routes, Prisma schema.
-- `apps/mcp-server`: OAuth-protected read-only MCP/SSE service.
-- `packages/shared`: shared constants, schemas, and types.
-- `scripts`: operational scripts (`db:migrate`, backups, data-dir init).
-- `tests`: invariant and CRUD tests.
+- `apps/web` — Next.js UI, API routes, Prisma schema.
+- `apps/mcp-server` — OAuth-protected MCP/SSE service with 12 read-only tools + resume generation.
+- `packages/shared` — shared constants, schemas, and types.
+- `scripts` — operational scripts (db:migrate, backups, data-dir init).
+- `tests` — invariant and CRUD tests.
+- `docker/` — container entrypoint scripts.
 
-## Core Data Areas
+## Quickstart (Docker — recommended)
 
-- Applications, interviews, interview reflections.
-- Follow-up attempts and follow-up results.
-- Email logs (with optional notes), engagement events.
-- Resumes + application links, master skills + resume links.
+1. Copy the env file:
+   ```bash
+   cp .env.example .env
+   ```
+2. Fill in `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` in `.env` (any strings you choose — they protect the MCP server).
+3. Build and start:
+   ```bash
+   docker compose up --build -d
+   ```
+4. Open the web UI: `http://localhost:3000`
+5. Connect Claude to MCP at `http://localhost:7331`
 
-## Web UI Pages
+Stop everything:
+```bash
+docker compose down
+```
 
-- **Today**: Dashboard/overview of recent activity and status.
-- **Applications**: List and search all job applications with filtering by status and query.
-- **Emails**: Communication logs page with full CRUD for email/LinkedIn messages.
-- **Interviews**: Interview tracking with multi-round support.
-- **Reflections**: Interview outcome reflections (advanced/rejected/pending).
-- **Follow-ups**: Track follow-up attempts and their results.
-- **Engagement Events**: Record job-related events (recruiter reply, phone screen, offer, rejection, etc.).
-- **Resumes**: Manage resumes, extract text, and link to applications and skills.
-- **Skills**: Master skill inventory with categories and experience years.
-- **Goals**: Job search goals and profile configuration.
-- **Settings**: Application and system configuration.
+On first boot the web container automatically runs `prisma migrate deploy` and initializes all data directories before serving traffic.
 
-## Web UI Capabilities
+## Quickstart (Local Dev)
 
-### Application Detail Page
-
-- Direct section actions for:
-  - Communication logs: view/edit/delete with multi-channel support (email, LinkedIn).
-  - Follow-ups: view/edit/delete with multiple channel types (email, LinkedIn, portal, other).
-  - Engagement events: view/edit/delete with automatic status updates on rejection events.
-  - Interviews: view/edit/delete with multi-round interview tracking.
-  - Resume links: add/remove links and download linked resume files.
-- Quick Log forms auto-dismiss success/error messages after 3 seconds.
-- Bulk email creation: create emails across multiple applications in one action.
-
-### Global Features
-
-- Search/filter applications by company name, role title, and generic status.
-- Communication Logs page: full CRUD for all email/LinkedIn messages (application-level and company-level).
-- Master Skills management: create, update, delete skills with categories and experience tracking.
-- Resume management: upload/link resumes, extract text from PDF/DOC/DOCX/TXT files.
-- Skill extraction from resumes: auto-import candidate skills from resume text.
-- Goals profile configuration: store job search strategy and objectives in control file.
-- Health check endpoint for service monitoring.
+1. Install deps: `pnpm install`
+2. Copy env: `cp .env.example .env`
+3. Run migrations: `pnpm db:migrate`
+4. Start services: `pnpm dev`
 
 ## Runtime Ports
 
-- Web app: `127.0.0.1:3000`
-- MCP server: `127.0.0.1:7331`
+| Service | Address |
+|---------|---------|
+| Web UI  | `http://localhost:3000` |
+| MCP server | `http://localhost:7331` |
 
-## Environment
+## Environment Variables
 
-Copy `.env.example` to `.env` and adjust values as needed.
+Copy `.env.example` to `.env`. Most defaults work out of the box.
 
-Key variables:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JOBTRACKER_DATA_DIR` | auto | Override data root directory |
+| `DATABASE_URL` | auto | Override SQLite path |
+| `APP_BASE_URL` | `http://localhost:3000` | Used to build resume download links |
+| `RESUME_OUTPUT_DIR` | `~/Documents/Job App Resumes` | Where generated PDF resumes are saved on your machine |
+| `MCP_PORT` | `7331` | MCP server port |
+| `MCP_BASE_URL` | — | Optional public HTTPS URL if exposing MCP externally |
+| `OAUTH_CLIENT_ID` | — | Required: protects MCP server |
+| `OAUTH_CLIENT_SECRET` | — | Required: protects MCP server |
 
-- Paths:
-  - `JOBTRACKER_DATA_DIR` (optional override for data root)
-  - `DATABASE_URL` (optional override; defaults to local SQLite file)
-- MCP/OAuth:
-  - `MCP_PORT`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`
-  - `MCP_BASE_URL` (optional public HTTPS base URL when exposing MCP outside localhost)
+## Web UI Pages
 
-## Quickstart
+- **Today** — Dashboard with upcoming interviews, recent activity timeline, and application status counts. All items are clickable and link to their application.
+- **Applications** — Full list with search and status filtering. Archived applications are hidden by default with a toggle to reveal them. Clicking a status count on the Today page deep-links here with the filter pre-applied.
+- **Application Detail** — Full CRUD for all data related to one application: interviews (with notes/meeting links), email logs, follow-up attempts, engagement events, and linked resumes.
+- **Emails** — Global communication log across all applications and companies.
+- **Interviews** — Global interview list across all applications, with notes column for meeting links and interviewer names.
+- **Goals** — Job search goals and profile configuration (backed by the control file).
+- **Resumes** — Upload and manage resumes, extract text, link to applications and skills.
+- **Settings** — Application and database configuration.
 
-1. Install deps:
-   - `pnpm install`
-2. Create env file:
-   - Bash: `cp .env.example .env`
-   - PowerShell: `Copy-Item .env.example .env`
-3. Initialize app-data folders:
-   - `pnpm init:data-dir`
-4. Run migrations:
-   - `pnpm db:migrate`
-5. Start services:
-   - `pnpm dev`
+## Resume Generation Workflow
 
-## Docker Deployment
+Claude can generate tailored PDF resumes via the `generate_resume` MCP tool:
 
-Use Docker Compose when you want a single command deployment with persistent SQLite storage.
+1. Ask Claude to tailor your resume for a specific job posting.
+2. Claude calls `get_master_resume` to load your source resume JSON, tailors it, then calls `generate_resume`.
+3. The PDF is saved automatically to `~/Documents/Job App Resumes` on your machine.
+4. Claude reports the filename — open that folder to find it.
+5. A time-limited download link (`http://localhost:3000/api/resumes/generated/<id>`) is also returned for browser download, valid for 24 hours.
 
-Layout note:
+To use a named master resume (e.g. for another person), upload it via `POST /api/master-resumes` and call `get_master_resume` with the `owner` parameter.
 
-- This app still uses two containers because the web UI and the MCP server are separate services.
-- Public exposure is transport-agnostic: use any HTTPS endpoint you want in front of the MCP service.
-- `ngrok` is only an optional convenience, not a deployment requirement.
+## MCP Server
 
-1. Review `.env`:
-   - For OpenAI, keep your normal API settings.
-   - For a model running on the Docker host, replace `127.0.0.1` with `host.docker.internal`.
-2. Build and start:
-   - `docker compose up --build -d`
-3. Open services:
-   - Web UI: `http://127.0.0.1:3000`
-   - MCP server: `http://127.0.0.1:7331`
-4. Stop:
-   - `docker compose down`
+The MCP server provides Claude with read-only access to all job tracking data plus PDF resume generation. It uses OAuth for security and supports both SSE streaming and HTTP request/response.
 
-Notes:
+### Connecting Claude
 
-- The shared Docker volume `job-tracker-data` stores the SQLite database, backups, resumes, OAuth token state, and control file.
-- The web container runs `init:data-dir` and `prisma migrate deploy` on startup before serving traffic.
-- Compose forces `DATABASE_URL=file:/data/job-tracker.sqlite` so container startup does not depend on a host-specific path from `.env`.
-- If you expose MCP publicly, point your tunnel, proxy, or domain at port `7331`.
-- More detail: `docs/docker.md`
+In Claude's MCP settings, add a remote server pointing at `http://localhost:7331`. Use the same `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` from your `.env` when prompted.
 
-## Useful Commands
+### Available Tools
 
-- `pnpm dev:web`: run web service only.
-- `pnpm dev:mcp`: run MCP service only.
-- `pnpm backup:run`: create SQLite backup + prune old backups.
-- `pnpm db:studio`: Prisma Studio.
-- `pnpm test`: run invariant + CRUD tests.
+| Tool | Description |
+|------|-------------|
+| `search_applications` | Search by text query and/or status with a result limit |
+| `get_application` | Full application with interviews, emails, follow-ups, and events |
+| `list_interviews` | All interviews, optionally filtered by application |
+| `get_reflection` | Interview reflection (pending/advanced/rejected) for a specific interview |
+| `list_email_logs` | Communication logs filtered by application, company, or global |
+| `list_followup_attempts` | Follow-up attempts and their results for an application |
+| `list_engagement_events` | Engagement events for an application |
+| `get_resume` | Single resume with linked applications |
+| `get_master_resume` | Master resume JSON for AI-tailored resume generation |
+| `generate_resume` | Generate a PDF from a tailored resume JSON (saves to your machine) |
+| `get_control_file` | Current goals/strategy control file text |
+| `get_full_context_dump` | Full system-wide data snapshot — use only when explicitly requested |
+
+All tools are read-only except `generate_resume`, which writes a PDF to disk only.
 
 ## Web API Surface
 
 ### Applications
 
-- `GET /api/applications` - List applications with optional filtering (query, genericStatus, limit).
-- `POST /api/applications` - Create new application with linked resumes.
-- `GET /api/applications/[id]` - Get application with all related data (interviews, emails, followups, events, resumes).
-- `PATCH /api/applications/[id]` - Update application details.
-- `DELETE /api/applications/[id]` - Delete application.
-- `PATCH /api/applications/[id]/resumes` - Update resume links for an application.
+- `GET /api/applications` — List with optional query, genericStatus, limit filters.
+- `POST /api/applications` — Create with linked resumes.
+- `GET /api/applications/[id]` — Full application with all relations.
+- `PATCH /api/applications/[id]` — Update application.
+- `DELETE /api/applications/[id]` — Delete application.
+- `PATCH /api/applications/[id]/resumes` — Update resume links.
 
 ### Interviews & Reflections
 
-- `GET /api/interviews` - List all interviews with optional application filter.
-- `POST /api/interviews` - Create interview and update application to "interviewing" status.
-- `GET /api/interviews/[id]` - Get interview with reflection data.
-- `PATCH /api/interviews/[id]` - Update interview.
-- `DELETE /api/interviews/[id]` - Delete interview.
-- `GET /api/reflections` - List interview reflections with optional filter.
-- `POST /api/reflections` - Create or upsert interview reflection.
+- `GET /api/interviews` — List all interviews (optional application filter).
+- `POST /api/interviews` — Create interview; auto-sets application to "interviewing".
+- `GET /api/interviews/[id]` — Get interview with reflection.
+- `PATCH /api/interviews/[id]` — Update interview.
+- `DELETE /api/interviews/[id]` — Delete interview.
+- `GET /api/reflections` — List reflections.
+- `POST /api/reflections` — Create or upsert reflection.
 
-### Communication Logs & Email
+### Communication Logs
 
-- `GET /api/emails` - List email logs with optional application filter and limit control.
-- `POST /api/emails` - Create email log(s) (supports single application, multiple applications, or company-level).
-- `GET /api/emails/[id]` - Get specific email log with application info.
-- `PATCH /api/emails/[id]` - Update email log (supports moving between applications).
+- `GET /api/emails` — List logs (optional application filter, limit).
+- `POST /api/emails` — Create log(s): single application, multiple applications, or company-level.
+- `GET /api/emails/[id]` — Get log with application info.
+- `PATCH /api/emails/[id]` — Update log.
 
 ### Follow-ups & Engagement
 
-- `GET /api/followups` - List follow-up attempts with optional application filter.
-- `POST /api/followups` - Create follow-up attempt.
-- `GET /api/followups/[id]` - Get follow-up with application and result data.
-- `PATCH /api/followups/[id]` - Update follow-up attempt.
-- `DELETE /api/followups/[id]` - Delete follow-up attempt.
-- `GET /api/followup-results` - List follow-up results with optional filter.
-- `POST /api/followup-results` - Create/upsert follow-up result (auto-rejects on rejection_reply).
-- `GET /api/engagement-events` - List engagement events with optional application filter.
-- `POST /api/engagement-events` - Create engagement event (auto-rejects on rejection event types).
-- `GET /api/engagement-events/[id]` - Get engagement event with application info.
-- `PATCH /api/engagement-events/[id]` - Update engagement event (auto-rejects on rejection).
-- `DELETE /api/engagement-events/[id]` - Delete engagement event.
+- `GET /api/followups` — List follow-up attempts.
+- `POST /api/followups` — Create follow-up attempt.
+- `GET /api/followups/[id]` — Get follow-up with result.
+- `PATCH /api/followups/[id]` — Update follow-up.
+- `DELETE /api/followups/[id]` — Delete follow-up.
+- `GET /api/followup-results` — List results.
+- `POST /api/followup-results` — Create/upsert result; auto-rejects application on rejection_reply.
+- `GET /api/engagement-events` — List events.
+- `POST /api/engagement-events` — Create event; auto-rejects application on rejection event types.
+- `GET /api/engagement-events/[id]` — Get event.
+- `PATCH /api/engagement-events/[id]` — Update event.
+- `DELETE /api/engagement-events/[id]` — Delete event.
 
 ### Resumes & Skills
 
-- `GET /api/resumes` - List all resumes with applications and master skills.
-- `POST /api/resumes` - Create resume (supports file upload or existing file path).
-- `GET /api/resumes/[id]` - Get resume with application and skill links.
-- `PATCH /api/resumes/[id]` - Update resume details and links.
-- `DELETE /api/resumes/[id]` - Delete resume.
-- `GET /api/resumes/[id]/download` - Download resume file with correct content-type.
-- `GET /api/master-resumes` - List managed master resume JSON files.
-- `POST /api/master-resumes` - Store a managed master resume JSON by owner for MCP resume generation.
-- `GET /api/master-skills` - List master skills with optional query/category filtering.
-- `POST /api/master-skills` - Create master skill with resume links.
-- `GET /api/master-skills/[id]` - Get master skill with resume links.
-- `PATCH /api/master-skills/[id]` - Update master skill and resume links.
-- `DELETE /api/master-skills` - Bulk delete all master skills.
-- `DELETE /api/master-skills/[id]` - Delete single master skill.
-- `POST /api/master-skills/generate-from-resume` - Extract and import skills from resume (supports file upload, text paste, or existing resume).
+- `GET /api/resumes` — List with applications and skills.
+- `POST /api/resumes` — Upload resume file or register existing path.
+- `GET /api/resumes/[id]` — Get resume with links.
+- `PATCH /api/resumes/[id]` — Update resume.
+- `DELETE /api/resumes/[id]` — Delete resume.
+- `GET /api/resumes/[id]/download` — Download file.
+- `GET /api/resumes/generated/[id]` — Download a generated PDF by token (24h TTL).
+- `GET /api/master-resumes` — List managed master resume JSON files.
+- `POST /api/master-resumes` — Store a master resume JSON by owner name.
+- `GET /api/master-skills` — List skills (optional query/category filter).
+- `POST /api/master-skills` — Create skill with resume links.
+- `GET /api/master-skills/[id]` — Get skill.
+- `PATCH /api/master-skills/[id]` — Update skill and links.
+- `DELETE /api/master-skills` — Bulk delete all skills.
+- `DELETE /api/master-skills/[id]` — Delete single skill.
+- `POST /api/master-skills/generate-from-resume` — Extract and import skills from a resume.
 
-### Configuration
+### Configuration & Utilities
 
-- `GET /api/goals-profile` - Get goals profile and control file path.
-- `PUT /api/goals-profile` - Update goals profile in control file.
-- `GET /api/control-file` - Get current control file text.
-- `GET /api/health` - Health check endpoint.
+- `GET /api/goals-profile` — Get goals profile and control file path.
+- `PUT /api/goals-profile` — Update goals profile.
+- `GET /api/control-file` — Get control file text.
+- `GET /api/health` — Health check.
 
-### Data Extraction & Utilities
+## Core Data Model
 
-- Resume text extraction: Supports PDF (via pdftotext), DOCX (XML parsing), DOC (strings), and plain text formats.
-- Skill extraction: Rule-based and candidate parsing from resume text with automatic experience year inference.
-- Auto-status updates: Application status automatically updates to "interviewing", "rejected", etc. based on events.
-- Bulk operations: Email logs and skill operations support creating/updating multiple records in transactions.
+**Application** — companyName, roleTitle, genericStatus, preciseStatus, roleFamily, roleLevel, appliedAt, careersPageUrl, postingDetails, compensation, notes. Relations: interviews, emailLogs, followups, events, resumes.
 
-### Write Triggers
+**Interview** — roundIndex, roundLabel, scheduledAt, status, notes. Relations: application, reflection.
 
-- All write operations trigger a worker signal for LLM-based UI card generation.
-- Worker reads structured data snapshots and produces suggestion cards without modifying truth data.
+**InterviewReflection** — summary, outcome (pending/advanced/rejected). 1:1 with Interview.
 
-## MCP Server
+**EmailLog** — direction, isHuman, subject, body, channel (email/linkedin), notes. Optional application or company-level.
 
-The MCP server provides read-only access to job tracking data via OAuth-protected endpoints. It supports both SSE streaming and traditional HTTP request/response patterns.
+**FollowupAttempt** — attemptIndex, channel (email/linkedin/portal/other), sentAt. Relations: application, result.
 
-### OAuth & Security
+**FollowupResult** — resultStatus, responseType, resolvedAt. 1:1 with FollowupAttempt.
 
-- `GET /.well-known/oauth-protected-resource` - OAuth resource metadata.
-- `GET /.well-known/oauth-authorization-server` - OAuth authorization server metadata.
-- `GET /oauth/authorize` - OAuth authorization endpoint.
-- `POST /oauth/token` - OAuth token endpoint.
+**EngagementEvent** — eventType, occurredAt. Relation: application.
 
-### Streaming & Messages
+**Resume** — name, filePath, extractedText. Relations: applications, masterSkills.
 
-- `GET /sse` - Server-Sent Events stream for real-time updates.
-- `POST /messages` - Send messages to streaming connection.
+**MasterSkill** — name, category, experienceYears, notes. Relations: resumes.
 
-### Tools & Data Access
+**GeneratedResumeDownload** — fileName, filePath, expiresAt. Tracks generated PDF tokens for download endpoint.
 
-- `GET /mcp/tools` - List available MCP tools with descriptions and schemas.
-- `POST /mcp/tools/:toolName` - Execute MCP tool with JSON input.
+### Automatic Behaviors
 
-### Available MCP Tools (Read-Only)
+- Creating an interview sets the application to `interviewing`.
+- Creating a rejection event or rejection follow-up result sets the application to `rejected`.
+- Job posting text is auto-cleaned on save (markdown stripped, whitespace normalized).
+- Archived applications are hidden from the table by default.
 
-#### Application & Search Tools
+## File Storage
 
-- `search_applications` - Search by query/status with limit (enum: applied, under_review, interviewing, offered, rejected, withdrawn, archived).
-- `get_application` - Fetch full application with interviews, emails, followups, and events.
+| What | Where |
+|------|-------|
+| SQLite database | `/data/job-tracker.sqlite` (Docker volume) |
+| Resume files | `/data/resumes/` |
+| Database backups | `/data/backups/` |
+| Control file | `/data/control.txt` |
+| Generated PDF resumes | `~/Documents/Job App Resumes` (host machine) |
 
-#### Interview & Reflection Tools
+Docker volume `job-tracker-data` is shared between both containers for database and resume file access. Generated PDF resumes are bind-mounted directly to your home directory so they're immediately accessible without digging into Docker internals.
 
-- `list_interviews` - List interviews optionally filtered by application.
-- `get_reflection` - Get interview reflection (pending/advanced/rejected outcome).
-
-#### Communication & Follow-up Tools
-
-- `list_email_logs` - List emails optionally filtered by application or company.
-- `list_followup_attempts` - List follow-up attempts with results for an application.
-- `list_engagement_events` - List engagement events (recruiter_reply, phone_screen, interview_round, offer, rejection).
-
-#### Resume & Skill Tools
-
-- `get_resume` - Get resume with linked applications and master skills.
-- `get_master_resume` - Get Khaleel's default or owner-specific master resume JSON, including Patrick's file (use as source for AI-tailored resumes).
-- `generate_resume` - Generate PDF resume from AI-tailored resume JSON.
-- `list_master_skills` - List master skills with optional query/category filter.
-
-#### System Tools
-
-- `get_control_file` - Get current control file text.
-- `get_full_context_dump` - Full system-wide data context (use only when explicitly requested).
-
-### MCP Tool Characteristics
-
-- All outputs are **read-only** (no mutations).
-- All outputs are **truncated for safety** (bounded result sizes).
-- Tools return structured data for AI analysis and decision support.
-- No strategic decision-making in tools; AI provides insights, user decides actions.
-
-## Database Schema & Data Model
-
-### Core Entities
-
-**Application**
-
-- Fields: companyName, roleTitle, genericStatus (applied/under_review/interviewing/offered/rejected/withdrawn/archived), preciseStatus, roleFamily, roleLevel, appliedAt, careersPageUrl, postingDetails, compensation, notes.
-- Relations: interviews, emailLogs, followups, events, resumes.
-
-**Interview**
-
-- Fields: roundIndex, roundLabel, scheduledAt, status (scheduled/completed/cancelled).
-- Relations: application, reflection.
-
-**InterviewReflection**
-
-- Fields: summary, outcome (pending/advanced/rejected).
-- Relations: interview (1:1).
-
-**EmailLog**
-
-- Fields: direction (inbound/outbound), isHuman, subject, body, channel (email/linkedin), notes.
-- Relations: application (optional), companyName (optional - for non-application emails).
-
-**FollowupAttempt**
-
-- Fields: attemptIndex, channel (email/linkedin/portal/other), sentAt.
-- Relations: application, result (optional).
-
-**FollowupResult**
-
-- Fields: resultStatus (pending/resolved/expired_no_response), responseType (human_reply/rejection_reply/screen_scheduled/interview_scheduled), resolvedAt.
-- Relations: followupAttempt (1:1).
-
-**EngagementEvent**
-
-- Fields: eventType (recruiter_reply/phone_screen/interview_round/offer/rejection_automated/rejection_human/rejection), occurredAt.
-- Relations: application.
-
-**Resume**
-
-- Fields: name, filePath, extractedText (from PDF/DOC/DOCX parsing).
-- Relations: applications, masterSkills.
-
-**MasterSkill**
-
-- Fields: name (unique), category, experienceYears, notes, createdAt.
-- Relations: resumeLinks.
-
-**ApplicationResume** (Junction)
-
-- Relation: links Application ↔ Resume.
-
-**ResumeMasterSkill** (Junction)
-
-- Relation: links Resume ↔ MasterSkill.
-
-### Automatic Features
-
-- **Auto Status Updates**: Application status automatically updates to "interviewing" (on interview creation) and "rejected" (on rejection event/followup).
-- **Multi-Round Interviews**: Support tracking multiple interview rounds per application.
-- **Company-Level Communication**: Email logs can be recorded at company level for general recruiter interactions.
-- **Bulk Transactions**: Email and skill operations use database transactions for consistency.
-- **Resume Text Extraction**: Automatic parsing of PDF (pdftotext), DOCX (XML), DOC (strings), and plain text files.
-- **Skill Auto-Import**: Rule-based skill extraction from resume text with automatic experience year inference.
-
-## LLM Worker System
-
-The application includes a local LLM worker that:
-
-- Runs periodically (triggered by data write events).
-- Reads structured data snapshots without modifying truth data.
-- Generates suggestion cards for user review.
-- Acts as a triage assistant, not a decision maker.
-- Enables external AI (GPT) analysis via MCP endpoints.
-
-## Testing
-
-Run automated tests to validate data integrity and API functionality:
+## Useful Commands
 
 ```bash
-pnpm test                # Run all tests
-pnpm test:invariants     # Data invariant checks
-pnpm test:crud          # Create/read/update/delete operations
-pnpm test:api           # Web API route tests
-pnpm test:mcp           # MCP server integration tests
+pnpm dev:web          # Run web service only
+pnpm dev:mcp          # Run MCP service only
+pnpm backup:run       # Create SQLite backup and prune old ones
+pnpm db:studio        # Prisma Studio
+pnpm test             # Run all tests
 ```
-
-## File Management
-
-### Resume Storage
-
-- Resumes are stored in `$JOBTRACKER_DATA_DIR/resumes/` (default: `./data/resumes`).
-- Supported formats: PDF, DOCX, DOC, TXT, and other text formats.
-- Text extraction is automatic on import; original files are preserved.
-
-### Control File
-
-- Stores goals profile and job search strategy.
-- Located at `$JOBTRACKER_DATA_DIR/control.txt` (default: `./config/control.txt`).
-- Managed via `/api/goals-profile` endpoint.
-
-### Backups
-
-- SQLite database backups are created in `$JOBTRACKER_DATA_DIR/backups/`.
-- Run `pnpm backup:run` to manually create and prune old backups.
 
 ## Project Philosophy
 
-This project follows the **Job Tracker Manifesto** (see AGENTS.md):
+From the **Job Tracker Manifesto** (`AGENTS.md`):
 
-1. **The app stores truth**; AI provides insight; the user makes decisions.
-2. The application is a **passive data system** — never ranks applications or determines best actions.
-3. All reasoning belongs to **LLMs**, not the application logic.
-4. The database records **facts only** (applications, interviews, emails, follow-ups), not computed analytics.
-5. MCP server is **read-only** for safety and consistent with passive data philosophy.
-6. Strategy and decision-making happen **outside the app** via human reasoning and AI analysis.
+1. The app stores truth. AI provides insight. The user makes decisions.
+2. The application is a passive data system — it never ranks applications or determines best actions.
+3. All reasoning belongs to LLMs, not application logic.
+4. The database records facts only — no computed analytics.
+5. MCP server is read-only for safety and consistency with the passive data philosophy.
+6. Strategy and decision-making happen outside the app via human reasoning and AI analysis.

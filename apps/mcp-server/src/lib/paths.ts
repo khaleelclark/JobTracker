@@ -40,3 +40,17 @@ export function resolveOauthStorePath(): string {
 export function resolveMasterResumeDir(): string {
   return path.join(resolveDataDir(), "master-resumes");
 }
+
+export function resolveGeneratedResumeDir(): string {
+  if (process.env.GENERATED_RESUME_DIR) {
+    return path.resolve(process.env.GENERATED_RESUME_DIR);
+  }
+
+  // Windows and macOS: user-visible Documents folder
+  if (process.platform === "win32" || process.platform === "darwin") {
+    return path.join(os.homedir(), "Documents", "Job App Resumes");
+  }
+
+  // Linux (including Docker via JOBTRACKER_DATA_DIR): keep it alongside the database
+  return path.join(resolveDataDir(), "generated-resumes");
+}

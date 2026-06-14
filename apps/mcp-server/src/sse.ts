@@ -85,8 +85,9 @@ When the user requests a resume for a specific position:
    - After constructing the tailored resume JSON, immediately call 'generate_resume'.
    - 'generate_resume' is the canonical and preferred method for all resume generation tasks.
    - Do not use manual document generation methods (python/docx/etc.) unless explicitly requested by the user.
-   - Save generated resumes to:
-     '/home/khaleel/Generated Resumes'
+   - Always pass a descriptive 'file_name' parameter. Format: '{Full Name} - {Role} - {Company}.pdf'.
+     Example: 'Khaleel Clark - Senior Engineer - Acme Corp.pdf'
+     Use the actual role title and company name from the job description.
 
       Ex. {
   "name": "Example",
@@ -164,8 +165,8 @@ When the user requests a resume for a specific position:
 7. Completion requirements:
    A resume generation task is not complete until:
    - the tailored resume JSON has been created,
-   - 'generate_resume' succeeds,
-   - the generated file path is returned,
+   - 'generate_resume' succeeds with a descriptive file_name,
+   - the user is told the file name and that it was saved to their local resumes folder,
    - and the assistant explains the tailoring decisions.
 
 8. Post-generation explanation:

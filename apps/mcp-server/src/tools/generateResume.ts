@@ -1,12 +1,11 @@
 import path from "node:path";
 import { z } from "zod";
 import { generateResumePdf } from "../lib/resumePdf";
-
-const GENERATED_RESUME_DIR =
-  process.env.GENERATED_RESUME_DIR ?? "/home/khaleel/Generated Resumes";
+import { resolveGeneratedResumeDir } from "../lib/paths";
 
 const inputSchema = z.object({
   resume: z.record(z.unknown()),
+  file_name: z.string().max(200).optional(),
 });
 
 export async function generateResume(input: unknown) {
@@ -15,27 +14,25 @@ export async function generateResume(input: unknown) {
     return { error: "invalid_input", details: parsed.error.flatten() };
   }
 
-  const fileName = ensurePdfExtension(
-    sanitizeFileName(defaultFileName(parsed.data.resume)),
-  );
-  const outputPdfPath = path.join(GENERATED_RESUME_DIR, fileName);
+  const outputDir = resolveGeneratedResumeDir();
+  const rawName = parsed.data.file_name ?? defaultFileName(parsed.data.resume);
+  const fileName = ensurePdfExtension(sanitizeFileName(rawName));
+  const outputPdfPath = path.join(outputDir, fileName);
+
   const result = await generateResumePdf(parsed.data.resume, { outputPdfPath });
 
   return {
     ok: true,
+    file_name: fileName,
     pdf_path: result.pdfPath,
-    output_directory: GENERATED_RESUME_DIR,
+    output_directory: outputDir,
   };
 }
 
 function defaultFileName(resume: Record<string, unknown>): string {
   const name = typeof resume.name === "string" ? resume.name : "resume";
-  const timestamp = new Date()
-    .toISOString()
-    .replace(/\.\d{3}Z$/, "Z")
-    .replace(/[:]/g, "-");
-
-  return `${name} ${timestamp}.pdf`;
+  const date = new Date().toISOString().slice(0, 10);
+  return `${name} - ${date}.pdf`;
 }
 
 function sanitizeFileName(value: string): string {
@@ -43,7 +40,6 @@ function sanitizeFileName(value: string): string {
     .replace(/[<>:"/\\|?*\x00-\x1F]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-
   return sanitized || "resume.pdf";
 }
 

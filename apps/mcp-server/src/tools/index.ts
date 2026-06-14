@@ -152,7 +152,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   {
     name: "get_master_resume",
     description:
-      "Return a master resume JSON for AI-tailored resume generation. Omit owner for Khaleel's default khaleel-master-resume.json, or pass an owner such as 'Patrick' for patrick-master-resume.json or a managed master resume stored through /api/master-resumes.",
+      "Return a master resume JSON for AI-tailored resume generation. Omit owner to load the default master resume file, or pass an owner name to load a named master resume (e.g. 'Patrick' loads patrick-master-resume.json, or a managed resume stored through /api/master-resumes).",
     inputSchema: {
       type: "object",
       properties: {
@@ -171,7 +171,7 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
   {
     name: "generate_resume",
     description:
-      "Generate a PDF resume from an AI-tailored resume JSON object and save it to /home/khaleel/Generated Resumes. You must provide the resume property for this tool to work.",
+      "Generate a PDF resume from an AI-tailored resume JSON object. Saves the PDF directly to the user's local machine and returns the file name and path. Always provide a descriptive file_name like 'Khaleel Clark - Role - Company.pdf'. Tell the user the file was saved and give them the file name.",
     inputSchema: {
       type: "object",
       properties: {
@@ -179,8 +179,13 @@ export const mcpToolDefinitions: MpcToolDefinition[] = [
           type: "object",
           description: `a verbose JSON Resume in the master resume format after tailoring/reordering for the target position.`,
         },
+        file_name: {
+          type: "string",
+          maxLength: 200,
+          description: "Descriptive file name for the PDF, e.g. 'Khaleel Clark - Senior Engineer - Acme.pdf'. Do not include a path. Extension is optional.",
+        },
       },
-      required: ["resume"],
+      required: ["resume", "file_name"],
       additionalProperties: false,
     },
   },
