@@ -11,7 +11,6 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
 const migrationsDir = path.join(repoRoot, "apps/web/prisma/migrations");
 const GENERIC_STATUSES = [
-  "interested",
   "applied",
   "under_review",
   "interviewing",
@@ -105,30 +104,6 @@ test("core CRUD across job tracker entities", async () => {
     });
     assert.equal(resumeUpdated.name, "Resume v2");
 
-    // MasterSkill CRUD (+ relation to resume)
-    const skill = await prisma.masterSkill.create({
-      data: {
-        name: "TypeScript",
-        category: "Programming Language",
-        notes: "Used in production web apps",
-        resumeLinks: {
-          create: [{ resumeId: resume.id }],
-        },
-      },
-      include: { resumeLinks: true },
-    });
-    assert.equal(skill.resumeLinks.length, 1);
-    const skillRead = await prisma.masterSkill.findUnique({ where: { id: skill.id } });
-    assert.equal(skillRead?.name, "TypeScript");
-    const skillUpdated = await prisma.masterSkill.update({
-      where: { id: skill.id },
-      data: { notes: "Used in production web + API apps" },
-    });
-    assert.equal(skillUpdated.notes, "Used in production web + API apps");
-    await prisma.masterSkill.delete({ where: { id: skill.id } });
-    const skillDeleted = await prisma.masterSkill.findUnique({ where: { id: skill.id } });
-    assert.equal(skillDeleted, null);
-
     await prisma.resume.delete({ where: { id: resume.id } });
     const resumeDeleted = await prisma.resume.findUnique({ where: { id: resume.id } });
     assert.equal(resumeDeleted, null);
@@ -172,6 +147,7 @@ test("core CRUD across job tracker entities", async () => {
     const emailLog = await prisma.emailLog.create({
       data: {
         applicationId: application.id,
+        channel: "linkedin",
         direction: "outbound",
         isHuman: true,
         subject: "Follow up",
@@ -233,28 +209,6 @@ test("core CRUD across job tracker entities", async () => {
     await prisma.engagementEvent.delete({ where: { id: event.id } });
     const eventDeleted = await prisma.engagementEvent.findUnique({ where: { id: event.id } });
     assert.equal(eventDeleted, null);
-
-    // UiCard CRUD
-    const card = await prisma.uiCard.create({
-      data: {
-        cardType: "followup_suggestion",
-        priority: "medium",
-        title: "Acme follow-up",
-        body: "No inbound response yet.",
-        evidenceJson: JSON.stringify({ application_id: application.id }),
-        dedupeKey: "followup_acme_1",
-        state: "active",
-        relatedApplicationId: application.id,
-      },
-    });
-    const cardUpdated = await prisma.uiCard.update({
-      where: { id: card.id },
-      data: { state: "dismissed" },
-    });
-    assert.equal(cardUpdated.state, "dismissed");
-    await prisma.uiCard.delete({ where: { id: card.id } });
-    const cardDeleted = await prisma.uiCard.findUnique({ where: { id: card.id } });
-    assert.equal(cardDeleted, null);
 
     // Delete interview then application (final D step)
     await prisma.interview.delete({ where: { id: interview.id } });

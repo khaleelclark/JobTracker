@@ -1,21 +1,11 @@
 import { z } from "zod";
 import { prisma } from "../lib/db";
 import { truncatePayload } from "../lib/truncate";
+import { listEngagementEventRows } from "./engagementEventsRaw";
 
-const inputSchema = z
-  .object({
-    id: z.string().uuid().optional(),
-    application_id: z.string().uuid().optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (!value.id && !value.application_id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "id or application_id is required",
-        path: ["id"],
-      });
-    }
-  });
+const inputSchema = z.object({
+  id: z.string().uuid(),
+});
 
 export async function getApplication(input: unknown) {
   const parsed = inputSchema.safeParse(input);
@@ -23,30 +13,29 @@ export async function getApplication(input: unknown) {
     return { error: "invalid_input", details: parsed.error.flatten() };
   }
 
-  const applicationId = parsed.data.id ?? parsed.data.application_id;
-  if (!applicationId) {
-    return { error: "invalid_input", details: { formErrors: ["id or application_id is required"] } };
-  }
+  const { id } = parsed.data;
 
-  const application = await prisma.application.findUnique({
-    where: { id: applicationId },
-    include: {
-      interviews: {
-        include: { reflection: true },
-        orderBy: { scheduledAt: "asc" },
+  const [application, events] = await Promise.all([
+    prisma.application.findUnique({
+      where: { id },
+      include: {
+        interviews: {
+          include: { reflection: true },
+          orderBy: { scheduledAt: "asc" },
+        },
+        followups: {
+          include: { result: true },
+          orderBy: { sentAt: "desc" },
+        },
+        resumes: { include: { resume: true } },
       },
-      followups: {
-        include: { result: true },
-        orderBy: { sentAt: "desc" },
-      },
-      events: { orderBy: { occurredAt: "desc" } },
-      resumes: { include: { resume: true } },
-    },
-  });
+    }),
+    listEngagementEventRows({ applicationId: id, take: 100 }),
+  ]);
 
   if (!application) {
     return { error: "not_found" };
   }
 
-  return truncatePayload({ application });
+  return truncatePayload({ application: { ...application, events } });
 }

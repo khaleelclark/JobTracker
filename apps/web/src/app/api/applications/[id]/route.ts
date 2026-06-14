@@ -1,7 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { updateApplicationSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -42,22 +43,35 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const application = await prisma.application.update({
-    where: { id },
-    data: {
-      companyName: parsed.data.companyName,
-      roleTitle: parsed.data.roleTitle,
-      genericStatus: parsed.data.genericStatus,
-      preciseStatus: parsed.data.preciseStatus,
-      roleFamily: parsed.data.roleFamily,
-      roleLevel: parsed.data.roleLevel,
-      appliedAt: parsed.data.appliedAt,
-      notes: parsed.data.notes,
-    },
-  });
+  try {
+    const application = await prisma.application.update({
+      where: { id },
+      data: {
+        companyName: parsed.data.companyName,
+        roleTitle: parsed.data.roleTitle,
+        careersPageUrl: parsed.data.careersPageUrl,
+        postingDetails: parsed.data.postingDetails,
+        compensation: parsed.data.compensation,
+        genericStatus: parsed.data.genericStatus,
+        preciseStatus: parsed.data.preciseStatus,
+        roleFamily: parsed.data.roleFamily,
+        roleLevel: parsed.data.roleLevel,
+        appliedAt: parsed.data.appliedAt,
+        notes: parsed.data.notes,
+        resumes: {
+          deleteMany: {},
+          create: parsed.data.linkedResumeIds.map((resumeId) => ({
+            resume: { connect: { id: resumeId } },
+          })),
+        },
+      },
+    });
 
-  await triggerWorkerFromWrite();
-  return NextResponse.json({ application });
+    return NextResponse.json({ application });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "unknown_error";
+    return NextResponse.json({ error: "update_failed", detail }, { status: 500 });
+  }
 }
 
 export async function DELETE(_: Request, context: RouteContext) {
@@ -69,6 +83,5 @@ export async function DELETE(_: Request, context: RouteContext) {
   }
 
   await prisma.application.delete({ where: { id } });
-  await triggerWorkerFromWrite();
   return NextResponse.json({ ok: true });
 }

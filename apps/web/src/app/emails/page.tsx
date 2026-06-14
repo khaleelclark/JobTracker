@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
-import { EmailLogCreateForm } from "@/components/forms/EmailLogCreateForm";
+import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 
 export default async function EmailsPage() {
   const [emails, applications] = await Promise.all([
@@ -19,42 +19,26 @@ export default async function EmailsPage() {
   return (
     <section className="stack-xl">
       <header className="page-header">
-        <h1>Email Logs</h1>
+        <h1>Communication Logs</h1>
         <p className="muted">Store communication history for context and follow-through.</p>
       </header>
 
-      <div className="layout-split">
-        <EmailLogCreateForm applications={applications} />
-        <div className="card table-shell">
-          <h2 className="no-margin">Recent Emails</h2>
-        {emails.length === 0 ? (
-          <p className="muted">No emails logged yet.</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th>Direction</th>
-                <th>Human</th>
-                <th>Subject</th>
-                <th>Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {emails.map((email) => (
-                <tr key={email.id}>
-                  <td>{email.application.companyName}</td>
-                  <td>{email.direction}</td>
-                  <td>{email.isHuman ? "yes" : "no"}</td>
-                  <td>{email.subject}</td>
-                  <td>{email.createdAt.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        </div>
-      </div>
+      <ApplicationCommunicationSection
+        applications={applications}
+        defaultApplicationId={applications[0]?.id ?? ""}
+        communicationLogs={emails.map((email) => ({
+          id: email.id,
+          applicationId: email.applicationId,
+          companyName: email.companyName ?? email.application?.companyName ?? "Unknown Company",
+          channel: email.channel,
+          direction: email.direction,
+          isHuman: email.isHuman,
+          subject: email.subject,
+          body: email.body,
+          notes: email.notes,
+          createdAtIso: email.createdAt.toISOString(),
+        }))}
+      />
     </section>
   );
 }

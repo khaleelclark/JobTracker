@@ -1,0 +1,64 @@
+services:
+  web:
+    image: job-tracker-web:latest
+    container_name: job-tracker-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web-runtime
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      JOBTRACKER_DATA_DIR: /data
+      DATABASE_URL: file:/data/job-tracker.sqlite
+      PORT: "3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then((res) => { if (!res.ok) process.exit(1); }).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "3000:3000"
+    volumes:
+      - job-tracker-data:/data
+      - "${RESUME_OUTPUT_DIR:-${HOME}/Documents/Job App Resumes}:/resumes"
+
+  mcp:
+    image: job-tracker-mcp:latest
+    container_name: job-tracker-mcp
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mcp-runtime
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      JOBTRACKER_DATA_DIR: /data
+      DATABASE_URL: file:/data/job-tracker.sqlite
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: "7331"
+      MASTER_RESUME_PATH: /app/khaleel-master-resume.json
+      GENERATED_RESUME_DIR: /resumes
+      CHROME_PATH: chromium
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "7331:7331"
+    volumes:
+      - job-tracker-data:/data
+      - "${RESUME_OUTPUT_DIR:-${HOME}/Documents/Job App Resumes}:/resumes"
+      - ./khaleel-master-resume.json:/app/khaleel-master-resume.json:ro
+      - ./patrick-master-resume.json:/app/patrick-master-resume.json:ro
+
+volumes:
+  job-tracker-data:

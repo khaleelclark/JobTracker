@@ -1,0 +1,73 @@
+export const dynamic = "force-dynamic";
+
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { updateEngagementEventSchema } from "@/lib/validation";
+
+function isRejectionEventType(eventType: string): boolean {
+  return eventType === "rejection_automated" || eventType === "rejection_human" || eventType === "rejection";
+}
+
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+export async function GET(_: Request, context: RouteContext) {
+  const { id } = await context.params;
+  const event = await prisma.engagementEvent.findUnique({
+    where: { id },
+    include: { application: true },
+  });
+
+  if (!event) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ event });
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  const { id } = await context.params;
+  const payload = await request.json();
+  const parsed = updateEngagementEventSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  const existing = await prisma.engagementEvent.findUnique({ where: { id }, select: { id: true } });
+  if (!existing) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  const event = await prisma.$transaction(async (tx) => {
+    const updated = await tx.engagementEvent.update({
+      where: { id },
+      data: parsed.data,
+      include: { application: true },
+    });
+
+    if (isRejectionEventType(updated.eventType)) {
+      await tx.application.update({
+        where: { id: updated.applicationId },
+        data: { genericStatus: "rejected" },
+      });
+    }
+
+    return updated;
+  });
+
+  return NextResponse.json({ event });
+}
+
+export async function DELETE(_: Request, context: RouteContext) {
+  const { id } = await context.params;
+  const existing = await prisma.engagementEvent.findUnique({ where: { id }, select: { id: true } });
+
+  if (!existing) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  await prisma.engagementEvent.delete({ where: { id } });
+  return NextResponse.json({ ok: true });
+}

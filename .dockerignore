@@ -1,0 +1,11 @@
+.env
+.env.local
+.git
+.gitignore
+.next
+.pnpm-store
+node_modules
+apps/*/node_modules
+coverage
+dist
+tmp

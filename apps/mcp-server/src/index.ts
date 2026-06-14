@@ -11,6 +11,7 @@ import { requiredToolNames, toolHandlers } from "./tools";
 loadProjectEnv();
 
 const app = express();
+const host = process.env.MCP_HOST ?? "127.0.0.1";
 const port = Number(process.env.MCP_PORT ?? 7331);
 
 app.set("trust proxy", true);
@@ -52,7 +53,7 @@ app.post("/mcp/tools/:toolName", authRequired, async (req, res) => {
   }
 });
 
-app.listen(port, "127.0.0.1", () => {
+app.listen(port, host, () => {
   // eslint-disable-next-line no-console
-  console.log(`MCP server listening on http://127.0.0.1:${port}`);
+  console.log(`MCP server listening on http://${host}:${port}`);
 });

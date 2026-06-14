@@ -1,7 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createFollowupSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -29,6 +30,5 @@ export async function POST(request: Request) {
     data: parsed.data,
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ followup }, { status: 201 });
 }

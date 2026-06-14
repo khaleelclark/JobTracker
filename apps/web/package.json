@@ -8,8 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "prisma": "prisma",
-    "worker:run": "tsx src/server/worker/cli.ts"
+    "prisma": "prisma"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

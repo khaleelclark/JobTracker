@@ -40,6 +40,11 @@ export async function readControlFile(): Promise<string> {
   return fs.readFile(resolveControlFilePath(), "utf8");
 }
 
+export async function writeControlFile(text: string): Promise<void> {
+  await ensureControlFile();
+  await fs.writeFile(resolveControlFilePath(), text, "utf8");
+}
+
 export async function saveResumeFile(fileName: string, buffer: Buffer): Promise<string> {
   await ensureDataLayout();
 

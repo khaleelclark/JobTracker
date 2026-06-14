@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
 
 interface InterviewOption {
@@ -12,13 +12,29 @@ interface InterviewOption {
 
 interface ReflectionCreateFormProps {
   interviews: InterviewOption[];
+  defaultInterviewId?: string;
+  hideHeader?: boolean;
+  onSaved?: () => void;
 }
 
-export function ReflectionCreateForm({ interviews }: ReflectionCreateFormProps) {
+export function ReflectionCreateForm({ interviews, defaultInterviewId, hideHeader, onSaved }: ReflectionCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!success && !error) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccess(null);
+      setError(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,6 +65,7 @@ export function ReflectionCreateForm({ interviews }: ReflectionCreateFormProps) 
 
       form.reset();
       setSuccess("Reflection saved.");
+      onSaved?.();
       router.refresh();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
@@ -60,17 +77,17 @@ export function ReflectionCreateForm({ interviews }: ReflectionCreateFormProps) 
 
   return (
     <form className="form-card compact" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h3>Log Reflection</h3>
-      </div>
+      {!hideHeader && (
+        <div className="form-header">
+          <h3>Log Reflection</h3>
+        </div>
+      )}
 
       <div className="form-grid form-grid-2">
         <label>
           Interview
-          <select name="interviewId" required defaultValue="">
-            <option value="" disabled>
-              Select interview
-            </option>
+          <select name="interviewId" required defaultValue={defaultInterviewId ?? ""}>
+            {!defaultInterviewId && <option value="" disabled>Select interview</option>}
             {interviews.map((interview) => (
               <option key={interview.id} value={interview.id}>
                 {interview.roundLabel} - {new Date(interview.scheduledAtIso).toLocaleDateString()}

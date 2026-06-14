@@ -1,11 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface EngagementEventCreateFormProps {
   applicationId: string;
+  hideHeader?: boolean;
+  onSaved?: () => void;
+}
+
+const EVENT_TYPE_OPTIONS = [
+  "recruiter_reply",
+  "offer",
+  "rejection_automated",
+  "rejection_human",
+] as const;
+
+function isRejectionEventType(eventType: string): boolean {
+  return eventType === "rejection_automated" || eventType === "rejection_human" || eventType === "rejection";
 }
 
 function toIsoFromDateTime(raw: string): string {
@@ -16,11 +30,35 @@ function toIsoFromDateTime(raw: string): string {
   return new Date(raw).toISOString();
 }
 
-export function EngagementEventCreateForm({ applicationId }: EngagementEventCreateFormProps) {
+function notifyRejectedStatus(applicationId: string) {
+  window.dispatchEvent(
+    new CustomEvent("application-status-updated", {
+      detail: {
+        applicationId,
+        status: "rejected",
+      },
+    }),
+  );
+}
+
+export function EngagementEventCreateForm({ applicationId, hideHeader, onSaved }: EngagementEventCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!success && !error) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccess(null);
+      setError(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,6 +89,10 @@ export function EngagementEventCreateForm({ applicationId }: EngagementEventCrea
 
       form.reset();
       setSuccess("Engagement event logged.");
+      onSaved?.();
+      if (isRejectionEventType(payload.eventType)) {
+        notifyRejectedStatus(applicationId);
+      }
       router.refresh();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
@@ -62,19 +104,21 @@ export function EngagementEventCreateForm({ applicationId }: EngagementEventCrea
 
   return (
     <form className="form-card compact" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h3>Log Engagement Event</h3>
-      </div>
+      {!hideHeader && (
+        <div className="form-header">
+          <h3>Log Engagement Event</h3>
+        </div>
+      )}
 
       <div className="form-grid form-grid-2">
         <label>
           Event Type
           <select name="eventType" defaultValue="recruiter_reply">
-            <option value="recruiter_reply">recruiter_reply</option>
-            <option value="phone_screen">phone_screen</option>
-            <option value="interview_round">interview_round</option>
-            <option value="offer">offer</option>
-            <option value="rejection">rejection</option>
+            {EVENT_TYPE_OPTIONS.map((eventType) => (
+              <option key={eventType} value={eventType}>
+                {toTitleCaseLabel(eventType)}
+              </option>
+            ))}
           </select>
         </label>
 

@@ -30,11 +30,13 @@ async function ensureFile(pathName: string, text: string): Promise<void> {
 async function main() {
   const dataDir = resolveDataDir();
   const resumeDir = path.join(dataDir, "resumes");
+  const masterResumeDir = path.join(dataDir, "master-resumes");
   const backupDir = path.join(dataDir, "backups");
   const controlFile = path.join(dataDir, "control.txt");
 
   await fs.mkdir(dataDir, { recursive: true });
   await fs.mkdir(resumeDir, { recursive: true });
+  await fs.mkdir(masterResumeDir, { recursive: true });
   await fs.mkdir(backupDir, { recursive: true });
 
   await ensureFile(
@@ -43,7 +45,7 @@ async function main() {
   );
 
   // eslint-disable-next-line no-console
-  console.log(JSON.stringify({ dataDir, resumeDir, backupDir, controlFile }, null, 2));
+  console.log(JSON.stringify({ dataDir, resumeDir, masterResumeDir, backupDir, controlFile }, null, 2));
 }
 
 main().catch((error) => {

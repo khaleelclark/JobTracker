@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { readControlFile } from "@/lib/fileStore";
 import { resolveControlFilePath } from "@/lib/paths";

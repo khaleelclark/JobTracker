@@ -16,9 +16,6 @@ export async function getResume(input: unknown) {
       applications: {
         include: { application: true },
       },
-      masterSkills: {
-        include: { masterSkill: true },
-      },
     },
   });
 

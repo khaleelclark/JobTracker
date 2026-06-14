@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
   DataGrid,
   GridColDef,
@@ -12,9 +13,13 @@ import {
 import {
   Box,
   Button,
+  IconButton,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -26,21 +31,83 @@ interface ApplicationRow {
   appliedAt: string;
 }
 
+interface ApplicationAutocompleteOptions {
+  companies: string[];
+  roleTitles: string[];
+  careersPageUrls: string[];
+  roleFamilies: string[];
+  roleLevels: string[];
+  compensations: string[];
+}
+
 interface ApplicationTableProps {
   applications: ApplicationRow[];
+  resumes: Array<{ id: string; name: string }>;
+  autocompleteOptions: ApplicationAutocompleteOptions;
   title?: string;
+  initialStatusFilter?: string;
 }
 
 export function ApplicationTable({
   applications,
+  resumes,
+  autocompleteOptions,
   title = "Application Records",
+  initialStatusFilter,
 }: ApplicationTableProps) {
+  const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+  const [showArchived, setShowArchived] = useState(initialStatusFilter === "archived");
+
+  const archivedCount = applications.filter((a) => a.genericStatus === "archived").length;
+  const visibleApplications = showArchived
+    ? applications
+    : applications.filter((a) => a.genericStatus !== "archived");
+
+  async function handleDuplicate(application: ApplicationRow) {
+    const response = await fetch(`/api/applications/${application.id}/duplicate`, {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as {
+        error?: unknown;
+      };
+      window.alert(
+        typeof body.error === "string"
+          ? body.error
+          : "Unable to duplicate application",
+      );
+      return;
+    }
+
+    router.refresh();
+  }
 
   const columns = useMemo<GridColDef<ApplicationRow>[]>(
     () => [
+      {
+        field: "view",
+        headerName: "View",
+        sortable: false,
+        filterable: false,
+        width: 80,
+        headerAlign: "center",
+        align: "center",
+        renderCell: (params: GridRenderCellParams<ApplicationRow>) => (
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            aria-label={`View application ${params.row.companyName} ${params.row.roleTitle}`}
+            title="View"
+            component={Link}
+            href={`/applications/${params.row.id}`}
+          >
+            <VisibilityIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+        ),
+      },
       {
         field: "companyName",
         headerName: "Company",
@@ -79,28 +146,31 @@ export function ApplicationTable({
         minWidth: isMobile ? 120 : 160,
         headerAlign: "center",
         align: "center",
-        renderCell: (params: GridRenderCellParams<ApplicationRow>) => (
-          <Box
-            sx={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <span
-              className={`pill status-${params.row.genericStatus}`}
-              style={{
-                lineHeight: 1.2,
+        renderCell: (params: GridRenderCellParams<ApplicationRow>) => {
+          const application = params.row;
+          return (
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
                 alignItems: "center",
-                whiteSpace: "nowrap",
               }}
             >
-              {toTitleCaseLabel(params.row.genericStatus)}
-            </span>
-          </Box>
-        ),
+              <span
+                className={`pill status-${application.genericStatus}`}
+                style={{
+                  lineHeight: 1.2,
+                  alignItems: "center",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {toTitleCaseLabel(application.genericStatus)}
+              </span>
+            </Box>
+          );
+        },
       },
       {
         field: "appliedAt",
@@ -116,18 +186,48 @@ export function ApplicationTable({
         headerName: "Actions",
         sortable: false,
         filterable: false,
-        width: 120,
+        width: isMobile ? 112 : 136,
         headerAlign: "center",
         align: "center",
-        renderCell: (params: GridRenderCellParams<ApplicationRow>) => (
-          <Button
-            size={isMobile ? "small" : "medium"}
-            component={Link}
-            href={`/applications/${params.row.id}`}
-          >
-            Edit
-          </Button>
-        ),
+        renderCell: (params: GridRenderCellParams<ApplicationRow>) => {
+          const label = `${params.row.companyName} ${params.row.roleTitle}`;
+          return (
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 0.5,
+              }}
+            >
+              <IconButton
+                size={isMobile ? "small" : "medium"}
+                aria-label={`Duplicate application ${label}`}
+                title="Duplicate"
+                onClick={() => void handleDuplicate(params.row)}
+                sx={{
+                  backgroundColor: "transparent",
+                  border: 0,
+                  boxShadow: "none",
+                  "&:hover": { backgroundColor: "transparent" },
+                }}
+              >
+                <ContentCopyIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
+              <IconButton
+                size={isMobile ? "small" : "medium"}
+                aria-label={`Edit application ${label}`}
+                title="Edit"
+                component={Link}
+                href={`/applications/${params.row.id}`}
+              >
+                <EditIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
+            </Box>
+          );
+        },
       },
     ],
     [isMobile],
@@ -145,7 +245,7 @@ export function ApplicationTable({
 
   function handleExportCsv() {
     const header = ["Company", "Role", "Status", "Applied Date"];
-    const rows = applications.map(row => [
+    const rows = visibleApplications.map(row => [
       row.companyName,
       row.roleTitle,
       toTitleCaseLabel(row.genericStatus),
@@ -167,14 +267,28 @@ export function ApplicationTable({
     URL.revokeObjectURL(url);
   }
 
-  if (applications.length === 0) {
+  const header = (
+    <div className="section-head">
+      <h2 className="no-margin">{title}</h2>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {archivedCount > 0 && (
+          <Button size="small" variant="text" onClick={() => setShowArchived((v) => !v)}>
+            {showArchived ? "Hide Archived" : `Show Archived (${archivedCount})`}
+          </Button>
+        )}
+        <ApplicationCreateForm
+          resumes={resumes}
+          autocompleteOptions={autocompleteOptions}
+        />
+      </Box>
+    </div>
+  );
+
+  if (visibleApplications.length === 0) {
     return (
       <div className="stack-md">
-        <div className="section-head">
-          <h2 className="no-margin">{title}</h2>
-          <ApplicationCreateForm />
-        </div>
-        <p className="muted">No applications logged yet.</p>
+        {header}
+        <p className="muted">{showArchived ? "No applications logged yet." : "No active applications."}</p>
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button onClick={handleExportCsv} disabled>
             Export Applications
@@ -186,13 +300,10 @@ export function ApplicationTable({
 
   return (
     <div className="stack-md">
-      <div className="section-head">
-        <h2 className="no-margin">{title}</h2>
-        <ApplicationCreateForm />
-      </div>
+      {header}
       <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
         <DataGrid
-          rows={applications}
+          rows={visibleApplications}
           columns={columns}
           autoHeight
           getRowId={(row: ApplicationRow): GridRowId => row.id}
@@ -205,6 +316,11 @@ export function ApplicationTable({
           pageSizeOptions={isMobile ? [5, 10, 25] : [10, 25, 50]}
           initialState={{
             pagination: { paginationModel },
+            filter: initialStatusFilter ? {
+              filterModel: {
+                items: [{ field: "genericStatus", operator: "equals", value: initialStatusFilter }],
+              },
+            } : undefined,
           }}
           sx={{
             backgroundColor: "#fff",
@@ -214,6 +330,11 @@ export function ApplicationTable({
               {
                 px: isMobile ? 1 : 2,
               },
+            "& .MuiDataGrid-cell[data-field='actions']": {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            },
           }}
         />
       </Box>

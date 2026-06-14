@@ -56,7 +56,7 @@ async function main() {
 
   try {
     await prisma.$connect();
-    await prisma.$executeRawUnsafe("PRAGMA wal_checkpoint(FULL)");
+    await prisma.$queryRawUnsafe("PRAGMA wal_checkpoint(FULL)");
     await prisma.$executeRawUnsafe(`VACUUM INTO '${toSqliteStringLiteral(backupPath)}'`);
   } finally {
     await prisma.$disconnect();

@@ -8,7 +8,6 @@ datasource db {
 }
 
 enum GenericStatus {
-  interested
   applied
   under_review
   interviewing
@@ -33,6 +32,11 @@ enum ReflectionOutcome {
 enum EmailDirection {
   inbound
   outbound
+}
+
+enum CommunicationChannel {
+  email
+  linkedin
 }
 
 enum FollowupChannel {
@@ -60,25 +64,18 @@ enum EngagementEventType {
   phone_screen
   interview_round
   offer
+  rejection_automated
+  rejection_human
   rejection
-}
-
-enum CardPriority {
-  low
-  medium
-  high
-}
-
-enum CardState {
-  active
-  dismissed
-  archived
 }
 
 model Application {
   id             String              @id @default(uuid())
   companyName    String              @map("company_name")
   roleTitle      String              @map("role_title")
+  careersPageUrl String?             @map("careers_page_url")
+  postingDetails String?             @map("posting_details")
+  compensation   String?
   genericStatus  GenericStatus       @map("generic_status")
   preciseStatus  String?             @map("precise_status")
   roleFamily     String?             @map("role_family")
@@ -92,7 +89,6 @@ model Application {
   emailLogs      EmailLog[]
   followups      FollowupAttempt[]
   events         EngagementEvent[]
-  uiCards        UiCard[]
 
   @@index([genericStatus])
   @@index([appliedAt])
@@ -106,34 +102,8 @@ model Resume {
   extractedText String?             @map("extracted_text")
   createdAt     DateTime            @default(now()) @map("created_at")
   applications  ApplicationResume[]
-  masterSkills  ResumeMasterSkill[]
 
   @@map("resumes")
-}
-
-model MasterSkill {
-  id           String            @id @default(uuid())
-  name         String
-  category     String?
-  experienceYears Float?         @map("experience_years")
-  notes        String?
-  createdAt    DateTime          @default(now()) @map("created_at")
-  updatedAt    DateTime          @updatedAt @map("updated_at")
-  resumeLinks  ResumeMasterSkill[]
-
-  @@index([category])
-  @@unique([name])
-  @@map("master_skills")
-}
-
-model ResumeMasterSkill {
-  resumeId      String      @map("resume_id")
-  masterSkillId String      @map("master_skill_id")
-  resume        Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  masterSkill   MasterSkill @relation(fields: [masterSkillId], references: [id], onDelete: Cascade)
-
-  @@id([resumeId, masterSkillId])
-  @@map("resume_master_skills")
 }
 
 model ApplicationResume {
@@ -154,9 +124,9 @@ model Interview {
   roundLabel  String                @map("round_label")
   scheduledAt DateTime              @map("scheduled_at")
   status      InterviewStatus
+  notes       String?
   createdAt   DateTime              @default(now()) @map("created_at")
   reflection  InterviewReflection?
-  uiCards     UiCard[]
 
   @@index([applicationId, scheduledAt])
   @@unique([applicationId, roundIndex])
@@ -176,15 +146,19 @@ model InterviewReflection {
 
 model EmailLog {
   id            String        @id @default(uuid())
-  applicationId String        @map("application_id")
-  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String?       @map("application_id")
+  application   Application?  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  companyName   String?       @map("company_name")
+  channel       CommunicationChannel @default(email)
   direction     EmailDirection
   isHuman       Boolean       @map("is_human")
   subject       String
   body          String
+  notes         String?
   createdAt     DateTime      @default(now()) @map("created_at")
 
   @@index([applicationId, createdAt])
+  @@index([companyName, createdAt])
   @@map("email_logs")
 }
 
@@ -223,47 +197,4 @@ model EngagementEvent {
 
   @@index([applicationId, occurredAt])
   @@map("engagement_events")
-}
-
-model UiCard {
-  id                   String       @id @default(uuid())
-  createdAt            DateTime     @default(now()) @map("created_at")
-  cardType             String       @map("card_type")
-  priority             CardPriority
-  title                String
-  body                 String
-  evidenceJson         String       @map("evidence_json")
-  suggestedGptPrompt   String?      @map("suggested_gpt_prompt")
-  relatedApplicationId String?      @map("related_application_id")
-  relatedInterviewId   String?      @map("related_interview_id")
-  relatedApplication   Application? @relation(fields: [relatedApplicationId], references: [id], onDelete: SetNull)
-  relatedInterview     Interview?   @relation(fields: [relatedInterviewId], references: [id], onDelete: SetNull)
-  state                CardState    @default(active)
-  snoozedUntil         DateTime?    @map("snoozed_until")
-  expiresAt            DateTime?    @map("expires_at")
-  dedupeKey            String       @map("dedupe_key")
-
-  @@index([state, priority])
-  @@unique([dedupeKey, state])
-  @@map("ui_cards")
-}
-
-model LlmRunQueue {
-  id               Int       @id
-  pending          Boolean   @default(false)
-  lastRunStartedAt DateTime? @map("last_run_started_at")
-  lastRunFinishedAt DateTime? @map("last_run_finished_at")
-  cooldownUntil    DateTime? @map("cooldown_until")
-
-  @@map("llm_run_queue")
-}
-
-model LlmRun {
-  id               String    @id @default(uuid())
-  startedAt        DateTime  @map("started_at")
-  finishedAt       DateTime? @map("finished_at")
-  cardsCreatedCount Int      @default(0) @map("cards_created_count")
-  error            String?
-
-  @@map("llm_runs")
 }

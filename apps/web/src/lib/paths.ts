@@ -53,3 +53,7 @@ export function resolveControlFilePath(): string {
 export function resolveResumeDir(): string {
   return path.join(resolveDataDir(), "resumes");
 }
+
+export function resolveMasterResumeDir(): string {
+  return path.join(resolveDataDir(), "master-resumes");
+}

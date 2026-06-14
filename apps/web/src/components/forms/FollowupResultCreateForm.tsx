@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface FollowupOption {
   id: string;
@@ -12,7 +13,16 @@ interface FollowupOption {
 
 interface FollowupResultCreateFormProps {
   followups: FollowupOption[];
+  applicationId: string;
 }
+
+const RESULT_STATUS_OPTIONS = ["pending", "resolved", "expired_no_response"] as const;
+const RESPONSE_TYPE_OPTIONS = [
+  "human_reply",
+  "rejection_reply",
+  "screen_scheduled",
+  "interview_scheduled",
+] as const;
 
 function toIsoFromDate(raw: string): string | null {
   if (!raw) {
@@ -22,11 +32,35 @@ function toIsoFromDate(raw: string): string | null {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-export function FollowupResultCreateForm({ followups }: FollowupResultCreateFormProps) {
+function notifyRejectedStatus(applicationId: string) {
+  window.dispatchEvent(
+    new CustomEvent("application-status-updated", {
+      detail: {
+        applicationId,
+        status: "rejected",
+      },
+    }),
+  );
+}
+
+export function FollowupResultCreateForm({ followups, applicationId }: FollowupResultCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!success && !error) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccess(null);
+      setError(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,7 +92,12 @@ export function FollowupResultCreateForm({ followups }: FollowupResultCreateForm
 
       form.reset();
       setSuccess("Follow-up result saved.");
-      router.refresh();
+
+      if (payload.responseType === "rejection_reply") {
+        notifyRejectedStatus(applicationId);
+      } else {
+        router.refresh();
+      }
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
@@ -91,20 +130,23 @@ export function FollowupResultCreateForm({ followups }: FollowupResultCreateForm
         <label>
           Result Status
           <select name="resultStatus" defaultValue="pending">
-            <option value="pending">pending</option>
-            <option value="resolved">resolved</option>
-            <option value="expired_no_response">expired_no_response</option>
+            {RESULT_STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {toTitleCaseLabel(status)}
+              </option>
+            ))}
           </select>
         </label>
 
         <label>
           Response Type
           <select name="responseType" defaultValue="">
-            <option value="">none</option>
-            <option value="human_reply">human_reply</option>
-            <option value="rejection_reply">rejection_reply</option>
-            <option value="screen_scheduled">screen_scheduled</option>
-            <option value="interview_scheduled">interview_scheduled</option>
+            <option value="">None</option>
+            {RESPONSE_TYPE_OPTIONS.map((responseType) => (
+              <option key={responseType} value={responseType}>
+                {toTitleCaseLabel(responseType)}
+              </option>
+            ))}
           </select>
         </label>
 

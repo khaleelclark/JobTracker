@@ -1,7 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createFollowupResultSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -26,16 +27,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const followupResult = await prisma.followupResult.upsert({
-    where: { followupAttemptId: parsed.data.followupAttemptId },
-    create: parsed.data,
-    update: {
-      resultStatus: parsed.data.resultStatus,
-      responseType: parsed.data.responseType,
-      resolvedAt: parsed.data.resolvedAt,
-    },
+  const followupAttempt = await prisma.followupAttempt.findUnique({
+    where: { id: parsed.data.followupAttemptId },
+    select: { applicationId: true },
   });
 
-  await triggerWorkerFromWrite();
+  if (!followupAttempt) {
+    return NextResponse.json({ error: "followup_attempt_not_found" }, { status: 404 });
+  }
+
+  const followupResult = await prisma.$transaction(async (tx) => {
+    const result = await tx.followupResult.upsert({
+      where: { followupAttemptId: parsed.data.followupAttemptId },
+      create: parsed.data,
+      update: {
+        resultStatus: parsed.data.resultStatus,
+        responseType: parsed.data.responseType,
+        resolvedAt: parsed.data.resolvedAt,
+      },
+    });
+
+    if (parsed.data.responseType === "rejection_reply") {
+      await tx.application.update({
+        where: { id: followupAttempt.applicationId },
+        data: { genericStatus: "rejected" },
+      });
+    }
+
+    return result;
+  });
+
   return NextResponse.json({ followupResult }, { status: 201 });
 }

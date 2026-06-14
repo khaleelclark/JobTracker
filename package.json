@@ -7,16 +7,17 @@
     "dev": "concurrently \"pnpm dev:web\" \"pnpm dev:mcp\"",
     "dev:web": "pnpm --filter @job-tracker/web dev",
     "dev:mcp": "pnpm --filter @job-tracker/mcp-server dev",
-    "ollama:serve:cpu": "powershell -ExecutionPolicy Bypass -File scripts/ollamaServeCpu.ps1",
-    "ollama:serve:cpu:sh": "bash scripts/ollamaServeCpu.sh",
     "db:migrate": "tsx scripts/dbMigrate.ts",
+    "db:deploy": "tsx scripts/dbDeploy.ts",
     "db:studio": "tsx scripts/dbStudio.ts",
-    "worker:run": "pnpm --filter @job-tracker/web worker:run",
     "backup:run": "tsx scripts/backup.ts",
     "init:data-dir": "tsx scripts/initDataDir.ts",
+    "resume:pdf": "node scripts/generateResumePdf.js",
     "test:invariants": "node --test tests/invariants.test.mjs",
     "test:crud": "node --test tests/crud.test.mjs",
-    "test": "pnpm test:invariants && pnpm test:crud"
+    "test:api": "cd apps/web && TSX_TSCONFIG=tsconfig.json node --import tsx --test ../../tests/api-crud.test.ts",
+    "test:mcp": "node --import tsx --test tests/mcp-full-context.test.ts",
+    "test": "pnpm test:invariants && pnpm test:crud && pnpm test:api && pnpm test:mcp"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

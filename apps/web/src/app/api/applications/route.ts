@@ -1,7 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createApplicationSchema, listApplicationsQuerySchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -48,15 +49,22 @@ export async function POST(request: Request) {
     data: {
       companyName: parsed.data.companyName,
       roleTitle: parsed.data.roleTitle,
+      careersPageUrl: parsed.data.careersPageUrl,
+      postingDetails: parsed.data.postingDetails,
+      compensation: parsed.data.compensation,
       genericStatus: parsed.data.genericStatus,
       preciseStatus: parsed.data.preciseStatus,
       roleFamily: parsed.data.roleFamily,
       roleLevel: parsed.data.roleLevel,
       appliedAt: parsed.data.appliedAt,
       notes: parsed.data.notes,
+      resumes: {
+        create: parsed.data.linkedResumeIds.map((resumeId) => ({
+          resume: { connect: { id: resumeId } },
+        })),
+      },
     },
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ application }, { status: 201 });
 }

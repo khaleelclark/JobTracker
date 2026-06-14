@@ -6,7 +6,7 @@ export default function HomePage() {
       <div className="hero">
         <h1>Local Job Search Memory</h1>
         <p>
-          Record facts, review triage cards, and give GPT high-context inputs. The app stores truth only; reasoning
+          Record facts and give GPT high-context inputs. The app stores truth only; reasoning
           stays with you and your models.
         </p>
       </div>
@@ -14,7 +14,7 @@ export default function HomePage() {
       <div className="grid grid-3">
         <div className="card interactive">
           <h2>Daily Command</h2>
-          <p className="muted">Start in Today to review cards, interviews, and timeline activity.</p>
+          <p className="muted">Start in Today to review interviews and timeline activity.</p>
           <Link className="cta-link" href="/today">
             Open Today
           </Link>
@@ -22,7 +22,7 @@ export default function HomePage() {
 
         <div className="card interactive">
           <h2>Capture Records</h2>
-          <p className="muted">Use interactive forms to log applications, interviews, emails, and more.</p>
+          <p className="muted">Use interactive forms to log applications, interviews, communication, and more.</p>
           <Link className="cta-link" href="/applications">
             Go To Applications
           </Link>

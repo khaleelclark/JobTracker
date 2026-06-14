@@ -12,12 +12,6 @@ function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 }
 
-test("write trigger only queues worker runs", () => {
-  const source = read("apps/web/src/server/hooks/onWriteTriggers.ts");
-  assert.match(source, /queueWorkerRun\(\)/);
-  assert.doesNotMatch(source, /runWorkerOnce\(/);
-});
-
 test("mcp tools are read-only (no prisma mutations)", () => {
   const toolsDir = path.join(repoRoot, "apps/mcp-server/src/tools");
   const files = fs.readdirSync(toolsDir).filter((file) => file.endsWith(".ts"));
@@ -30,15 +24,11 @@ test("mcp tools are read-only (no prisma mutations)", () => {
   }
 });
 
-test("llm worker mutates only card/run tables", () => {
-  const source = read("apps/web/src/server/worker/llmWorker.ts");
-  const mutationPattern = /prisma\.([a-zA-Z0-9_]+)\.(create|update|updateMany|upsert|delete|deleteMany|createMany)\(/g;
-  const allowedModels = new Set(["uiCard", "llmRun"]);
-
-  for (const match of source.matchAll(mutationPattern)) {
-    const model = match[1];
-    assert.ok(allowedModels.has(model), `unexpected prisma mutation target in worker: ${model}`);
-  }
+test("insight-card and worker endpoints are removed", () => {
+  assert.equal(fs.existsSync(path.join(repoRoot, "apps/web/src/app/api/ui-cards/route.ts")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, "apps/web/src/app/api/ui-cards/[id]/route.ts")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, "apps/web/src/app/api/worker/refresh/route.ts")), false);
+  assert.equal(fs.existsSync(path.join(repoRoot, "apps/web/src/server/worker/llmWorker.ts")), false);
 });
 
 test("generic status includes under_review across schema/constants/validation/mcp", () => {
@@ -57,6 +47,7 @@ test("application status displays use title-case formatter", () => {
   const appTable = read("apps/web/src/components/ApplicationTable.tsx");
   const appCreate = read("apps/web/src/components/forms/ApplicationCreateForm.tsx");
   const appEdit = read("apps/web/src/components/forms/ApplicationEditDeleteForm.tsx");
+  const statusPill = read("apps/web/src/components/ApplicationStatusPill.tsx");
   const appDetail = read("apps/web/src/app/applications/[id]/page.tsx");
   const today = read("apps/web/src/app/today/page.tsx");
   const globals = read("apps/web/src/app/globals.css");
@@ -64,7 +55,15 @@ test("application status displays use title-case formatter", () => {
   assert.match(appTable, /toTitleCaseLabel\(application\.genericStatus\)/);
   assert.match(appCreate, /toTitleCaseLabel\(status\)/);
   assert.match(appEdit, /toTitleCaseLabel\(status\)/);
-  assert.match(appDetail, /toTitleCaseLabel\(application\.genericStatus\)/);
+  // Detail page delegates status display to ApplicationStatusPill
+  assert.match(appDetail, /ApplicationStatusPill/);
+  assert.match(statusPill, /toTitleCaseLabel\(status\)/);
   assert.match(today, /toTitleCaseLabel\(application\.genericStatus\)/);
   assert.match(globals, /\.status-under_review/);
+});
+
+test("mcp full-context tool is available with warning metadata", () => {
+  const toolsIndex = read("apps/mcp-server/src/tools/index.ts");
+  assert.match(toolsIndex, /name:\s*"get_full_context_dump"/);
+  assert.match(toolsIndex, /Use only when explicitly asked for full\/system-wide context/i);
 });

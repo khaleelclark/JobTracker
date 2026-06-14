@@ -1,7 +1,12 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createEngagementEventSchema } from "@/lib/validation";
-import { triggerWorkerFromWrite } from "@/server/hooks/onWriteTriggers";
+
+function isRejectionEventType(eventType: string): boolean {
+  return eventType === "rejection_automated" || eventType === "rejection_human" || eventType === "rejection";
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -24,10 +29,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const event = await prisma.engagementEvent.create({
-    data: parsed.data,
+  const event = await prisma.$transaction(async (tx) => {
+    const created = await tx.engagementEvent.create({
+      data: parsed.data,
+    });
+
+    if (isRejectionEventType(created.eventType)) {
+      await tx.application.update({
+        where: { id: created.applicationId },
+        data: { genericStatus: "rejected" },
+      });
+    }
+
+    return created;
   });
 
-  await triggerWorkerFromWrite();
   return NextResponse.json({ event }, { status: 201 });
 }

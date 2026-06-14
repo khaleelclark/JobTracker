@@ -1,13 +1,29 @@
+"use client";
+
+import Link from "next/link";
+import { toTitleCaseLabel } from "@/lib/format";
+
 interface InterviewItem {
   id: string;
+  applicationId: string;
   applicationCompany: string;
   roundLabel: string;
-  scheduledAt: Date;
+  scheduledAtIso: string;
   status: string;
 }
 
 interface InterviewListProps {
   interviews: InterviewItem[];
+}
+
+function fmtTime(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso));
 }
 
 export function InterviewList({ interviews }: InterviewListProps) {
@@ -19,13 +35,15 @@ export function InterviewList({ interviews }: InterviewListProps) {
     <div className="card">
       <ul className="clean-list">
         {interviews.map((interview) => (
-          <li key={interview.id} className="list-row">
-            <span>
-              <strong>{interview.applicationCompany}</strong> - {interview.roundLabel}
-            </span>
-            <span className="muted">
-              {interview.scheduledAt.toLocaleString()} ({interview.status})
-            </span>
+          <li key={interview.id} className="list-row list-row-link">
+            <Link href={`/applications/${interview.applicationId}`} className="list-row-inner">
+              <span>
+                <strong>{interview.applicationCompany}</strong> - {interview.roundLabel}
+              </span>
+              <span className="muted">
+                {fmtTime(interview.scheduledAtIso)} ({toTitleCaseLabel(interview.status)})
+              </span>
+            </Link>
           </li>
         ))}
       </ul>

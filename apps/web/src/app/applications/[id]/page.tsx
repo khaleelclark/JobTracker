@@ -4,9 +4,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MarkdownContent } from "@/components/MarkdownContent";
-import { ApplicationDetailActivityPanel } from "@/components/ApplicationDetailActivityPanel";
+import { cleanPostingText } from "@/lib/format";
+import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
-import { toTitleCaseLabel } from "@/lib/format";
+import { ActivitySection } from "@/components/ActivitySection";
+import { InterviewsSection } from "@/components/InterviewsSection";
+import { ApplicationResumeLinksManager } from "@/components/ApplicationResumeLinksManager";
+import { ApplicationStatusPill } from "@/components/ApplicationStatusPill";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 
 interface ApplicationDetailPageProps {
@@ -18,7 +22,8 @@ export default async function ApplicationDetailPage({
 }: ApplicationDetailPageProps) {
   const { id } = await params;
 
-  const application = await prisma.application.findUnique({
+  const [application, resumes, applicationOptions] = await Promise.all([
+    prisma.application.findUnique({
     where: { id },
     include: {
       interviews: {
@@ -36,7 +41,23 @@ export default async function ApplicationDetailPage({
       events: { orderBy: { occurredAt: "desc" } },
       resumes: { include: { resume: true } },
     },
-  });
+    }),
+    prisma.resume.findMany({
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true },
+    }),
+    prisma.application.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        companyName: true,
+        roleTitle: true,
+        careersPageUrl: true,
+        roleFamily: true,
+        roleLevel: true,
+        compensation: true,
+      },
+    }),
+  ]);
 
   if (!application) {
     notFound();
@@ -46,6 +67,20 @@ export default async function ApplicationDetailPage({
     application.followups.length > 0
       ? Math.max(...application.followups.map(item => item.attemptIndex)) + 1
       : 1;
+
+  const uniqueValues = (values: Array<string | null>) =>
+    Array.from(
+      new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]),
+    ).sort((a, b) => a.localeCompare(b));
+
+  const autocompleteOptions = {
+    companies: uniqueValues(applicationOptions.map((item) => item.companyName)),
+    roleTitles: uniqueValues(applicationOptions.map((item) => item.roleTitle)),
+    careersPageUrls: uniqueValues(applicationOptions.map((item) => item.careersPageUrl)),
+    roleFamilies: uniqueValues(applicationOptions.map((item) => item.roleFamily)),
+    roleLevels: uniqueValues(applicationOptions.map((item) => item.roleLevel)),
+    compensations: uniqueValues(applicationOptions.map((item) => item.compensation)),
+  };
 
   return (
     <section className="stack-xl">
@@ -68,14 +103,45 @@ export default async function ApplicationDetailPage({
         </Link>
       </div>
 
-      <div className="card">
+      <div className="card stack-md">
         <h1 className="no-margin">{application.companyName}</h1>
         <p>
           {application.roleTitle} -{" "}
-          <span className={`pill status-${application.genericStatus}`}>
-            {toTitleCaseLabel(application.genericStatus)}
-          </span>
+          <ApplicationStatusPill applicationId={application.id} initialStatus={application.genericStatus} />
         </p>
+        {application.compensation ? (
+          <p className="muted">Compensation: {application.compensation}</p>
+        ) : null}
+        {application.careersPageUrl ? (
+          <p>
+            <a
+              href={application.careersPageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-block",
+                textDecoration: "none",
+                border: "1px solid rgba(15, 74, 134, 0.25)",
+                background: "linear-gradient(145deg, #ffffff 0%, #e5efff 100%)",
+                color: "var(--brand-strong)",
+                borderRadius: "10px",
+                padding: "0.43rem 0.75rem",
+                lineHeight: 1.2,
+              }}
+            >
+              Open Careers Page
+            </a>
+          </p>
+        ) : null}
+        <h3>Posting Details</h3>
+        {application.postingDetails ? (
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6, fontSize: "0.9rem" }}>
+            {cleanPostingText(application.postingDetails)}
+          </p>
+        ) : (
+          <p className="muted">No posting details.</p>
+        )}
+        <h3>Notes</h3>
         {application.notes ? (
           <MarkdownContent markdown={application.notes} />
         ) : (
@@ -88,131 +154,91 @@ export default async function ApplicationDetailPage({
           id: application.id,
           companyName: application.companyName,
           roleTitle: application.roleTitle,
+          careersPageUrl: application.careersPageUrl,
+          postingDetails: application.postingDetails,
+          compensation: application.compensation,
           genericStatus: application.genericStatus,
           preciseStatus: application.preciseStatus,
           roleFamily: application.roleFamily,
           roleLevel: application.roleLevel,
           appliedAtIso: application.appliedAt.toISOString(),
           notes: application.notes,
+          linkedResumeIds: application.resumes.map((entry) => entry.resumeId),
         }}
+        resumes={resumes}
+        autocompleteOptions={autocompleteOptions}
       />
 
-      <ApplicationDetailActivityPanel
-        application={{
-          id: application.id,
-          companyName: application.companyName,
-          roleTitle: application.roleTitle,
-        }}
-        interviews={application.interviews.map(interview => ({
-          id: interview.id,
-          roundLabel: interview.roundLabel,
-          scheduledAtIso: interview.scheduledAt.toISOString(),
-        }))}
-        followups={application.followups.map(followup => ({
+      <ActivitySection
+        applicationId={application.id}
+        followups={application.followups.map((followup) => ({
           id: followup.id,
+          applicationId: followup.applicationId,
           attemptIndex: followup.attemptIndex,
+          channel: followup.channel,
           sentAtIso: followup.sentAt.toISOString(),
+          resultStatus: followup.result?.resultStatus ?? "pending",
+          responseType: followup.result?.responseType ?? null,
+          resolvedAtIso: followup.result?.resolvedAt?.toISOString() ?? null,
+        }))}
+        events={application.events.map((event) => ({
+          id: event.id,
+          applicationId: event.applicationId,
+          eventType: event.eventType,
+          occurredAtIso: event.occurredAt.toISOString(),
         }))}
         nextFollowupAttemptIndex={nextFollowupAttemptIndex}
       />
 
-      <div className="grid grid-2">
-        <div className="card">
-          <h2>Follow-ups</h2>
-          {application.followups.length === 0 ? (
-            <p className="muted">No follow-up attempts.</p>
-          ) : (
-            <ul className="clean-list">
-              {application.followups.map(f => (
-                <li key={f.id} className="list-row">
-                  <span>
-                    Attempt {f.attemptIndex} via {f.channel} on{" "}
-                    {f.sentAt.toLocaleDateString()}
-                  </span>
-                  <span className="pill">
-                    {f.result?.resultStatus ?? "pending"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="card">
-          <h2>Engagement Events</h2>
-          {application.events.length === 0 ? (
-            <p className="muted">No events.</p>
-          ) : (
-            <ul className="clean-list">
-              {application.events.map(event => (
-                <li key={event.id} className="list-row">
-                  <span>{event.eventType}</span>
-                  <span className="muted">
-                    {event.occurredAt.toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      <div className="card">
-        <h2>Recent Emails</h2>
-        {application.emailLogs.length === 0 ? (
-          <p className="muted">No emails logged.</p>
-        ) : (
-          <ul className="clean-list">
-            {application.emailLogs.map(email => (
-              <li key={email.id} className="list-row">
-                <span>
-                  {email.direction} {email.isHuman ? "human" : "automated"}:{" "}
-                  {email.subject}
-                </span>
-                <span className="muted">
-                  {email.createdAt.toLocaleDateString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <ApplicationCommunicationSection
+        applications={[
+          {
+            id: application.id,
+            companyName: application.companyName,
+            roleTitle: application.roleTitle,
+          },
+        ]}
+        defaultApplicationId={application.id}
+        communicationLogs={application.emailLogs.map((email) => ({
+          id: email.id,
+          applicationId: email.applicationId,
+          companyName: application.companyName,
+          channel: email.channel,
+          direction: email.direction,
+          isHuman: email.isHuman,
+          subject: email.subject,
+          body: email.body,
+          notes: email.notes,
+          createdAtIso: email.createdAt.toISOString(),
+        }))}
+      />
 
       <div className="card">
         <h2>Resumes</h2>
-        {application.resumes.length === 0 ? (
-          <p className="muted">No linked resumes.</p>
-        ) : (
-          <ul className="clean-list">
-            {application.resumes.map(entry => (
-              <li key={entry.resumeId} className="list-row">
-                <span>{entry.resume.name}</span>
-                <span className="muted">{entry.resume.filePath}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ApplicationResumeLinksManager
+          applicationId={application.id}
+          linkedResumes={application.resumes.map((entry) => ({
+            resumeId: entry.resumeId,
+            name: entry.resume.name,
+          }))}
+          allResumes={resumes}
+        />
       </div>
 
-      <div className="card">
-        <h2>Interviews</h2>
-        {application.interviews.length === 0 ? (
-          <p className="muted">No interviews logged.</p>
-        ) : (
-          <ul className="clean-list">
-            {application.interviews.map(interview => (
-              <li key={interview.id} className="list-row">
-                <span>
-                  {interview.roundLabel} ({interview.status})
-                </span>
-                <span className="muted">
-                  {interview.scheduledAt.toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <InterviewsSection
+        applications={[{ id: application.id, companyName: application.companyName, roleTitle: application.roleTitle }]}
+        defaultApplicationId={application.id}
+        interviews={application.interviews.map((interview) => ({
+          id: interview.id,
+          applicationId: interview.applicationId,
+          companyName: application.companyName,
+          roundIndex: interview.roundIndex,
+          roundLabel: interview.roundLabel,
+          status: interview.status,
+          scheduledAtIso: interview.scheduledAt.toISOString(),
+          notes: interview.notes ?? null,
+        }))}
+      />
     </section>
   );
 }

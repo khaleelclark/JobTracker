@@ -352,7 +352,6 @@ td a:hover {
   color: #0f766e;
 }
 
-.status-interested,
 .status-applied,
 .status-under_review,
 .status-interviewing,
@@ -361,11 +360,6 @@ td a:hover {
 .status-withdrawn,
 .status-archived {
   border: none;
-}
-
-.status-interested {
-  background: rgba(59, 130, 246, 0.14);
-  color: #1d4ed8;
 }
 
 .status-applied {
@@ -517,6 +511,12 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.dashboard-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
 .metric-card {
   display: grid;
   gap: 0.15rem;
@@ -534,6 +534,15 @@ button:disabled {
 
 .metric-card strong {
   font-size: 1.14rem;
+}
+
+.dashboard-metric {
+  min-height: 106px;
+  align-content: center;
+}
+
+.dashboard-metric strong {
+  font-size: 1.75rem;
 }
 
 .empty-state {
@@ -562,6 +571,82 @@ button:disabled {
   border-radius: 10px;
   padding: 0.45rem 0.6rem;
   background: rgba(255, 255, 255, 0.75);
+}
+
+.list-row-link {
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.list-row-link:hover {
+  background: rgba(99, 130, 255, 0.07);
+  border-color: rgba(99, 130, 255, 0.25);
+}
+
+.list-row-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.45rem 0.6rem;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.resume-library-text {
+  min-width: 0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.resume-library-path {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.text-link-button {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.text-link-button:hover:not(:disabled) {
+  background: transparent;
+  color: var(--brand-strong);
+}
+
+.resume-preview-frame {
+  width: 100%;
+  height: min(68vh, 760px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.resume-preview-text {
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0.5rem 0 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f7fbff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9rem;
 }
 
 .section-head {
@@ -669,4 +754,35 @@ button:disabled {
     animation: none;
     transition: none;
   }
+}
+
+/* ── Database nav badge ── */
+
+.nav-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.db-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.db-mode-badge--test {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.db-mode-badge--nav {
+  padding: 0.18rem 0.55rem;
+  font-size: 0.72rem;
 }

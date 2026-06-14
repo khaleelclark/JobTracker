@@ -41,7 +41,7 @@ export async function handleToken(req: Request, res: Response) {
   return res.json({
     token_type: "bearer",
     access_token: accessToken,
-    expires_in: 24 * 60 * 60,
+    expires_in: 30 * 24 * 60 * 60,
   });
 }
 

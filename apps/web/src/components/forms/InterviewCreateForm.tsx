@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface ApplicationOption {
   id: string;
@@ -13,6 +14,8 @@ interface ApplicationOption {
 interface InterviewCreateFormProps {
   applications: ApplicationOption[];
   defaultApplicationId?: string;
+  hideHeader?: boolean;
+  onSaved?: () => void;
 }
 
 const INTERVIEW_STATUS_OPTIONS = ["scheduled", "completed", "cancelled"] as const;
@@ -25,11 +28,24 @@ function toIsoFromDateTime(raw: string): string {
   return new Date(raw).toISOString();
 }
 
-export function InterviewCreateForm({ applications, defaultApplicationId }: InterviewCreateFormProps) {
+export function InterviewCreateForm({ applications, defaultApplicationId, hideHeader, onSaved }: InterviewCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!success && !error) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccess(null);
+      setError(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,6 +62,7 @@ export function InterviewCreateForm({ applications, defaultApplicationId }: Inte
       roundLabel: String(data.get("roundLabel") ?? "").trim(),
       scheduledAt: toIsoFromDateTime(String(data.get("scheduledAt") ?? "")),
       status: String(data.get("status") ?? "scheduled"),
+      notes: String(data.get("notes") ?? "").trim() || null,
     };
 
     try {
@@ -65,6 +82,7 @@ export function InterviewCreateForm({ applications, defaultApplicationId }: Inte
       }
       setSuccess("Interview logged.");
       router.refresh();
+      onSaved?.();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
@@ -75,10 +93,12 @@ export function InterviewCreateForm({ applications, defaultApplicationId }: Inte
 
   return (
     <form className="form-card" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h2>Log Interview</h2>
-        <p className="muted">Track each round and status as factual events.</p>
-      </div>
+      {!hideHeader && (
+        <div className="form-header">
+          <h2>Log Interview</h2>
+          <p className="muted">Track each round and status as factual events.</p>
+        </div>
+      )}
 
       <div className="form-grid form-grid-2">
         <label>
@@ -110,7 +130,7 @@ export function InterviewCreateForm({ applications, defaultApplicationId }: Inte
           <select name="status" defaultValue="scheduled">
             {INTERVIEW_STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {toTitleCaseLabel(status)}
               </option>
             ))}
           </select>
@@ -120,6 +140,11 @@ export function InterviewCreateForm({ applications, defaultApplicationId }: Inte
       <label>
         Scheduled At
         <input name="scheduledAt" type="datetime-local" required />
+      </label>
+
+      <label>
+        Notes
+        <textarea name="notes" rows={3} maxLength={4000} placeholder="Meeting link, interviewer name, prep notes…" />
       </label>
 
       <div className="form-actions">

@@ -1,0 +1,329 @@
+{
+  "name": "Khaleel Zindel Clark",
+  "location": "Orlando, FL",
+  "phone": "206-816-0570",
+  "email": "khaleelzindel@gmail.com",
+  "linkedin": "https://www.linkedin.com/in/khaleelclark/",
+  "github": "https://github.com/khaleelclark/",
+  "portfolio": "https://khaleelclark.com/",
+  "citizenship": "U.S. Citizen, Eligible for Security Clearance",
+
+  "sections": [
+    {
+      "name": "Technical Skills",
+      "items": [
+        {
+          "title": "Programming Languages",
+          "bullets": [
+            "Java",
+            "JavaScript",
+            "TypeScript",
+            "C#",
+            "Python",
+            "HTML",
+            "CSS",
+            "SQL"
+          ]
+        },
+        {
+          "title": "Frameworks & Libraries",
+          "bullets": [
+            "ASP.NET",
+            "Node.js",
+            "Next.js",
+            "Entity Framework",
+            "Room",
+            "Material UI (MUI)",
+            "React",
+            "JavaFX",
+            "Express",
+            "Streamlit",
+            "Pandas",
+            "Plotly",
+            "NumPy",
+            "Zod"
+          ]
+        },
+        {
+          "title": "Databases",
+          "bullets": ["PostgreSQL", "SQL Server", "SQLite", "MongoDB"]
+        },
+        {
+          "title": "Tools & Infrastructure",
+          "bullets": [
+            "Docker",
+            "Gradle",
+            "Nginx",
+            "OData",
+            "RabbitMQ",
+            "Authentik",
+            "Git LFS",
+            "Salesforce",
+            "AS400",
+            "Power BI",
+            "Bash",
+            "Cron",
+            "Follow Up Boss",
+            "Zillow Premier Agent CRM",
+            "Hubspot",
+            "ServiceNow",
+            "Zendesk",
+            "Amazon Connect",
+            "Office 365",
+            "Google Workspace"
+          ]
+        },
+        {
+          "title": "Dev & Workflow",
+          "bullets": [
+            "Jira",
+            "Confluence",
+            "Figma",
+            "Git",
+            "Miro",
+            "Notion",
+            "pnpm",
+            "Swagger",
+            "Asana",
+            "Jenkins"
+          ]
+        },
+        {
+          "title": "Operating Systems",
+          "bullets": ["Linux", "Windows", "macOS"]
+        },
+        {
+          "title": "Automation & Business Systems",
+          "bullets": [
+            "Process improvement",
+            "Requirements gathering",
+            "User support",
+            "Issue triage",
+            "Onboarding",
+            "Cross-functional coordination"
+          ]
+        },
+        {
+          "title": "Architecture & Systems Design",
+          "bullets": [
+            "Microservices Architecture",
+            "RESTful API Design",
+            "Role-Based Access Control (RBAC)",
+            "Authentication & Authorization",
+            "OIDC",
+            "Workflow Automation",
+            "ETL Pipelines",
+            "Data Transformation",
+            "Event-Driven Architecture"
+          ]
+        },
+        {
+          "title": "Product & Collaboration Skills",
+          "bullets": [
+            "Product Thinking & User-Centered Design",
+            "Requirements Gathering & Feature Definition",
+            "Cross-Functional Team Collaboration",
+            "Stakeholder Communication",
+            "Technical Documentation",
+            "Issue Prioritization & Product Feedback Loops",
+            "Workflow & Process Optimization",
+            "User Experience (UX) Awareness",
+            "UX Research",
+            "Wireframing & Prototyping",
+            "Agile Development",
+            "Competitive Analysis",
+            "Persona Development",
+            "User Story Creation with Acceptance Criteria",
+            "Usability Testing"
+          ]
+        },
+        {
+          "title": "Networking & Security",
+          "bullets": [
+            "Raspberry Pi",
+            "Port-forwarding",
+            "DNS records",
+            "SSL certificates"
+          ]
+        },
+        {
+          "title": "Additional Knowledge",
+          "bullets": ["Azure Fundamentals", "PowerShell", "SEO", "Kotlin"]
+        }
+      ]
+    },
+    {
+      "name": "Education",
+      "items": [
+        {
+          "title": "Valencia College",
+          "sub_title": "Orlando, FL",
+          "end_date": "May 2026",
+          "bullets": [
+            "**Bachelor of Applied Science in Computing Technology & Software Development**",
+            "Earned May 2026"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Professional Experience",
+      "items": [
+        {
+          "title": "Hilton Grand Vacations",
+          "sub_title": "Remote, US",
+          "position": "Associate Member Experience",
+          "start_date": "Mar 2025",
+          "end_date": "Sep 2025",
+          "bullets": [
+            "Managed hotel reservations, membership programs, and payment transactions simultaneously across Salesforce and AS400 in a high-volume remote environment.",
+            "Executed secure financial transactions including loan payments, club assessments, and rental agreements with accuracy and strict attention to compliance.",
+            "Maintained exceptional softphone availability and readiness compliance, consistently logging minimal downtime as one of the strongest performers on the metric.",
+            "Achieved a 35% vacation booking conversion rate against a 15% KPI threshold, more than double the minimum through consultative member engagement and proactive alternatives when preferred properties had no availability.",
+            "Resolved member issues through structured troubleshooting and cross-functional coordination with membership support and portfolio services teams.",
+            "Provided phone-based member support, educating users on program functionality and resolving inquiries across membership and account workflows."
+          ]
+        },
+        {
+          "title": "CrowdStreet",
+          "sub_title": "Remote, US",
+          "position": "Investor Relations Specialist - Product & Systems Support",
+          "start_date": "Jan 2022",
+          "end_date": "Dec 2022",
+          "bullets": [
+            "Provided Tier 2 support for enterprise investor management systems supporting accredited investors with portfolios ranging from $25K to $100M+, troubleshooting account access, MFA resets, and system-related issues.",
+            "Triaged and resolved 50+ daily investor inquiries within SLA targets, escalating complex issues to product and engineering teams.",
+            "Conducted direct 1-on-1 investor sessions via phone and Zoom, providing personalized support on account setup, troubleshooting, and platform navigation for high-net-worth, accredited-only clientele.",
+            "Concurrently managed 25+ active complex investor workflows including ownership transfers and CRE transaction support while maintaining continuous queue coverage across the broader investor base.",
+            "Translated user pain points into prioritized, actionable product feedback, bridging investor experience and platform reliability across product, engineering, and content teams.",
+            "Led a 3-person cross-functional initiative over 2 months using agile sprint cycles to identify and resolve systemic platform friction points, presenting findings and status updates during twice-weekly standups and contributing as a regular speaker during weekly office hours.",
+            "Drove multi-team product improvements through structured issue analysis: findings directly resulted in a UI change from the product team, ticket routing updates from the ops team, and help center revisions from the content team, reducing inbound ticket volume."
+          ]
+        },
+        {
+          "title": "LPT Realty",
+          "sub_title": "Lake Mary, FL",
+          "position": "User Support Specialist",
+          "start_date": "Jun 2023",
+          "end_date": "Aug 2024",
+          "bullets": [
+            "Provided technical support for a rapidly scaling national brokerage, supporting hundreds of agents across CRM platforms including Follow Up Boss and Zillow lead management tools.",
+            "Resolved 30+ daily tickets and support requests across system access, configuration, and platform integrations as part of a 5-person support team.",
+            "Conducted weekly virtual orientation sessions for new agents, ensuring smooth onboarding and team integration.",
+            "Onboarded and trained non-technical users on systems and workflows, improving adoption and reducing operational errors.",
+            "Troubleshot and resolved the majority of issues internally, escalating to external teams only when necessary, maintaining a high first-contact resolution rate across a non-technical agent base."
+          ]
+        },
+        {
+          "title": "AdventHealth",
+          "sub_title": "Orlando, FL",
+          "position": "Referral Specialist",
+          "start_date": "Jun 2021",
+          "end_date": "Jan 2022",
+          "bullets": [
+            "Provided phone-based support for patients, physicians, and insurance providers in a high-volume referral processing role, navigating multiple complex healthcare systems simultaneously.",
+            "Ranked in the top 3% of a ~20-person team for call quality, consistently scoring above 98 across a multi-factor evaluation rubric.",
+            "Achieved one-call resolution as a tracked KPI, navigating Epic, Athena, Cerner, insurance portals, and provider websites in real time to avoid follow-up contacts and get patients seen faster.",
+            "Processed an average of 50 referrals per day across enterprise healthcare systems, maintaining data accuracy and documentation compliance in a HIPAA-regulated environment.",
+            "Coordinated with physicians, insurance providers, and internal departments to resolve referral bottlenecks and keep patient processing timelines on track."
+          ]
+        },
+        {
+          "title": "Costco (Logistics)",
+          "sub_title": "Winter Park, FL",
+          "position": "Processing Clerk",
+          "start_date": "Oct 2020",
+          "end_date": "Jun 2021",
+          "bullets": [
+            "Operated in one of the highest-volume contact center environments, routinely facing 300+ calls in queue within minutes of opening while navigating 6+ enterprise logistics and eCommerce systems simultaneously.",
+            "Managed 70+ daily member interactions including escalations, applying one-call resolution practices and independently issuing up to 10% compensation without manager approval, rarely requiring escalation beyond that threshold.",
+            "Informally supported the IT team with manager approval in deploying and configuring workstations and managing hardware inventory while performing primary role duties, with intent to transition into an official IT position."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Project Experience",
+      "items": [
+        {
+          "title": "Wynncraft Guild Website",
+          "link": "https://novus.dpdns.org/",
+          "sub_title": "ASP.NET Core, React, TypeScript, SQL Server, RabbitMQ, Authentik, MUI, MUI DataGrid, rsbuild, Docker Compose",
+          "position": "Founder & Open Source Developer",
+          "start_date": "Dec 2025",
+          "end_date": "Present",
+          "bullets": [
+            "Eliminated a fully manual workflow, saving the guild 120+ hours of administrative labor annually through end-to-end automation.",
+            "Gathered and translated business requirements into structured system workflows across dashboards, user management, and administrative tooling.",
+            "Designed and implemented responsive React interfaces: dashboards, leaderboards, profiles, and admin tooling, built from reusable components with React hooks managing shared application state.",
+            "Implemented role-based access and authentication workflows to ensure secure and controlled system usage.",
+            "Managed development iteratively, prioritizing features based on active user feedback and community needs.",
+            "Architected and launched an open-source guild management platform with 52 active users and growing, currently being adopted by external guilds, demonstrating real-world product viability and community traction beyond the original use case.",
+            "Structured the .NET backend using a DTO and service layer pattern, separating data contracts from business logic to support clean API design and long-term maintainability.",
+            "Designed and implemented a parameterized leaderboard API supporting date-range filtering across multiple entity types enabling flexible, data-driven reporting from a single backend."
+          ]
+        },
+        {
+          "title": "National Park Companion App",
+          "link": "https://www.figma.com/design/tEaTJzFKoQadMc8cKCgETh/National-Park-Companion-App?node-id=23-1459&p=f&t=RsmWn3cqtd4DnMVG-0",
+          "sub_title": "Figma, UX Research, Interaction Design",
+          "position": "Solo Designer",
+          "start_date": "Feb 2026",
+          "end_date": "Apr 2026",
+          "bullets": [
+            "Executed the full UX design lifecycle solo from discovery through validation, including user research surveys, competitive analysis, persona development, user stories with acceptance criteria, wireframes, interactive prototyping, and usability testing.",
+            "Conducted competitive analysis across existing NPS and outdoor apps, identifying gaps in the market and defining a clear product positioning for the companion app.",
+            "Translated user research findings into structured personas and user stories with acceptance criteria, grounding design decisions in real user needs rather than assumptions.",
+            "Built a fully interactive Figma prototype demonstrating complete user flows, used as the basis for usability testing and iterative design refinement."
+          ]
+        },
+        {
+          "title": "Job Search Intelligence Platform",
+          "sub_title": "MCP, React, TypeScript, Prisma, OAuth, Next.js, Zod, monorepo architecture",
+          "position": "Independent Developer",
+          "start_date": "Mar 2026",
+          "end_date": "Present",
+          "bullets": [
+            "Designed a structured Prisma schema tracking the full job-search lifecycle: applications, interviews, follow-ups, emails, events, and reflections as a local-first SQLite database with no external data exposure.",
+            "Built a master skills inventory system with canonical skill tracking and resume-skill linking, enabling structured comparison between tailored resumes and a single source-of-truth skills record.",
+            "Structured the codebase as a pnpm workspaces monorepo with three packages: web app, MCP server, and shared types, enforcing clean separation between UI, API, and validation layers.",
+            "Defined shared Zod schemas in a dedicated package consumed across both the web app and MCP server, ensuring type-safe validation at every system boundary without duplication.",
+            "Exposed read-only MCP tool endpoints covering: applications, interviews, reflections, email logs, follow-ups, resumes, and skills with bearer token protection and SSE transport as a structured API surface for AI agent consumption.",
+            "Implemented MCP-integrated resume generation tools allowing GPT to retrieve a master resume JSON, apply role-specific tailoring, and render a formatted PDF via headless Chromium, fully automating a previously manual process.",
+            "Implemented automated SQLite backup with scheduled pruning of backups older than 30 days, ensuring data durability without manual maintenance overhead."
+          ]
+        },
+        {
+          "title": "Airport Operations Analytics Dashboard",
+          "link": "https://airportanalysis.streamlit.app/",
+          "sub_title": "Python, SQLite, Pandas, Streamlit, Plotly, FAA / ADSB.lol / AirLabs APIs",
+          "start_date": "Feb 2026",
+          "end_date": "Present",
+          "bullets": [
+            "Designed KPI logic to analyze operational disruption patterns and performance trends.",
+            "Integrated three independent live data sources: FAA (airspace restrictions), ADSB.lol (real-time traffic snapshots), and AirLabs (airline delays, cancellations, and diversions) into a unified SQLite data model for cross-source analysis.",
+            "Wrote an automated test suite using pytest covering data parsing and scoring logic, enabling safe iteration on collection and analysis code without manual validation.",
+            "Deployed a cron-based automated collection pipeline running every 10 minutes, using flock to prevent overlapping runs and shell script wrappers to ensure consistent execution in production.",
+            "Framed the project around a testable analytical question (whether MCO underperforms DEN when normalized for traffic volume) and built the dashboard KPIs and visualizations to directly answer it.",
+            "Implemented custom API throttling logic with persistent state tracking to respect rate limits across collection windows, preventing quota exhaustion without sacrificing data freshness.",
+            "Designed and deployed the full application on a self-hosted Linux environment, configuring process management, scheduled collection, and a reverse-proxy-ready server architecture for production reliability.",
+            "Authored comprehensive technical documentation covering the full deployment lifecycle - runtime model, environment configuration, database initialization, cron setup, and a structured operational troubleshooting guide."
+          ]
+        },
+        {
+          "title": "Portfolio Website",
+          "link": "https://khaleelclark.com/",
+          "sub_title": "React, TypeScript",
+          "start_date": "Jan 2025",
+          "end_date": "Present",
+          "bullets": [
+            "Self-hosted on Raspberry Pi, configured port-forwarding, DNS records, SSL certificates, and firewall rules to securely expose the site to the internet",
+            "Designed and developed a responsive portfolio with an emphasis on visual hierarchy, layout consistency, and user experience.",
+            "Created reusable UI components and flexible page layouts to enable efficient iteration and future content updates.",
+            "Monitored and analyzed incoming traffic to identify access patterns and potential security issues"
+          ]
+        }
+      ]
+    }
+  ]
+}

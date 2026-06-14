@@ -1,13 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import { toTitleCaseLabel } from "@/lib/format";
 
 interface FollowupCreateFormProps {
   applicationId: string;
   defaultAttemptIndex: number;
+  hideHeader?: boolean;
+  onSaved?: () => void;
 }
+
+const FOLLOWUP_CHANNEL_OPTIONS = ["email", "linkedin", "portal", "other"] as const;
 
 function toIsoFromDate(raw: string): string {
   if (!raw) {
@@ -17,11 +22,24 @@ function toIsoFromDate(raw: string): string {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-export function FollowupCreateForm({ applicationId, defaultAttemptIndex }: FollowupCreateFormProps) {
+export function FollowupCreateForm({ applicationId, defaultAttemptIndex, hideHeader, onSaved }: FollowupCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!success && !error) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccess(null);
+      setError(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,6 +75,7 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex }: Follo
       }
       setSuccess("Follow-up logged.");
       router.refresh();
+      onSaved?.();
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
@@ -67,9 +86,11 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex }: Follo
 
   return (
     <form className="form-card compact" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h3>Log Follow-up</h3>
-      </div>
+      {!hideHeader && (
+        <div className="form-header">
+          <h3>Log Follow-up</h3>
+        </div>
+      )}
 
       <div className="form-grid form-grid-2">
         <label>
@@ -80,10 +101,11 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex }: Follo
         <label>
           Channel
           <select name="channel" defaultValue="email">
-            <option value="email">email</option>
-            <option value="linkedin">linkedin</option>
-            <option value="portal">portal</option>
-            <option value="other">other</option>
+            {FOLLOWUP_CHANNEL_OPTIONS.map((channel) => (
+              <option key={channel} value={channel}>
+                {toTitleCaseLabel(channel)}
+              </option>
+            ))}
           </select>
         </label>
       </div>

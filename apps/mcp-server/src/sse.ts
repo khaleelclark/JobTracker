@@ -20,6 +20,165 @@ interface Session {
 
 const sessions = new Map<string, Session>();
 
+const MCP_INSTRUCTIONS = [
+  `Job tracker tools are factual retrieval and workflow orchestration tools. 
+Do not invent application history, interview outcomes, resume content, or company interactions.
+
+The resume generation workflow is the primary exception and should operate autonomously when sufficient context exists.
+
+## Resume Generation Workflow
+
+Interpret the following user intents as resume-generation tasks:
+- "generate resume"
+- "tailor resume"
+- "optimize my resume"
+- pasted job descriptions
+- ATS optimization requests
+- resume tailoring shorthand or implied workflow continuation
+
+When the user requests a resume for a specific position:
+
+1. Analyze the job description first.
+   - Identify:
+     - primary technologies
+     - engineering focus areas
+     - seniority level
+     - required keywords
+     - preferred qualifications
+     - ATS-relevant terminology
+   - Infer the most relevant experience and projects from resume history.
+
+2. Call 'get_master_resume'.
+   - 'get_master_resume' is the canonical source resume for all tailored resume generation tasks.
+   - Omit owner to load the default master resume.
+   - Pass { "owner": "Name" } to load a specific person's master resume (e.g. "Patrick").
+   - Do not generate resumes from memory when the tool is available.
+
+3. Generate a new tailored resume JSON object using the same schema structure as the master resume.
+   - Preserve factual accuracy.
+   - Reorganize sections for maximum relevance to the target role.
+   - Remove or minimize unrelated content.
+   - Prioritize role-relevant technical experience, projects, systems work, and measurable impact.
+   - Prefer concise, impact-oriented bullet points.
+   - Optimize for both human readability and ATS parsing.
+
+4. Tailoring priorities:
+   - Match technologies and terminology from the job posting.
+   - Emphasize transferable engineering experience when direct experience is limited.
+   - Prioritize technical projects over unrelated work history when appropriate.
+   - Reframe operational or support work in technically relevant language when factually justified.
+   - Preserve all relevant technical skills from the master resume.
+   - Avoid keyword stuffing.
+
+5. Technical skills handling:
+   - You MAY:
+     - rename skill categories,
+     - merge categories,
+     - reorganize technical sections,
+     - reorder technologies by relevance.
+   - You MUST NOT:
+     - remove relevant technologies,
+     - fabricate skills,
+     - overstate proficiency.
+
+6. Resume generation execution:
+   - After constructing the tailored resume JSON, immediately call 'generate_resume'.
+   - 'generate_resume' is the canonical and preferred method for all resume generation tasks.
+   - Do not use manual document generation methods (python/docx/etc.) unless explicitly requested by the user.
+   - Always pass a descriptive 'file_name' parameter. Format: '{Full Name} - {Role} - {Company}.pdf'.
+     Example: 'Jane Smith - Senior Engineer - Acme Corp.pdf'
+     Use the actual role title and company name from the job description.
+
+      Ex. {
+  "name": "Example",
+  "location": "Example",
+  "email": "example@example.com",
+  "phone": "Example",
+  "linkedin": "https://linkedin.com/in/example",
+  "github": "https://github.com/example",
+  "portfolio": "https://example.com",
+
+  "sections": [
+    {
+      "name": "Technical Skills",
+      "type": "grouped",
+      "items": [
+        {
+          "title": "Programming Languages",
+          "bullets": ["Example", "Example"]
+        },
+        {
+          "title": "Frameworks",
+          "bullets": ["Example", "Example"]
+        }
+      ]
+    },
+
+    {
+      "name": "Experience",
+      "type": "timeline",
+      "items": [
+        {
+          "title": "Example Company",
+          "sub_title": "Example Location",
+          "position": "Example Role",
+          "start_date": "YYYY",
+          "end_date": "YYYY",
+          "bullets": ["Example", "Example"]
+        }
+      ]
+    },
+
+    {
+      "name": "Education",
+      "type": "timeline",
+      "items": [
+        {
+          "title": "Example University",
+          "sub_title": "Example Location",
+          "start_date": "YYYY",
+          "end_date": "YYYY",
+          "bullets": ["Example Degree"]
+        }
+      ]
+    },
+
+    {
+      "name": "Projects",
+      "type": "timeline",
+      "items": [
+        {
+          "title": "Example Project",
+          "sub_title": "Tech Stack Example",
+          "link": "https://example.com",
+          "start_date": "YYYY",
+          "end_date": "YYYY",
+          "bullets": ["Example", "Example"]
+        }
+      ]
+    }
+  ]
+}
+
+7. Completion requirements:
+   A resume generation task is not complete until:
+   - the tailored resume JSON has been created,
+   - 'generate_resume' succeeds with a descriptive file_name,
+   - the user is told the file name and that it was saved to their local resumes folder,
+   - and the assistant explains the tailoring decisions.
+
+8. Post-generation explanation:
+   After successful generation, provide a concise explanation including:
+   - major resume restructuring decisions,
+   - important keyword alignments,
+   - technologies emphasized,
+   - projects prioritized,
+   - and how the resume was optimized for the target role.
+
+The assistant should behave like an autonomous recruiting operations assistant, not a passive chatbot.
+Bias toward execution over clarification when sufficient context exists`,
+].join(" ");
+
 function writeSseEvent(res: Response, event: string, data: string): void {
   res.write(`event: ${event}\n`);
   for (const line of data.split(/\r?\n/)) {
@@ -32,7 +191,11 @@ function writeSseJson(res: Response, event: string, payload: unknown): void {
   writeSseEvent(res, event, JSON.stringify(payload));
 }
 
-function sendRpcResult(session: Session, id: JsonRpcId | undefined, result: unknown): void {
+function sendRpcResult(
+  session: Session,
+  id: JsonRpcId | undefined,
+  result: unknown,
+): void {
   if (typeof id === "undefined") {
     return;
   }
@@ -44,7 +207,13 @@ function sendRpcResult(session: Session, id: JsonRpcId | undefined, result: unkn
   });
 }
 
-function sendRpcError(session: Session, id: JsonRpcId | undefined, code: number, message: string, data?: unknown): void {
+function sendRpcError(
+  session: Session,
+  id: JsonRpcId | undefined,
+  code: number,
+  message: string,
+  data?: unknown,
+): void {
   if (typeof id === "undefined") {
     return;
   }
@@ -76,7 +245,10 @@ function toJsonText(value: unknown): string {
   }
 }
 
-async function handleRpcRequest(session: Session, input: unknown): Promise<void> {
+async function handleRpcRequest(
+  session: Session,
+  input: unknown,
+): Promise<void> {
   const req = asRecord(input) as JsonRpcRequest | null;
   if (!req || req.jsonrpc !== "2.0" || typeof req.method !== "string") {
     const id = req?.id;
@@ -105,14 +277,14 @@ async function handleRpcRequest(session: Session, input: unknown): Promise<void>
         name: "job-tracker-mcp",
         version: "0.1.0",
       },
-      instructions: "Read-only job tracker tools. Use tools for factual retrieval only.",
+      instructions: MCP_INSTRUCTIONS,
     });
     return;
   }
 
   if (req.method === "tools/list") {
     sendRpcResult(session, req.id, {
-      tools: mcpToolDefinitions.map((tool) => ({
+      tools: mcpToolDefinitions.map(tool => ({
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
@@ -127,13 +299,18 @@ async function handleRpcRequest(session: Session, input: unknown): Promise<void>
     const rawArgs = params?.arguments;
 
     if (!toolName) {
-      sendRpcError(session, req.id, -32602, "Invalid params", { reason: "missing_tool_name" });
+      sendRpcError(session, req.id, -32602, "Invalid params", {
+        reason: "missing_tool_name",
+      });
       return;
     }
 
     const handler = toolHandlers[toolName];
     if (!handler) {
-      sendRpcError(session, req.id, -32601, "Method not found", { reason: "unknown_tool", tool: toolName });
+      sendRpcError(session, req.id, -32601, "Method not found", {
+        reason: "unknown_tool",
+        tool: toolName,
+      });
       return;
     }
 
@@ -194,8 +371,12 @@ export function handleSse(req: Request, res: Response): void {
   });
 }
 
-export async function handleMessages(req: Request, res: Response): Promise<void> {
-  const sessionId = typeof req.query.sessionId === "string" ? req.query.sessionId : "";
+export async function handleMessages(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const sessionId =
+    typeof req.query.sessionId === "string" ? req.query.sessionId : "";
   if (!sessionId) {
     res.status(400).json({ error: "missing_session_id" });
     return;
