@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
-import { toTitleCaseLabel } from "@/lib/format";
+import { toTitleCaseLabel, nowDateTimeLocalValue } from "@/lib/format";
 
 interface ApplicationOption {
   id: string;
@@ -139,7 +139,7 @@ export function InterviewCreateForm({ applications, defaultApplicationId, hideHe
 
       <label>
         Scheduled At
-        <input name="scheduledAt" type="datetime-local" required />
+        <input name="scheduledAt" type="datetime-local" required defaultValue={nowDateTimeLocalValue()} />
       </label>
 
       <label>

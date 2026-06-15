@@ -1,17 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, WheelEvent, useRef, useState } from "react";
+import { FormEvent, useState } from "react";
 import {
   Autocomplete,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
   TextField,
 } from "@mui/material";
+import { DataGrid, GridColDef, GridPaginationModel, GridRenderCellParams } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
@@ -38,24 +41,27 @@ interface ResumeLibraryProps {
 
 export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
   const router = useRouter();
-  const previewFrameRef = useRef<HTMLIFrameElement | null>(null);
   const [editingResume, setEditingResume] = useState<ResumeOption | null>(null);
   const [editLinkedApplications, setEditLinkedApplications] = useState<ApplicationOption[]>([]);
   const [deleteResume, setDeleteResume] = useState<ResumeOption | null>(null);
   const [previewResume, setPreviewResume] = useState<ResumeOption | null>(null);
+  const [previewLinkedApplications, setPreviewLinkedApplications] = useState<ApplicationOption[]>([]);
   const [saving, setSaving] = useState(false);
+  const [savingLinks, setSavingLinks] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<GridPaginationModel>({ page: 0, pageSize: 10 });
+
+  function openPreview(resume: ResumeOption) {
+    setPreviewResume(resume);
+    setPreviewLinkedApplications(applications.filter((a) => resume.linkedApplicationIds.includes(a.id)));
+  }
 
   async function handleEditSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editingResume) {
-      return;
-    }
-
+    if (!editingResume) return;
     setSaving(true);
     setError(null);
-
     try {
       const data = new FormData(event.currentTarget);
       const payload = {
@@ -64,82 +70,140 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         extractedText: String(data.get("extractedText") ?? "").trim() || null,
         linkedApplicationIds: editLinkedApplications.map((a) => a.id),
       };
-
       const response = await fetch(`/api/resumes/${editingResume.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as {
-          error?: unknown;
-        };
-        const message =
-          typeof body.error === "string"
-            ? body.error
-            : `Unable to update resume (${response.status})`;
-        throw new Error(message);
+        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
+        throw new Error(typeof body.error === "string" ? body.error : `Unable to update resume (${response.status})`);
       }
-
       setEditingResume(null);
       router.refresh();
     } catch (submitError) {
-      setError(
-        submitError instanceof Error ? submitError.message : "Unknown error",
-      );
+      setError(submitError instanceof Error ? submitError.message : "Unknown error");
     } finally {
       setSaving(false);
     }
   }
 
-  async function handleDeleteConfirmed() {
-    if (!deleteResume) {
-      return;
+  async function handleSavePreviewLinks() {
+    if (!previewResume) return;
+    setSavingLinks(true);
+    setError(null);
+    try {
+      const payload = {
+        name: previewResume.name,
+        filePath: previewResume.filePath,
+        extractedText: previewResume.extractedText,
+        linkedApplicationIds: previewLinkedApplications.map((a) => a.id),
+      };
+      const response = await fetch(`/api/resumes/${previewResume.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
+        throw new Error(typeof body.error === "string" ? body.error : `Unable to update links (${response.status})`);
+      }
+      router.refresh();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Unknown error");
+    } finally {
+      setSavingLinks(false);
     }
+  }
 
+  async function handleDeleteConfirmed() {
+    if (!deleteResume) return;
     setDeleting(true);
     setError(null);
-
     try {
-      const response = await fetch(`/api/resumes/${deleteResume.id}`, {
-        method: "DELETE",
-      });
-
+      const response = await fetch(`/api/resumes/${deleteResume.id}`, { method: "DELETE" });
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as {
-          error?: unknown;
-        };
-        const message =
-          typeof body.error === "string"
-            ? body.error
-            : `Unable to delete resume (${response.status})`;
-        throw new Error(message);
+        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
+        throw new Error(typeof body.error === "string" ? body.error : `Unable to delete resume (${response.status})`);
       }
-
       setDeleteResume(null);
       router.refresh();
     } catch (deleteError) {
-      setError(
-        deleteError instanceof Error ? deleteError.message : "Unknown error",
-      );
+      setError(deleteError instanceof Error ? deleteError.message : "Unknown error");
       setDeleting(false);
     }
   }
 
-  function handlePreviewWheel(event: WheelEvent<HTMLDivElement>) {
-    const frameWindow = previewFrameRef.current?.contentWindow;
-    if (!frameWindow) {
-      return;
-    }
+  const appMap = new Map(applications.map((a) => [a.id, a]));
 
-    event.preventDefault();
-    frameWindow.scrollBy({
-      top: event.deltaY,
-      left: event.deltaX,
-      behavior: "auto",
-    });
-  }
+  const columns: GridColDef[] = [
+    {
+      field: "name",
+      headerName: "Name",
+      flex: 2,
+      minWidth: 180,
+      renderCell: (params: GridRenderCellParams<ResumeOption>) => (
+        <span style={{ fontWeight: 500 }}>{params.row.name}</span>
+      ),
+    },
+    {
+      field: "linkedApplicationIds",
+      headerName: "Linked Applications",
+      width: 200,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params: GridRenderCellParams<ResumeOption>) => {
+        const count = params.row.linkedApplicationIds.length;
+        if (count === 0) return <span className="muted">—</span>;
+        return <Chip label={count} size="small" />;
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 120,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params: GridRenderCellParams<ResumeOption>) => (
+        <div style={{ display: "flex", gap: "0.25rem", alignItems: "center", justifyContent: "center", width: "100%" }}>
+          <IconButton
+            size="small"
+            title="Download"
+            aria-label={`Download ${params.row.name}`}
+            component="a"
+            href={`/api/resumes/${params.row.id}/download`}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
+            <DownloadIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+          <IconButton
+            size="small"
+            title="Edit"
+            aria-label={`Edit ${params.row.name}`}
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              setEditingResume(params.row);
+              setEditLinkedApplications(
+                applications.filter((a) => params.row.linkedApplicationIds.includes(a.id)),
+              );
+            }}
+          >
+            <EditIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+          <IconButton
+            size="small"
+            title="Delete"
+            aria-label={`Delete ${params.row.name}`}
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); setDeleteResume(params.row); }}
+          >
+            <DeleteIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+        </div>
+      ),
+    },
+  ];
 
   if (resumes.length === 0) {
     return <p className="muted">No resumes uploaded yet.</p>;
@@ -147,142 +211,84 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
 
   return (
     <>
-      <ul className="clean-list">
-        {resumes.map(resume => (
-          <li key={resume.id} className="list-row">
-            <div className="resume-library-text">
-              <button
-                type="button"
-                className="text-link-button"
-                onClick={() => setPreviewResume(resume)}
-              >
-                <strong>{resume.name}</strong>
-              </button>
-              <div className="muted resume-library-path">{resume.filePath}</div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                flexShrink: 0,
-                gap: "0.35rem",
-              }}
-            >
-              <IconButton
-                size="small"
-                aria-label={`Download resume ${resume.name}`}
-                title="Download"
-                component="a"
-                href={`/api/resumes/${resume.id}/download`}
-              >
-                <DownloadIcon sx={{ fontSize: "1rem" }} />
-              </IconButton>
-              <IconButton
-                size="small"
-                aria-label={`Edit resume ${resume.name}`}
-                title="Edit"
-                onClick={() => {
-                  setEditingResume(resume);
-                  setEditLinkedApplications(
-                    applications.filter((a) => resume.linkedApplicationIds.includes(a.id)),
-                  );
-                }}
-              >
-                <EditIcon sx={{ fontSize: "1rem" }} />
-              </IconButton>
-              <IconButton
-                size="small"
-                aria-label={`Delete resume ${resume.name}`}
-                title="Delete"
-                onClick={() => setDeleteResume(resume)}
-              >
-                <DeleteIcon sx={{ fontSize: "1rem" }} />
-              </IconButton>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <DataGrid
+        rows={resumes}
+        columns={columns}
+        paginationModel={pagination}
+        onPaginationModelChange={setPagination}
+        pageSizeOptions={[10, 25, 50]}
+        onRowClick={(params) => openPreview(params.row)}
+        disableRowSelectionOnClick
+        sx={{
+          border: "none",
+          "& .MuiDataGrid-row": { cursor: "pointer" },
+          "& .MuiDataGrid-columnHeaders": { background: "transparent" },
+          "& .MuiDataGrid-cell": { display: "flex", alignItems: "center" },
+        }}
+      />
 
-      <Dialog
-        open={Boolean(previewResume)}
-        onClose={() => setPreviewResume(null)}
-        maxWidth="lg"
-        fullWidth
-      >
+      {/* Preview dialog */}
+      <Dialog open={Boolean(previewResume)} onClose={() => { setPreviewResume(null); setError(null); }} maxWidth="lg" fullWidth>
         <DialogTitle>{previewResume?.name}</DialogTitle>
-        <DialogContent onWheel={handlePreviewWheel}>
+        <DialogContent>
           {previewResume ? (
             <div className="stack-md">
               <iframe
-                ref={previewFrameRef}
                 title={`Preview ${previewResume.name}`}
                 src={`/api/resumes/${previewResume.id}/preview`}
                 className="resume-preview-frame"
               />
-              <div>
-                <h3>Extracted Text</h3>
-                {previewResume.extractedText ? (
-                  <pre className="resume-preview-text">
-                    {previewResume.extractedText}
-                  </pre>
-                ) : (
-                  <p className="muted">No extracted text stored.</p>
-                )}
+              <Divider />
+              <div className="stack-sm">
+                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem" }}>Linked Applications</p>
+                <Autocomplete
+                  multiple
+                  options={applications}
+                  getOptionLabel={(o) => `${o.companyName} - ${o.roleTitle}`}
+                  value={previewLinkedApplications}
+                  onChange={(_, val) => setPreviewLinkedApplications(val)}
+                  isOptionEqualToValue={(o, v) => o.id === v.id}
+                  renderOption={(props, option) => <li {...props} key={option.id}>{option.companyName} - {option.roleTitle}</li>}
+                  renderInput={(params) => <TextField {...params} placeholder="Search applications..." size="small" />}
+                />
+                {error ? <p className="error-text">{error}</p> : null}
               </div>
             </div>
           ) : null}
         </DialogContent>
         <DialogActions>
           {previewResume ? (
-            <Button
-              component="a"
-              href={`/api/resumes/${previewResume.id}/download`}
-              endIcon={<DownloadIcon sx={{ fontSize: "1rem" }} />}
-            >
-              Download
-            </Button>
+            <>
+              <Button component="a" href={`/api/resumes/${previewResume.id}/download`} endIcon={<DownloadIcon sx={{ fontSize: "1rem" }} />}>
+                Download
+              </Button>
+              <Button onClick={() => void handleSavePreviewLinks()} disabled={savingLinks} endIcon={<SaveIcon sx={{ fontSize: "1rem" }} />}>
+                {savingLinks ? "Saving..." : "Save Links"}
+              </Button>
+            </>
           ) : null}
-          <Button onClick={() => setPreviewResume(null)}>Close</Button>
+          <Button onClick={() => { setPreviewResume(null); setError(null); }}>Close</Button>
         </DialogActions>
       </Dialog>
 
+      {/* Edit dialog */}
       <Dialog
         open={Boolean(editingResume)}
-        onClose={(_event, reason) => {
-          if (reason === "backdropClick" || saving) {
-            return;
-          }
-          setEditingResume(null);
-          setError(null);
-        }}
+        onClose={(_e, reason) => { if (reason === "backdropClick" || saving) return; setEditingResume(null); setError(null); }}
         maxWidth="md"
         fullWidth
       >
         <DialogTitle>Edit Resume</DialogTitle>
         <DialogContent>
           {editingResume ? (
-            <form
-              id="edit-resume-form"
-              className="form-card"
-              onSubmit={handleEditSubmit}
-            >
+            <form id="edit-resume-form" className="form-card" onSubmit={handleEditSubmit}>
               <label>
                 Display Name
-                <input
-                  name="name"
-                  maxLength={200}
-                  required
-                  defaultValue={editingResume.name}
-                />
+                <input name="name" maxLength={200} required defaultValue={editingResume.name} />
               </label>
               <label>
                 File Path
-                <input
-                  name="filePath"
-                  maxLength={1000}
-                  required
-                  defaultValue={editingResume.filePath}
-                />
+                <input name="filePath" maxLength={1000} required defaultValue={editingResume.filePath} />
               </label>
               <Autocomplete
                 multiple
@@ -296,59 +302,35 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
               />
               <label>
                 Extracted Text (optional)
-                <textarea
-                  name="extractedText"
-                  rows={5}
-                  maxLength={50000}
-                  defaultValue={editingResume.extractedText ?? ""}
-                />
+                <textarea name="extractedText" rows={5} maxLength={50000} defaultValue={editingResume.extractedText ?? ""} />
               </label>
             </form>
           ) : null}
           {error ? <p className="error-text">{error}</p> : null}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditingResume(null)} disabled={saving}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            form="edit-resume-form"
-            disabled={saving}
-            endIcon={<SaveIcon sx={{ fontSize: "1rem" }} />}
-          >
+          <Button onClick={() => { setEditingResume(null); setError(null); }} disabled={saving}>Cancel</Button>
+          <Button type="submit" form="edit-resume-form" disabled={saving} endIcon={<SaveIcon sx={{ fontSize: "1rem" }} />}>
             {saving ? "Saving..." : "Save Changes"}
           </Button>
         </DialogActions>
       </Dialog>
 
+      {/* Delete dialog */}
       <Dialog
         open={Boolean(deleteResume)}
-        onClose={(_event, reason) => {
-          if (reason === "backdropClick" || deleting) {
-            return;
-          }
-          setDeleteResume(null);
-          setError(null);
-        }}
+        onClose={(_e, reason) => { if (reason === "backdropClick" || deleting) return; setDeleteResume(null); setError(null); }}
         maxWidth="xs"
         fullWidth
       >
         <DialogTitle>Delete Resume?</DialogTitle>
         <DialogContent>
-          Delete <strong>{deleteResume?.name}</strong> and remove its links from
-          applications and skills?
+          Delete <strong>{deleteResume?.name}</strong> and remove its application links?
           {error ? <p className="error-text">{error}</p> : null}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteResume(null)} disabled={deleting}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() => void handleDeleteConfirmed()}
-            disabled={deleting}
-            endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}
-          >
+          <Button onClick={() => { setDeleteResume(null); setError(null); }} disabled={deleting}>Cancel</Button>
+          <Button onClick={() => void handleDeleteConfirmed()} disabled={deleting} endIcon={<DeleteIcon sx={{ fontSize: "1rem" }} />}>
             {deleting ? "Deleting..." : "Confirm Delete"}
           </Button>
         </DialogActions>

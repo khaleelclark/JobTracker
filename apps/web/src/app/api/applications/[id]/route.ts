@@ -58,6 +58,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         roleLevel: parsed.data.roleLevel,
         appliedAt: parsed.data.appliedAt,
         notes: parsed.data.notes,
+        coverLetter: parsed.data.coverLetter,
         resumes: {
           deleteMany: {},
           create: parsed.data.linkedResumeIds.map((resumeId) => ({

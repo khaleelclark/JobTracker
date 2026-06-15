@@ -39,6 +39,7 @@ interface ApplicationEditDeleteFormProps {
     roleLevel: string | null;
     appliedAtIso: string;
     notes: string | null;
+    coverLetter: string | null;
     linkedResumeIds: string[];
   };
   resumes: Array<{ id: string; name: string }>;
@@ -127,6 +128,7 @@ export function ApplicationEditDeleteForm({
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
       notes: String(data.get("notes") ?? "").trim() || null,
+      coverLetter: String(data.get("coverLetter") ?? "").trim() || null,
       linkedResumeIds: selectedResumes.map((r) => r.id),
     };
 
@@ -365,6 +367,17 @@ export function ApplicationEditDeleteForm({
           rows={4}
           maxLength={4000}
           defaultValue={application.notes ?? ""}
+        />
+      </label>
+
+      <label>
+        Cover Letter
+        <textarea
+          name="coverLetter"
+          rows={6}
+          maxLength={20000}
+          placeholder="Paste or write your cover letter here..."
+          defaultValue={application.coverLetter ?? ""}
         />
       </label>
 

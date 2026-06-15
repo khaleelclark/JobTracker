@@ -55,6 +55,7 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const [viewingInterview, setViewingInterview] = useState<InterviewRow | null>(null);
   const [editingInterview, setEditingInterview] = useState<InterviewRow | null>(null);
   const [deleteInterview, setDeleteInterview] = useState<InterviewRow | null>(null);
   const [saving, setSaving] = useState(false);
@@ -171,18 +172,30 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
       headerName: "Actions",
       sortable: false,
       filterable: false,
-      width: 90,
+      width: 100,
       headerAlign: "center",
       align: "center",
       renderCell: (params: GridRenderCellParams<InterviewRow>) => (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-          <IconButton size="small" title="Edit" onClick={() => { setEditingInterview(params.row); setError(null); }}>
+        <Box sx={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: 0.5 }}>
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            title="Edit"
+            aria-label={`Edit interview ${params.row.roundLabel}`}
+            onClick={(e) => { e.stopPropagation(); setEditingInterview(params.row); setError(null); }}
+            sx={{ backgroundColor: "transparent", border: 0, boxShadow: "none", "&:hover": { backgroundColor: "transparent" } }}
+          >
             <EditIcon sx={{ fontSize: "1rem" }} />
           </IconButton>
-          <IconButton size="small" title="Delete" onClick={() => { setDeleteInterview(params.row); setError(null); }}>
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            title="Delete"
+            aria-label={`Delete interview ${params.row.roundLabel}`}
+            onClick={(e) => { e.stopPropagation(); setDeleteInterview(params.row); setError(null); }}
+            sx={{ backgroundColor: "transparent", border: 0, boxShadow: "none", "&:hover": { backgroundColor: "transparent" } }}
+          >
             <DeleteIcon sx={{ fontSize: "1rem" }} />
           </IconButton>
-        </div>
+        </Box>
       ),
     },
   ];
@@ -202,14 +215,48 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
           columns={columns}
           autoHeight
           getRowId={(row: InterviewRow): GridRowId => row.id}
+          onRowClick={(params) => { setViewingInterview(params.row); setError(null); }}
           disableRowSelectionOnClick
           disableColumnResize
+          rowHeight={58}
           pageSizeOptions={isMobile ? [5, 10] : [10, 25]}
-          density="compact"
           initialState={{ pagination: { paginationModel } }}
-          sx={{ backgroundColor: "#fff", width: "100%" }}
+          sx={{ backgroundColor: "#fff", width: "100%", "& .MuiDataGrid-row": { cursor: "pointer" } }}
         />
       </Box>
+
+      {/* View */}
+      <Dialog open={Boolean(viewingInterview)} onClose={() => setViewingInterview(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
+          {viewingInterview?.companyName} — {viewingInterview?.roundLabel}
+          <IconButton size="small" onClick={() => setViewingInterview(null)}>
+            <CloseIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {viewingInterview ? (
+            <Box sx={{ display: "grid", gap: 2 }}>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                <Chip size="small" label={`Round ${viewingInterview.roundIndex}`} />
+                <Chip size="small" label={toTitleCaseLabel(viewingInterview.status)} />
+                <Chip size="small" variant="outlined" label={fmtTime(viewingInterview.scheduledAtIso)} />
+              </Box>
+              {viewingInterview.notes ? (
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Notes</Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{viewingInterview.notes}</Typography>
+                </Box>
+              ) : null}
+            </Box>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setEditingInterview(viewingInterview); setViewingInterview(null); setError(null); }} endIcon={<EditIcon sx={{ fontSize: "1rem" }} />}>
+            Edit
+          </Button>
+          <Button onClick={() => setViewingInterview(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Edit */}
       <Dialog

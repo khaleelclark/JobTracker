@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
-import { toTitleCaseLabel } from "@/lib/format";
+import { toTitleCaseLabel, todayDateInputValue } from "@/lib/format";
 
 interface FollowupCreateFormProps {
   applicationId: string;
@@ -112,7 +112,7 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex, hideHea
 
       <label>
         Sent Date
-        <input name="sentAt" type="date" />
+        <input name="sentAt" type="date" defaultValue={todayDateInputValue()} />
       </label>
 
       <div className="form-actions">

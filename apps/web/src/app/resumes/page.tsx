@@ -29,23 +29,22 @@ export default async function ResumesPage() {
         </p>
       </header>
 
-      <div className="layout-split">
-        <ResumeCreateForm applications={applications} />
-        <div className="card stack-md">
-          <h2 className="no-margin">Resume Library</h2>
-          <ResumeLibrary
-            resumes={resumes.map(resume => ({
-              id: resume.id,
-              name: resume.name,
-              filePath: resume.filePath,
-              extractedText: resume.extractedText,
-              linkedApplicationIds: resume.applications.map(
-                entry => entry.applicationId,
-              ),
-            }))}
-            applications={applications}
-          />
-        </div>
+      <ResumeCreateForm applications={applications} />
+
+      <div className="card stack-md">
+        <h2 className="no-margin">Resume Library</h2>
+        <ResumeLibrary
+          resumes={resumes.map(resume => ({
+            id: resume.id,
+            name: resume.name,
+            filePath: resume.filePath,
+            extractedText: resume.extractedText,
+            linkedApplicationIds: resume.applications.map(
+              entry => entry.applicationId,
+            ),
+          }))}
+          applications={applications}
+        />
       </div>
     </section>
   );

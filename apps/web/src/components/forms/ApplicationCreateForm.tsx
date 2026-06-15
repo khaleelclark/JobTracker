@@ -11,7 +11,7 @@ import {
   IconButton,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
-import { toTitleCaseLabel } from "@/lib/format";
+import { toTitleCaseLabel, todayDateInputValue } from "@/lib/format";
 
 const STATUS_OPTIONS = [
   "applied",
@@ -250,7 +250,7 @@ export function ApplicationCreateForm({
 
               <label>
                 Applied Date
-                <input name="appliedAt" type="date" />
+                <input name="appliedAt" type="date" defaultValue={todayDateInputValue()} />
               </label>
 
               <label>

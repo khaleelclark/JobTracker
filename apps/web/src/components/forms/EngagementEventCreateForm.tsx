@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
-import { toTitleCaseLabel } from "@/lib/format";
+import { toTitleCaseLabel, nowDateTimeLocalValue } from "@/lib/format";
 
 interface EngagementEventCreateFormProps {
   applicationId: string;
@@ -124,7 +124,7 @@ export function EngagementEventCreateForm({ applicationId, hideHeader, onSaved }
 
         <label>
           Occurred At
-          <input name="occurredAt" type="datetime-local" />
+          <input name="occurredAt" type="datetime-local" defaultValue={nowDateTimeLocalValue()} />
         </label>
       </div>
 

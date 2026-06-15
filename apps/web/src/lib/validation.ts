@@ -30,6 +30,7 @@ export const createApplicationSchema = z.object({
   roleLevel: z.string().max(120).optional().nullable(),
   appliedAt: z.coerce.date(),
   notes: z.string().max(4000).optional().nullable(),
+  coverLetter: z.string().max(20000).optional().nullable(),
   linkedResumeIds: z.array(z.string().uuid()).default([]),
 });
 

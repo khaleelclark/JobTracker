@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { fmtLocalDateTime } from "@/lib/format";
 
 interface TimelineEntry {
   id: string;
   label: string;
-  occurredAt: Date;
+  occurredAtIso: string;
   applicationId?: string;
 }
 
@@ -18,21 +21,21 @@ export function Timeline({ entries }: TimelineProps) {
 
   return (
     <ul className="clean-list">
-        {entries.map((entry) => (
-          <li key={entry.id} className={entry.applicationId ? "list-row list-row-link" : "list-row"}>
-            {entry.applicationId ? (
-              <Link href={`/applications/${entry.applicationId}`} className="list-row-inner">
-                <span>{entry.label}</span>
-                <span className="muted">{entry.occurredAt.toLocaleString()}</span>
-              </Link>
-            ) : (
-              <>
-                <span>{entry.label}</span>
-                <span className="muted">{entry.occurredAt.toLocaleString()}</span>
-              </>
-            )}
-          </li>
-        ))}
+      {entries.map((entry) => (
+        <li key={entry.id} className={entry.applicationId ? "list-row list-row-link" : "list-row"}>
+          {entry.applicationId ? (
+            <Link href={`/applications/${entry.applicationId}`} className="list-row-inner">
+              <span>{entry.label}</span>
+              <span className="muted">{fmtLocalDateTime(entry.occurredAtIso)}</span>
+            </Link>
+          ) : (
+            <>
+              <span>{entry.label}</span>
+              <span className="muted">{fmtLocalDateTime(entry.occurredAtIso)}</span>
+            </>
+          )}
+        </li>
+      ))}
     </ul>
   );
 }

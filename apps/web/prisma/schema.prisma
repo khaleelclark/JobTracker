@@ -84,6 +84,7 @@ model Application {
   createdAt      DateTime            @default(now()) @map("created_at")
   updatedAt      DateTime            @updatedAt @map("updated_at")
   notes          String?
+  coverLetter    String?             @map("cover_letter")
   resumes        ApplicationResume[]
   interviews     Interview[]
   emailLogs      EmailLog[]

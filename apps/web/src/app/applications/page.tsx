@@ -4,12 +4,37 @@ import { ApplicationTable } from "@/components/ApplicationTable";
 import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
 
+async function autoArchiveStaleApplications() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 60);
+  const stale = await prisma.application.findMany({
+    where: { genericStatus: "applied", appliedAt: { lt: cutoff } },
+    select: { id: true, notes: true },
+  });
+  if (stale.length === 0) return;
+  const archiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  await Promise.all(
+    stale.map((app) =>
+      prisma.application.update({
+        where: { id: app.id },
+        data: {
+          genericStatus: "archived",
+          notes: [app.notes?.trim(), `Auto-archived on ${archiveDate} — no activity for 60+ days.`]
+            .filter(Boolean)
+            .join("\n\n"),
+        },
+      }),
+    ),
+  );
+}
+
 export default async function ApplicationsPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
   const { status: initialStatus } = await searchParams;
+  await autoArchiveStaleApplications();
   const [applications, resumes] = await Promise.all([
     prisma.application.findMany({
       orderBy: { appliedAt: "desc" },

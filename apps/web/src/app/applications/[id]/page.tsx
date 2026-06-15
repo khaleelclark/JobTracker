@@ -130,6 +130,7 @@ export default async function ApplicationDetailPage({
                 roleLevel: application.roleLevel,
                 appliedAtIso: application.appliedAt.toISOString(),
                 notes: application.notes,
+                coverLetter: application.coverLetter,
                 linkedResumeIds: application.resumes.map((entry) => entry.resumeId),
               }}
               resumes={resumes}

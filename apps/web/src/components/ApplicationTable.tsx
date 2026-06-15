@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -59,12 +58,12 @@ export function ApplicationTable({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
-  const [showArchived, setShowArchived] = useState(initialStatusFilter === "archived");
+  const [showArchived, setShowArchived] = useState(initialStatusFilter === "archived" || initialStatusFilter === "rejected");
 
-  const archivedCount = applications.filter((a) => a.genericStatus === "archived").length;
+  const hiddenCount = applications.filter((a) => a.genericStatus === "archived" || a.genericStatus === "rejected").length;
   const visibleApplications = showArchived
     ? applications
-    : applications.filter((a) => a.genericStatus !== "archived");
+    : applications.filter((a) => a.genericStatus !== "archived" && a.genericStatus !== "rejected");
 
   async function handleDuplicate(application: ApplicationRow) {
     const response = await fetch(`/api/applications/${application.id}/duplicate`, {
@@ -88,26 +87,6 @@ export function ApplicationTable({
 
   const columns = useMemo<GridColDef<ApplicationRow>[]>(
     () => [
-      {
-        field: "view",
-        headerName: "View",
-        sortable: false,
-        filterable: false,
-        width: 80,
-        headerAlign: "center",
-        align: "center",
-        renderCell: (params: GridRenderCellParams<ApplicationRow>) => (
-          <IconButton
-            size={isMobile ? "small" : "medium"}
-            aria-label={`View application ${params.row.companyName} ${params.row.roleTitle}`}
-            title="View"
-            component={Link}
-            href={`/applications/${params.row.id}`}
-          >
-            <VisibilityIcon sx={{ fontSize: "1rem" }} />
-          </IconButton>
-        ),
-      },
       {
         field: "companyName",
         headerName: "Company",
@@ -206,7 +185,7 @@ export function ApplicationTable({
                 size={isMobile ? "small" : "medium"}
                 aria-label={`Duplicate application ${label}`}
                 title="Duplicate"
-                onClick={() => void handleDuplicate(params.row)}
+                onClick={(e) => { e.stopPropagation(); void handleDuplicate(params.row); }}
                 sx={{
                   backgroundColor: "transparent",
                   border: 0,
@@ -271,9 +250,9 @@ export function ApplicationTable({
     <div className="section-head">
       <h2 className="no-margin">{title}</h2>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {archivedCount > 0 && (
+        {hiddenCount > 0 && (
           <Button size="small" variant="text" onClick={() => setShowArchived((v) => !v)}>
-            {showArchived ? "Hide Archived" : `Show Archived (${archivedCount})`}
+            {showArchived ? "Hide Archived & Rejected" : `Show Archived & Rejected (${hiddenCount})`}
           </Button>
         )}
         <ApplicationCreateForm
@@ -288,7 +267,7 @@ export function ApplicationTable({
     return (
       <div className="stack-md">
         {header}
-        <p className="muted">{showArchived ? "No applications logged yet." : "No active applications."}</p>
+        <p className="muted">{showArchived ? "No applications logged yet." : "No active applications. Use \"Show Archived & Rejected\" to see hidden records."}</p>
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button onClick={handleExportCsv} disabled>
             Export Applications
@@ -307,6 +286,8 @@ export function ApplicationTable({
           columns={columns}
           autoHeight
           getRowId={(row: ApplicationRow): GridRowId => row.id}
+          rowHeight={58}
+          onRowClick={(params) => router.push(`/applications/${params.row.id}`)}
           disableRowSelectionOnClick
           disableColumnResize
           columnVisibilityModel={{
@@ -326,6 +307,7 @@ export function ApplicationTable({
             backgroundColor: "#fff",
             width: "100%",
             maxWidth: "100%",
+            "& .MuiDataGrid-row": { cursor: "pointer" },
             "& .MuiDataGrid-cell, & .MuiDataGrid-columnHeaderTitleContainer":
               {
                 px: isMobile ? 1 : 2,

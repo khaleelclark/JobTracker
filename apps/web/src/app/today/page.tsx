@@ -6,6 +6,7 @@ import { Timeline } from "@/components/Timeline";
 import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
 import { GENERIC_APPLICATION_STATUSES } from "@job-tracker/shared";
+import { LocalDate } from "@/components/LocalDate";
 
 function startOfDay(date: Date) {
   const nextDate = new Date(date);
@@ -167,29 +168,29 @@ export default async function TodayPage() {
     ...recentApplications.map(application => ({
       id: `application_${application.id}_${application.updatedAt.toISOString()}`,
       label: `${application.companyName}: application updated (${application.roleTitle}, ${toTitleCaseLabel(application.genericStatus)})`,
-      occurredAt: application.updatedAt,
+      occurredAtIso: application.updatedAt.toISOString(),
       applicationId: application.id,
     })),
     ...engagementEvents.map(event => ({
       id: `event_${event.id}`,
       label: `${event.application.companyName}: ${event.eventType}`,
-      occurredAt: event.occurredAt,
+      occurredAtIso: event.occurredAt.toISOString(),
       applicationId: event.applicationId,
     })),
     ...followups.map(followup => ({
       id: `followup_${followup.id}`,
       label: `${followup.application.companyName}: follow-up via ${followup.channel}`,
-      occurredAt: followup.sentAt,
+      occurredAtIso: followup.sentAt.toISOString(),
       applicationId: followup.applicationId,
     })),
     ...emails.map(email => ({
       id: `email_${email.id}`,
       label: `${email.companyName ?? email.application?.companyName ?? "Unknown Company"}: ${email.direction} ${email.channel} communication (${email.subject})`,
-      occurredAt: email.createdAt,
+      occurredAtIso: email.createdAt.toISOString(),
       applicationId: email.applicationId ?? undefined,
     })),
   ]
-    .sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime())
+    .sort((a, b) => new Date(b.occurredAtIso).getTime() - new Date(a.occurredAtIso).getTime())
     .slice(0, 10);
 
   return (
@@ -198,11 +199,7 @@ export default async function TodayPage() {
         <h1>
           Today{" "}
           <span className="today-date">
-            {now.toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
+            <LocalDate />
           </span>
         </h1>
         <p className="muted">
