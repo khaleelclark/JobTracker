@@ -165,27 +165,28 @@ export default async function TodayPage() {
   );
 
   const timeline = [
-    ...recentApplications.map(application => ({
+    ...recentApplications.slice(0, 5).map(application => ({
       id: `application_${application.id}_${application.updatedAt.toISOString()}`,
-      label: `${application.companyName}: application updated (${application.roleTitle}, ${toTitleCaseLabel(application.genericStatus)})`,
+      label: `${application.companyName}: ${application.roleTitle} — ${toTitleCaseLabel(application.genericStatus)}`,
       occurredAtIso: application.updatedAt.toISOString(),
       applicationId: application.id,
     })),
     ...engagementEvents.map(event => ({
       id: `event_${event.id}`,
-      label: `${event.application.companyName}: ${event.eventType}`,
+      label: `${event.application.companyName}: ${toTitleCaseLabel(event.eventType)}`,
       occurredAtIso: event.occurredAt.toISOString(),
       applicationId: event.applicationId,
     })),
     ...followups.map(followup => ({
       id: `followup_${followup.id}`,
-      label: `${followup.application.companyName}: follow-up via ${followup.channel}`,
+      label: `${followup.application.companyName}: Follow-up via ${toTitleCaseLabel(followup.channel)}`,
       occurredAtIso: followup.sentAt.toISOString(),
       applicationId: followup.applicationId,
+      dateOnly: true,
     })),
     ...emails.map(email => ({
       id: `email_${email.id}`,
-      label: `${email.companyName ?? email.application?.companyName ?? "Unknown Company"}: ${email.direction} ${email.channel} communication (${email.subject})`,
+      label: `${email.companyName ?? email.application?.companyName ?? "Unknown Company"}: ${toTitleCaseLabel(email.direction)} ${toTitleCaseLabel(email.channel)} (${email.subject})`,
       occurredAtIso: email.createdAt.toISOString(),
       applicationId: email.applicationId ?? undefined,
     })),

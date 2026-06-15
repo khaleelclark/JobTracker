@@ -275,7 +275,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
     <>
       {success ? <p className="success-text">{success}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
-      <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+      <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden", border: "1px solid rgba(15, 74, 134, 0.22)", borderRadius: "8px" }}>
         <DataGrid
           rows={emails}
           columns={columns}
@@ -294,8 +294,12 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
           }}
           sx={{
             backgroundColor: "#fff",
+            border: "none",
             width: "100%",
             maxWidth: "100%",
+            "& .MuiDataGrid-columnHeader, & .MuiDataGrid-scrollbarFiller": { backgroundColor: "rgba(15, 74, 134, 0.06)" },
+            "--DataGrid-t-color-border-base": "rgba(15, 74, 134, 0.22)",
+            "& .MuiDataGrid-footerContainer": { backgroundColor: "rgba(15, 74, 134, 0.04)" },
             "& .MuiDataGrid-row": { cursor: "pointer" },
             "& .MuiDataGrid-cell": {
               display: "flex",

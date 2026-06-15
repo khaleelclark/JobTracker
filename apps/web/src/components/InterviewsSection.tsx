@@ -59,6 +59,7 @@ export function InterviewsSection({ applications, interviews, defaultApplication
         <DialogContent>
           <InterviewCreateForm
             applications={applications}
+            existingInterviews={interviews.map((iv) => ({ applicationId: iv.applicationId, roundIndex: iv.roundIndex }))}
             defaultApplicationId={defaultApplicationId}
             hideHeader
             onSaved={() => setIsAddOpen(false)}

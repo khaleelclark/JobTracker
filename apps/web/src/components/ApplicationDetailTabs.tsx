@@ -19,12 +19,20 @@ export function ApplicationDetailTabs({
   resumes,
 }: ApplicationDetailTabsProps) {
   const [tab, setTab] = useState(0);
+  const [visited, setVisited] = useState<Set<number>>(new Set([0]));
+
+  function handleTabChange(_e: React.SyntheticEvent, val: number) {
+    setTab(val);
+    setVisited((prev) => new Set([...prev, val]));
+  }
+
+  const panels = [details, activity, communication, interviews, resumes];
 
   return (
     <div className="stack-md">
       <Tabs
         value={tab}
-        onChange={(_e, val: number) => setTab(val)}
+        onChange={handleTabChange}
         sx={{ borderBottom: "1px solid var(--line)" }}
       >
         <Tab label="Details" />
@@ -34,11 +42,13 @@ export function ApplicationDetailTabs({
         <Tab label="Resumes" />
       </Tabs>
 
-      <div hidden={tab !== 0}>{details}</div>
-      <div hidden={tab !== 1}>{activity}</div>
-      <div hidden={tab !== 2}>{communication}</div>
-      <div hidden={tab !== 3}>{interviews}</div>
-      <div hidden={tab !== 4}>{resumes}</div>
+      {panels.map((panel, i) =>
+        visited.has(i) ? (
+          <div key={i} hidden={tab !== i}>
+            {panel}
+          </div>
+        ) : null,
+      )}
     </div>
   );
 }

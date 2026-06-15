@@ -209,7 +209,7 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
       {success ? <p className="success-text">{success}</p> : null}
       {error && !editingInterview && !deleteInterview ? <p className="error-text">{error}</p> : null}
 
-      <Box sx={{ width: "100%", overflowX: "hidden" }}>
+      <Box sx={{ width: "100%", overflowX: "hidden", border: "1px solid rgba(15, 74, 134, 0.22)", borderRadius: "8px" }}>
         <DataGrid
           rows={interviews}
           columns={columns}
@@ -221,7 +221,15 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
           rowHeight={58}
           pageSizeOptions={isMobile ? [5, 10] : [10, 25]}
           initialState={{ pagination: { paginationModel } }}
-          sx={{ backgroundColor: "#fff", width: "100%", "& .MuiDataGrid-row": { cursor: "pointer" } }}
+          sx={{
+            backgroundColor: "#fff",
+            border: "none",
+            width: "100%",
+            "& .MuiDataGrid-columnHeader, & .MuiDataGrid-scrollbarFiller": { backgroundColor: "rgba(15, 74, 134, 0.06)" },
+            "--DataGrid-t-color-border-base": "rgba(15, 74, 134, 0.22)",
+            "& .MuiDataGrid-footerContainer": { backgroundColor: "rgba(15, 74, 134, 0.04)" },
+            "& .MuiDataGrid-row": { cursor: "pointer" },
+          }}
         />
       </Box>
 

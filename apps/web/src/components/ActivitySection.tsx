@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { FollowupCreateForm } from "@/components/forms/FollowupCreateForm";
 import { EngagementEventCreateForm } from "@/components/forms/EngagementEventCreateForm";
@@ -23,52 +22,20 @@ export function ActivitySection({ applicationId, followups, events, nextFollowup
   const [isEventOpen, setIsEventOpen] = useState(false);
 
   return (
-    <div className="card stack-md">
-      <div className="section-head">
-        <h2 className="no-margin">Activity</h2>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <IconButton
-            size="small"
-            aria-label="Add follow-up"
-            title="Add follow-up"
-            onClick={() => setIsFollowupOpen(true)}
-            sx={{
-              borderRadius: "999px",
-              border: "1px solid rgba(19, 33, 48, 0.18)",
-              px: 1.1,
-              py: 0.45,
-              gap: 0.45,
-            }}
-          >
-            <AddIcon sx={{ fontSize: "1.15rem" }} />
-            <span style={{ fontSize: "0.85rem", lineHeight: 1.1 }}>Follow-up</span>
-          </IconButton>
-          <IconButton
-            size="small"
-            aria-label="Log event"
-            title="Log event"
-            onClick={() => setIsEventOpen(true)}
-            sx={{
-              borderRadius: "999px",
-              border: "1px solid rgba(19, 33, 48, 0.18)",
-              px: 1.1,
-              py: 0.45,
-              gap: 0.45,
-            }}
-          >
-            <AddIcon sx={{ fontSize: "1.15rem" }} />
-            <span style={{ fontSize: "0.85rem", lineHeight: 1.1 }}>Event</span>
-          </IconButton>
+    <div className="stack-md">
+      <div className="card table-shell stack-md">
+        <div className="section-head">
+          <h2 className="no-margin">Follow-ups</h2>
+          <Button onClick={() => setIsFollowupOpen(true)}>+ Add Follow-up</Button>
         </div>
-      </div>
-
-      <div>
-        <h3 style={{ marginBottom: "0.5rem" }}>Follow-ups</h3>
         <FollowupsCrudTable followups={followups} />
       </div>
 
-      <div>
-        <h3 style={{ marginBottom: "0.5rem" }}>Engagement Events</h3>
+      <div className="card table-shell stack-md">
+        <div className="section-head">
+          <h2 className="no-margin">Engagement Events</h2>
+          <Button onClick={() => setIsEventOpen(true)}>+ Log Event</Button>
+        </div>
         <EngagementEventsCrudTable events={events} />
       </div>
 

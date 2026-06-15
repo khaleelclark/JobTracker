@@ -143,7 +143,7 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
       flex: 2,
       minWidth: 180,
       renderCell: (params: GridRenderCellParams<ResumeOption>) => (
-        <span style={{ fontWeight: 500 }}>{params.row.name}</span>
+        <span style={{ fontWeight: 500, textDecoration: "underline" }}>{params.row.name}</span>
       ),
     },
     {
@@ -220,9 +220,12 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         onRowClick={(params) => openPreview(params.row)}
         disableRowSelectionOnClick
         sx={{
-          border: "none",
+          border: "1px solid rgba(15, 74, 134, 0.22)",
+          borderRadius: "8px",
+          "& .MuiDataGrid-columnHeader, & .MuiDataGrid-scrollbarFiller": { backgroundColor: "rgba(15, 74, 134, 0.06)" },
+          "--DataGrid-t-color-border-base": "rgba(15, 74, 134, 0.22)",
+          "& .MuiDataGrid-footerContainer": { backgroundColor: "rgba(15, 74, 134, 0.04)" },
           "& .MuiDataGrid-row": { cursor: "pointer" },
-          "& .MuiDataGrid-columnHeaders": { background: "transparent" },
           "& .MuiDataGrid-cell": { display: "flex", alignItems: "center" },
         }}
       />
