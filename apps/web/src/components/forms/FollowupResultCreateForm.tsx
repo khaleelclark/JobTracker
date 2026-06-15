@@ -2,14 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel } from "@/lib/format";
 
-interface FollowupOption {
-  id: string;
-  attemptIndex: number;
-  sentAtIso: string;
-}
+interface FollowupOption { id: string; attemptIndex: number; sentAtIso: string; }
 
 interface FollowupResultCreateFormProps {
   followups: FollowupOption[];
@@ -17,30 +20,15 @@ interface FollowupResultCreateFormProps {
 }
 
 const RESULT_STATUS_OPTIONS = ["pending", "resolved", "expired_no_response"] as const;
-const RESPONSE_TYPE_OPTIONS = [
-  "human_reply",
-  "rejection_reply",
-  "screen_scheduled",
-  "interview_scheduled",
-] as const;
+const RESPONSE_TYPE_OPTIONS = ["human_reply", "rejection_reply", "screen_scheduled", "interview_scheduled"] as const;
 
 function toIsoFromDate(raw: string): string | null {
-  if (!raw) {
-    return null;
-  }
-
+  if (!raw) return null;
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
 function notifyRejectedStatus(applicationId: string) {
-  window.dispatchEvent(
-    new CustomEvent("application-status-updated", {
-      detail: {
-        applicationId,
-        status: "rejected",
-      },
-    }),
-  );
+  window.dispatchEvent(new CustomEvent("application-status-updated", { detail: { applicationId, status: "rejected" } }));
 }
 
 export function FollowupResultCreateForm({ followups, applicationId }: FollowupResultCreateFormProps) {
@@ -50,16 +38,9 @@ export function FollowupResultCreateForm({ followups, applicationId }: FollowupR
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!success && !error) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setSuccess(null);
-      setError(null);
-    }, 3000);
-
-    return () => window.clearTimeout(timeoutId);
+    if (!success && !error) return;
+    const id = window.setTimeout(() => { setSuccess(null); setError(null); }, 3000);
+    return () => window.clearTimeout(id);
   }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -70,7 +51,6 @@ export function FollowupResultCreateForm({ followups, applicationId }: FollowupR
 
     const form = event.currentTarget;
     const data = new FormData(form);
-
     const payload = {
       followupAttemptId: String(data.get("followupAttemptId") ?? ""),
       resultStatus: String(data.get("resultStatus") ?? "pending"),
@@ -84,91 +64,59 @@ export function FollowupResultCreateForm({ followups, applicationId }: FollowupR
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: unknown };
         throw new Error(typeof body.error === "string" ? body.error : "Unable to save follow-up result");
       }
-
       form.reset();
       setSuccess("Follow-up result saved.");
-
-      if (payload.responseType === "rejection_reply") {
-        notifyRejectedStatus(applicationId);
-      } else {
-        router.refresh();
-      }
-    } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Unknown error";
-      setError(message);
+      if (payload.responseType === "rejection_reply") notifyRejectedStatus(applicationId);
+      else router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form className="form-card compact" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h3>Log Follow-up Result</h3>
-      </div>
+    <Paper component="form" onSubmit={handleSubmit} elevation={0}
+      sx={{ border: "1px solid", borderColor: "divider", boxShadow: "none" }}>
+      <Stack spacing={2}>
+        <Typography variant="h3">Log Follow-up Result</Typography>
 
-      <div className="form-grid form-grid-2">
-        <label>
-          Follow-up Attempt
-          <select name="followupAttemptId" required defaultValue="">
-            <option value="" disabled>
-              Select follow-up
-            </option>
-            {followups.map((followup) => (
-              <option key={followup.id} value={followup.id}>
-                Attempt {followup.attemptIndex} - {new Date(followup.sentAtIso).toLocaleDateString()}
-              </option>
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 1.5 }}>
+          <TextField select label="Follow-up Attempt" name="followupAttemptId" required size="small" fullWidth defaultValue="">
+            <MenuItem value="" disabled>Select follow-up</MenuItem>
+            {followups.map(f => (
+              <MenuItem key={f.id} value={f.id}>
+                Attempt {f.attemptIndex} — {new Date(f.sentAtIso).toLocaleDateString()}
+              </MenuItem>
             ))}
-          </select>
-        </label>
+          </TextField>
 
-        <label>
-          Result Status
-          <select name="resultStatus" defaultValue="pending">
-            {RESULT_STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
-                {toTitleCaseLabel(status)}
-              </option>
-            ))}
-          </select>
-        </label>
+          <TextField select label="Result Status" name="resultStatus" defaultValue="pending" size="small" fullWidth>
+            {RESULT_STATUS_OPTIONS.map(s => <MenuItem key={s} value={s}>{toTitleCaseLabel(s)}</MenuItem>)}
+          </TextField>
 
-        <label>
-          Response Type
-          <select name="responseType" defaultValue="">
-            <option value="">None</option>
-            {RESPONSE_TYPE_OPTIONS.map((responseType) => (
-              <option key={responseType} value={responseType}>
-                {toTitleCaseLabel(responseType)}
-              </option>
-            ))}
-          </select>
-        </label>
+          <TextField select label="Response Type" name="responseType" defaultValue="" size="small" fullWidth>
+            <MenuItem value="">None</MenuItem>
+            {RESPONSE_TYPE_OPTIONS.map(t => <MenuItem key={t} value={t}>{toTitleCaseLabel(t)}</MenuItem>)}
+          </TextField>
 
-        <label>
-          Resolved Date
-          <input name="resolvedAt" type="date" />
-        </label>
-      </div>
+          <TextField label="Resolved Date" name="resolvedAt" type="date" size="small" fullWidth />
+        </Box>
 
-      <div className="form-actions">
-        <button type="submit" disabled={submitting || followups.length === 0}>
-          {submitting ? "Saving..." : (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              Save
-              <SaveIcon sx={{ fontSize: "1rem" }} />
-            </span>
-          )}
-        </button>
-        {followups.length === 0 ? <span className="error-text">No follow-up attempts available.</span> : null}
-        {success ? <span className="success-text">{success}</span> : null}
-        {error ? <span className="error-text">{error}</span> : null}
-      </div>
-    </form>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Button type="submit" disabled={submitting || followups.length === 0}
+            endIcon={<SaveIcon sx={{ fontSize: "1rem !important" }} />}>
+            {submitting ? "Saving..." : "Save"}
+          </Button>
+          {followups.length === 0 && <Typography variant="body2" color="error">No follow-up attempts available.</Typography>}
+          {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+          {error && <Typography variant="body2" color="error">{error}</Typography>}
+        </Box>
+      </Stack>
+    </Paper>
   );
 }

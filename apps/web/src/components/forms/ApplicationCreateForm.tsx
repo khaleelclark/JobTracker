@@ -4,31 +4,26 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import {
   Autocomplete,
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  MenuItem,
+  Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel, todayDateInputValue } from "@/lib/format";
 
 const STATUS_OPTIONS = [
-  "applied",
-  "under_review",
-  "interviewing",
-  "offered",
-  "rejected",
-  "withdrawn",
-  "archived",
+  "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived",
 ] as const;
 
-interface ResumeOption {
-  id: string;
-  name: string;
-}
+interface ResumeOption { id: string; name: string; }
 
 interface ApplicationAutocompleteOptions {
   companies: string[];
@@ -40,23 +35,14 @@ interface ApplicationAutocompleteOptions {
 }
 
 function toIsoFromDateInput(raw: string): string {
-  if (!raw) {
-    return new Date().toISOString();
-  }
-
+  if (!raw) return new Date().toISOString();
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-function normalizedCareersPageUrl(
-  value: FormDataEntryValue | null,
-): string | null {
+function normalizedCareersPageUrl(value: FormDataEntryValue | null): string | null {
   const raw = String(value ?? "").trim();
-  if (!raw) {
-    return null;
-  }
-
-  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-  return withProtocol;
+  if (!raw) return null;
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 }
 
 interface ApplicationCreateFormProps {
@@ -64,10 +50,7 @@ interface ApplicationCreateFormProps {
   autocompleteOptions: ApplicationAutocompleteOptions;
 }
 
-export function ApplicationCreateForm({
-  resumes,
-  autocompleteOptions,
-}: ApplicationCreateFormProps) {
+export function ApplicationCreateForm({ resumes, autocompleteOptions }: ApplicationCreateFormProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -97,9 +80,7 @@ export function ApplicationCreateForm({
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
       notes: String(data.get("notes") ?? "").trim() || null,
       coverLetter: String(data.get("coverLetter") ?? "").trim() || null,
-      linkedResumeIds: data
-        .getAll("linkedResumeIds")
-        .map(value => String(value)),
+      linkedResumeIds: data.getAll("linkedResumeIds").map(v => String(v)),
     };
 
     try {
@@ -110,14 +91,8 @@ export function ApplicationCreateForm({
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as {
-          error?: unknown;
-        };
-        throw new Error(
-          typeof body.error === "string"
-            ? body.error
-            : "Unable to create application",
-        );
+        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
+        throw new Error(typeof body.error === "string" ? body.error : "Unable to create application");
       }
 
       form.reset();
@@ -125,194 +100,76 @@ export function ApplicationCreateForm({
       setSuccess("Application saved.");
       setIsDialogOpen(false);
       router.refresh();
-    } catch (submitError) {
-      const message =
-        submitError instanceof Error ? submitError.message : "Unknown error";
-      setError(message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleClose() {
+    if (submitting) return;
+    setIsDialogOpen(false);
+    setError(null);
+    setSuccess(null);
   }
 
   return (
     <>
       <Button onClick={() => setIsDialogOpen(true)}>+ Add Application</Button>
 
-      <Dialog
-        open={isDialogOpen}
-        onClose={(_event, reason) => {
-          if (reason === "backdropClick" || submitting) {
-            return;
-          }
-          setIsDialogOpen(false);
-          setError(null);
-          setSuccess(null);
-        }}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={isDialogOpen} onClose={(_e, reason) => { if (reason !== "backdropClick") handleClose(); }} maxWidth="md" fullWidth>
         <DialogTitle sx={{ pr: 7 }}>
           Log Application
           <IconButton
-            aria-label="Close add application dialog"
-            onClick={() => {
-              if (submitting) {
-                return;
-              }
-              setIsDialogOpen(false);
-              setError(null);
-              setSuccess(null);
-            }}
+            aria-label="Close"
+            onClick={handleClose}
             disabled={submitting}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              borderRadius: 0,
-              backgroundColor: "transparent",
-              "&:hover": { backgroundColor: "transparent" },
-            }}
+            sx={{ position: "absolute", right: 8, top: 8 }}
           >
-            x
+            ✕
           </IconButton>
         </DialogTitle>
+
         <DialogContent sx={{ pt: 1 }}>
-          <form className="form-card" onSubmit={handleSubmit}>
-            <div className="form-grid form-grid-2">
-              <datalist id="application-company-options">
-                {autocompleteOptions.companies.map(value => (
-                  <option key={value} value={value} />
-                ))}
-              </datalist>
-              <datalist id="application-role-title-options">
-                {autocompleteOptions.roleTitles.map(value => (
-                  <option key={value} value={value} />
-                ))}
-              </datalist>
-              <datalist id="application-careers-page-options">
-                {autocompleteOptions.careersPageUrls.map(value => (
-                  <option key={value} value={value} />
-                ))}
-              </datalist>
-              <datalist id="application-role-family-options">
-                {autocompleteOptions.roleFamilies.map(value => (
-                  <option key={value} value={value} />
-                ))}
-              </datalist>
-              <datalist id="application-role-level-options">
-                {autocompleteOptions.roleLevels.map(value => (
-                  <option key={value} value={value} />
-                ))}
-              </datalist>
-              <datalist id="application-compensation-options">
-                {autocompleteOptions.compensations.map(value => (
-                  <option key={value} value={value} />
-                ))}
-              </datalist>
+          <Stack component="form" spacing={2} onSubmit={handleSubmit} id="app-create-form">
+            {/* Datalists for native autocomplete */}
+            <datalist id="ac-company">{autocompleteOptions.companies.map(v => <option key={v} value={v} />)}</datalist>
+            <datalist id="ac-role-title">{autocompleteOptions.roleTitles.map(v => <option key={v} value={v} />)}</datalist>
+            <datalist id="ac-careers-page">{autocompleteOptions.careersPageUrls.map(v => <option key={v} value={v} />)}</datalist>
+            <datalist id="ac-role-family">{autocompleteOptions.roleFamilies.map(v => <option key={v} value={v} />)}</datalist>
+            <datalist id="ac-role-level">{autocompleteOptions.roleLevels.map(v => <option key={v} value={v} />)}</datalist>
+            <datalist id="ac-compensation">{autocompleteOptions.compensations.map(v => <option key={v} value={v} />)}</datalist>
 
-              <label>
-                Company
-                <input
-                  name="companyName"
-                  required
-                  maxLength={200}
-                  list="application-company-options"
-                  placeholder="Acme Corp"
-                />
-              </label>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 1.5 }}>
+              <TextField label="Company" name="companyName" required size="small" fullWidth
+                slotProps={{ htmlInput: { maxLength: 200, list: "ac-company" } }} />
+              <TextField label="Role Title" name="roleTitle" required size="small" fullWidth
+                slotProps={{ htmlInput: { maxLength: 200, list: "ac-role-title" } }} />
+              <TextField label="Careers Page (optional)" name="careersPageUrl" size="small" fullWidth
+                placeholder="https://jobs.company.com/roles/123"
+                slotProps={{ htmlInput: { maxLength: 1000, list: "ac-careers-page" } }} />
+              <TextField select label="Status" name="genericStatus" defaultValue="applied" size="small" fullWidth>
+                {STATUS_OPTIONS.map(s => <MenuItem key={s} value={s}>{toTitleCaseLabel(s)}</MenuItem>)}
+              </TextField>
+              <TextField label="Applied Date" name="appliedAt" type="date" defaultValue={todayDateInputValue()} size="small" fullWidth />
+              <TextField label="Role Family" name="roleFamily" size="small" fullWidth
+                slotProps={{ htmlInput: { maxLength: 120, list: "ac-role-family" } }} placeholder="Engineering" />
+              <TextField label="Role Level" name="roleLevel" size="small" fullWidth
+                slotProps={{ htmlInput: { maxLength: 120, list: "ac-role-level" } }} placeholder="Mid" />
+              <TextField label="Compensation" name="compensation" size="small" fullWidth
+                slotProps={{ htmlInput: { maxLength: 300, list: "ac-compensation" } }}
+                placeholder="$70,000 - $100,000 + bonus" />
+            </Box>
 
-              <label>
-                Role Title
-                <input
-                  name="roleTitle"
-                  required
-                  maxLength={200}
-                  list="application-role-title-options"
-                  placeholder="Product Manager"
-                />
-              </label>
+            <TextField label="Precise Status" name="preciseStatus" size="small" fullWidth
+              placeholder="Recruiter screen completed"
+              slotProps={{ htmlInput: { maxLength: 200 } }} />
 
-              <label>
-                Careers Page (optional)
-                <input
-                  name="careersPageUrl"
-                  maxLength={1000}
-                  list="application-careers-page-options"
-                  placeholder="https://jobs.company.com/roles/123"
-                />
-              </label>
+            <TextField multiline rows={6} label="Posting Details" name="postingDetails" size="small" fullWidth
+              placeholder="Paste role posting details (requirements, responsibilities, compensation…)"
+              slotProps={{ htmlInput: { maxLength: 50000 } }} />
 
-              <label>
-                Status
-                <select name="genericStatus" defaultValue="applied">
-                  {STATUS_OPTIONS.map(status => (
-                    <option key={status} value={status}>
-                      {toTitleCaseLabel(status)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                Applied Date
-                <input
-                  name="appliedAt"
-                  type="date"
-                  defaultValue={todayDateInputValue()}
-                />
-              </label>
-
-              <label>
-                Role Family
-                <input
-                  name="roleFamily"
-                  maxLength={120}
-                  list="application-role-family-options"
-                  placeholder="Engineering"
-                />
-              </label>
-
-              <label>
-                Role Level
-                <input
-                  name="roleLevel"
-                  maxLength={120}
-                  list="application-role-level-options"
-                  placeholder="Mid"
-                />
-              </label>
-
-              <label>
-                Compensation
-                <input
-                  name="compensation"
-                  maxLength={300}
-                  list="application-compensation-options"
-                  placeholder="$70,000 - $100,000 + bonus + benefits."
-                />
-              </label>
-            </div>
-
-            <label>
-              Precise Status
-              <input
-                name="preciseStatus"
-                maxLength={200}
-                placeholder="Recruiter screen completed"
-              />
-            </label>
-
-            <label>
-              Posting Details
-              <textarea
-                name="postingDetails"
-                rows={6}
-                maxLength={50000}
-                placeholder="Paste role posting details (requirements, responsibilities, compensation, location, etc.)"
-              />
-            </label>
-
-            <label>Linked Resumes</label>
             <Autocomplete
               multiple
               options={resumes}
@@ -320,84 +177,34 @@ export function ApplicationCreateForm({
               value={selectedResumes}
               onChange={(_, val) => setSelectedResumes(val)}
               isOptionEqualToValue={(o, v) => o.id === v.id}
-              renderOption={(props, option) => (
-                <li {...props} key={option.id}>
-                  {option.name}
-                </li>
-              )}
-              renderInput={params => (
-                <TextField
-                  {...params}
-                  placeholder="Search resumes..."
-                  size="small"
-                />
-              )}
+              renderOption={(props, option) => <li {...props} key={option.id}>{option.name}</li>}
+              renderInput={params => <TextField {...params} label="Linked Resumes" size="small" />}
             />
             {selectedResumes.map(r => (
-              <input
-                key={r.id}
-                type="hidden"
-                name="linkedResumeIds"
-                value={r.id}
-              />
+              <input key={r.id} type="hidden" name="linkedResumeIds" value={r.id} />
             ))}
 
-            <label>
-              Notes
-              <textarea
-                name="notes"
-                rows={4}
-                maxLength={4000}
-                placeholder="Any factual notes from the posting or application"
-              />
-            </label>
+            <TextField multiline rows={4} label="Notes" name="notes" size="small" fullWidth
+              placeholder="Any factual notes from the posting or application"
+              slotProps={{ htmlInput: { maxLength: 4000 } }} />
 
-            <label>
-              Cover Letter
-              <textarea
-                name="coverLetter"
-                rows={6}
-                maxLength={20000}
-                placeholder="Paste or write your cover letter here..."
-              />
-            </label>
+            <TextField multiline rows={6} label="Cover Letter" name="coverLetter" size="small" fullWidth
+              placeholder="Paste or write your cover letter here…"
+              slotProps={{ htmlInput: { maxLength: 20000 } }} />
 
-            <div className="form-actions">
-              <button type="submit" disabled={submitting}>
-                {submitting ? (
-                  "Saving..."
-                ) : (
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.35rem",
-                    }}
-                  >
-                    Save Application
-                    <SaveIcon sx={{ fontSize: "1rem" }} />
-                  </span>
-                )}
-              </button>
-              {success ? <span className="success-text">{success}</span> : null}
-              {error ? <span className="error-text">{error}</span> : null}
-            </div>
-          </form>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+              <Button type="submit" form="app-create-form" disabled={submitting}
+                endIcon={<SaveIcon sx={{ fontSize: "1rem !important" }} />}>
+                {submitting ? "Saving..." : "Save Application"}
+              </Button>
+              {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+              {error && <Typography variant="body2" color="error">{error}</Typography>}
+            </Box>
+          </Stack>
         </DialogContent>
+
         <DialogActions>
-          <Button
-            onClick={() => {
-              if (submitting) {
-                return;
-              }
-              setIsDialogOpen(false);
-              setError(null);
-              setSuccess(null);
-            }}
-            disabled={submitting}
-          >
-            Close
-          </Button>
+          <Button onClick={handleClose} disabled={submitting}>Close</Button>
         </DialogActions>
       </Dialog>
     </>
