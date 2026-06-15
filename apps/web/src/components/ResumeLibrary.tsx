@@ -3,12 +3,14 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, WheelEvent, useRef, useState } from "react";
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  TextField,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
@@ -38,6 +40,7 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
   const router = useRouter();
   const previewFrameRef = useRef<HTMLIFrameElement | null>(null);
   const [editingResume, setEditingResume] = useState<ResumeOption | null>(null);
+  const [editLinkedApplications, setEditLinkedApplications] = useState<ApplicationOption[]>([]);
   const [deleteResume, setDeleteResume] = useState<ResumeOption | null>(null);
   const [previewResume, setPreviewResume] = useState<ResumeOption | null>(null);
   const [saving, setSaving] = useState(false);
@@ -59,9 +62,7 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         name: String(data.get("name") ?? "").trim(),
         filePath: String(data.get("filePath") ?? "").trim(),
         extractedText: String(data.get("extractedText") ?? "").trim() || null,
-        linkedApplicationIds: data
-          .getAll("linkedApplicationIds")
-          .map(value => String(value)),
+        linkedApplicationIds: editLinkedApplications.map((a) => a.id),
       };
 
       const response = await fetch(`/api/resumes/${editingResume.id}`, {
@@ -180,7 +181,12 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
                 size="small"
                 aria-label={`Edit resume ${resume.name}`}
                 title="Edit"
-                onClick={() => setEditingResume(resume)}
+                onClick={() => {
+                  setEditingResume(resume);
+                  setEditLinkedApplications(
+                    applications.filter((a) => resume.linkedApplicationIds.includes(a.id)),
+                  );
+                }}
               >
                 <EditIcon sx={{ fontSize: "1rem" }} />
               </IconButton>
@@ -278,21 +284,16 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
                   defaultValue={editingResume.filePath}
                 />
               </label>
-              <label>
-                Link to Applications
-                <select
-                  name="linkedApplicationIds"
-                  multiple
-                  defaultValue={editingResume.linkedApplicationIds}
-                  size={Math.min(8, Math.max(3, applications.length))}
-                >
-                  {applications.map(application => (
-                    <option key={application.id} value={application.id}>
-                      {application.companyName} - {application.roleTitle}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Autocomplete
+                multiple
+                options={applications}
+                getOptionLabel={(o) => `${o.companyName} - ${o.roleTitle}`}
+                value={editLinkedApplications}
+                onChange={(_, val) => setEditLinkedApplications(val)}
+                isOptionEqualToValue={(o, v) => o.id === v.id}
+                renderOption={(props, option) => <li {...props} key={option.id}>{option.companyName} - {option.roleTitle}</li>}
+                renderInput={(params) => <TextField {...params} label="Link to Applications" size="small" />}
+              />
               <label>
                 Extracted Text (optional)
                 <textarea

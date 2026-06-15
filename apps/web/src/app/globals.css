@@ -8,7 +8,7 @@
   --surface-strong: #ffffff;
   --brand: #0f766e;
   --brand-strong: #0f4a86;
-  --accent: #f59e0b;
+  --accent: #9333ea;
   --danger: #b91c1c;
   --success: #0f766e;
   --shadow: 0 18px 48px rgba(13, 34, 66, 0.12);
@@ -27,7 +27,7 @@ body {
 body {
   font-family: var(--font-body);
   color: var(--ink-strong);
-  background: radial-gradient(circle at 5% -10%, #ffedb8 0%, transparent 34%),
+  background: radial-gradient(circle at 5% -10%, #e9d5ff 0%, transparent 34%),
     radial-gradient(circle at 95% 5%, #a7f3d0 0%, transparent 34%),
     linear-gradient(165deg, #f8fafc 0%, #ebf6ff 48%, #f8fbff 100%);
   position: relative;
@@ -414,6 +414,10 @@ td a:hover {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.form-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 label {
   display: grid;
   gap: 0.36rem;
@@ -458,8 +462,8 @@ textarea {
 
 button {
   font: inherit;
-  border: 1px solid rgba(15, 74, 134, 0.25);
-  background: linear-gradient(145deg, #ffffff 0%, #e5efff 100%);
+  border: none;
+  background: transparent;
   color: var(--brand-strong);
   border-radius: 10px;
   padding: 0.43rem 0.75rem;
@@ -467,7 +471,7 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background: linear-gradient(145deg, #f7fbff 0%, #dceafe 100%);
+  background: rgba(15, 74, 134, 0.06);
 }
 
 button:disabled {

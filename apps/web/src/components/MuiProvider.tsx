@@ -1,6 +1,11 @@
 "use client";
 
-import { CssBaseline, GlobalStyles, ThemeProvider, createTheme } from "@mui/material";
+import {
+  CssBaseline,
+  GlobalStyles,
+  ThemeProvider,
+  createTheme,
+} from "@mui/material";
 import { PropsWithChildren, useMemo } from "react";
 
 export function MuiProvider({ children }: PropsWithChildren) {
@@ -26,8 +31,8 @@ export function MuiProvider({ children }: PropsWithChildren) {
                 textTransform: "none",
                 fontWeight: 400,
                 lineHeight: 1.2,
-                border: "1px solid rgba(15, 74, 134, 0.25)",
-                background: "linear-gradient(145deg, #ffffff 0%, #e5efff 100%)",
+                border: "none",
+                background: "transparent",
                 color: "var(--brand-strong)",
                 borderRadius: "10px",
                 padding: "0.43rem 0.75rem",
@@ -46,6 +51,21 @@ export function MuiProvider({ children }: PropsWithChildren) {
             styleOverrides: {
               select: {
                 minHeight: "1.2em",
+              },
+            },
+          },
+          MuiTab: {
+            styleOverrides: {
+              root: {
+                background: "transparent",
+                border: "none",
+                padding: "0.5rem 1rem",
+                borderRadius: "10px 10px 0 0",
+                "&.Mui-selected": {
+                  background:
+                    "linear-gradient(145deg, #ffffff 0%, #e5efff 100%)",
+                  color: "var(--brand-strong)",
+                },
               },
             },
           },

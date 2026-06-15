@@ -45,7 +45,9 @@ function toIsoFromDateInput(raw: string): string {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-function normalizedCareersPageUrl(value: FormDataEntryValue | null): string | null {
+function normalizedCareersPageUrl(
+  value: FormDataEntryValue | null,
+): string | null {
   const raw = String(value ?? "").trim();
   if (!raw) {
     return null;
@@ -91,7 +93,9 @@ export function ApplicationCreateForm({
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
       notes: String(data.get("notes") ?? "").trim() || null,
-      linkedResumeIds: data.getAll("linkedResumeIds").map((value) => String(value)),
+      linkedResumeIds: data
+        .getAll("linkedResumeIds")
+        .map(value => String(value)),
     };
 
     try {
@@ -169,40 +173,34 @@ export function ApplicationCreateForm({
         </DialogTitle>
         <DialogContent sx={{ pt: 1 }}>
           <form className="form-card" onSubmit={handleSubmit}>
-            <div className="form-header">
-              <p className="muted">
-                Create a factual record. No ranking or automation is applied.
-              </p>
-            </div>
-
             <div className="form-grid form-grid-2">
               <datalist id="application-company-options">
-                {autocompleteOptions.companies.map((value) => (
+                {autocompleteOptions.companies.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-role-title-options">
-                {autocompleteOptions.roleTitles.map((value) => (
+                {autocompleteOptions.roleTitles.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-careers-page-options">
-                {autocompleteOptions.careersPageUrls.map((value) => (
+                {autocompleteOptions.careersPageUrls.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-role-family-options">
-                {autocompleteOptions.roleFamilies.map((value) => (
+                {autocompleteOptions.roleFamilies.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-role-level-options">
-                {autocompleteOptions.roleLevels.map((value) => (
+                {autocompleteOptions.roleLevels.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-compensation-options">
-                {autocompleteOptions.compensations.map((value) => (
+                {autocompleteOptions.compensations.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
@@ -312,7 +310,7 @@ export function ApplicationCreateForm({
                 multiple
                 size={Math.min(6, Math.max(3, resumes.length))}
               >
-                {resumes.map((resume) => (
+                {resumes.map(resume => (
                   <option key={resume.id} value={resume.id}>
                     {resume.name}
                   </option>
