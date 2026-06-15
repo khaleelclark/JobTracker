@@ -5,7 +5,9 @@ import { resetPrismaClient } from "@/lib/db";
 
 const DATA_DIR = process.env.JOBTRACKER_DATA_DIR
   ? path.resolve(process.env.JOBTRACKER_DATA_DIR)
-  : "/data";
+  : fs.existsSync("/data")
+    ? "/data"
+    : path.dirname(process.env.DATABASE_URL?.replace(/^file:/, "") ?? process.env.HOME ?? process.cwd());
 
 function inDataDir(p: string): boolean {
   return path.resolve(p).startsWith(DATA_DIR);

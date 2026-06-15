@@ -255,7 +255,11 @@ export function ApplicationCreateForm({
 
               <label>
                 Applied Date
-                <input name="appliedAt" type="date" defaultValue={todayDateInputValue()} />
+                <input
+                  name="appliedAt"
+                  type="date"
+                  defaultValue={todayDateInputValue()}
+                />
               </label>
 
               <label>
@@ -284,7 +288,7 @@ export function ApplicationCreateForm({
                   name="compensation"
                   maxLength={300}
                   list="application-compensation-options"
-                  placeholder="$140k-$170k base + bonus/equity"
+                  placeholder="$70,000 - $100,000 + bonus + benefits."
                 />
               </label>
             </div>
@@ -304,7 +308,7 @@ export function ApplicationCreateForm({
                 name="postingDetails"
                 rows={6}
                 maxLength={50000}
-                placeholder="Paste factual role posting details (requirements, responsibilities, compensation, location, etc.)"
+                placeholder="Paste role posting details (requirements, responsibilities, compensation, location, etc.)"
               />
             </label>
 
@@ -312,15 +316,30 @@ export function ApplicationCreateForm({
             <Autocomplete
               multiple
               options={resumes}
-              getOptionLabel={(o) => o.name}
+              getOptionLabel={o => o.name}
               value={selectedResumes}
               onChange={(_, val) => setSelectedResumes(val)}
               isOptionEqualToValue={(o, v) => o.id === v.id}
-              renderOption={(props, option) => <li {...props} key={option.id}>{option.name}</li>}
-              renderInput={(params) => <TextField {...params} placeholder="Search resumes..." size="small" />}
+              renderOption={(props, option) => (
+                <li {...props} key={option.id}>
+                  {option.name}
+                </li>
+              )}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  placeholder="Search resumes..."
+                  size="small"
+                />
+              )}
             />
-            {selectedResumes.map((r) => (
-              <input key={r.id} type="hidden" name="linkedResumeIds" value={r.id} />
+            {selectedResumes.map(r => (
+              <input
+                key={r.id}
+                type="hidden"
+                name="linkedResumeIds"
+                value={r.id}
+              />
             ))}
 
             <label>

@@ -22,7 +22,7 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppNav({ dbLabel }: { dbLabel: string | null }) {
+export function AppNav({ dbLabel: _dbLabel }: { dbLabel: string | null }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -34,11 +34,6 @@ export function AppNav({ dbLabel }: { dbLabel: string | null }) {
             <Link className="brand" href="/">
               Job Tracker
             </Link>
-            {dbLabel && (
-              <span className="db-mode-badge db-mode-badge--test db-mode-badge--nav" title={dbLabel}>
-                {dbLabel}
-              </span>
-            )}
           </div>
           <button
             className="nav-hamburger"

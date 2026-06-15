@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { ApplicationTable } from "@/components/ApplicationTable";
 import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
@@ -94,16 +95,16 @@ export default async function ApplicationsPage({
         <p className="muted">Capture each role as a structured fact record.</p>
       </header>
 
-      <div className="stats-row">
-        <div className="metric-card">
+      <div className="stats-row" style={{ display: "grid", gridTemplateColumns: `repeat(${Object.keys(summary).length + 1}, 1fr)` }}>
+        <Link href="/applications" className="metric-card metric-card-link">
           <span className="metric-label">Total</span>
           <strong>{applications.length}</strong>
-        </div>
+        </Link>
         {Object.entries(summary).map(([status, count]) => (
-          <div key={status} className="metric-card">
+          <Link key={status} href={`/applications?status=${status}`} className="metric-card metric-card-link">
             <span className="metric-label">{toTitleCaseLabel(status)}</span>
             <strong>{count}</strong>
-          </div>
+          </Link>
         ))}
       </div>
 
