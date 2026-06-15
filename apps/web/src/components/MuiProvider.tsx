@@ -217,12 +217,7 @@ export function MuiProvider({ children }: PropsWithChildren) {
                 borderRadius: "16px",
                 padding: "1rem",
                 background: "rgba(255, 255, 255, 0.9)",
-                transition: "box-shadow 220ms ease, transform 220ms ease",
                 overflow: "hidden",
-                "&:hover": {
-                  boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)",
-                  transform: "translateY(-2px)",
-                },
               },
             },
           },

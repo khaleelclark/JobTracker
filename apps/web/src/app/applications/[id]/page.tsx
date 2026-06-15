@@ -2,6 +2,12 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { prisma } from "@/lib/db";
 import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
@@ -10,57 +16,33 @@ import { InterviewsSection } from "@/components/InterviewsSection";
 import { ApplicationResumeLinksManager } from "@/components/ApplicationResumeLinksManager";
 import { ApplicationDetailTabs } from "@/components/ApplicationDetailTabs";
 import { ApplicationHeader } from "@/components/ApplicationHeader";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 
 interface ApplicationDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function ApplicationDetailPage({
-  params,
-}: ApplicationDetailPageProps) {
+export default async function ApplicationDetailPage({ params }: ApplicationDetailPageProps) {
   const { id } = await params;
 
   const [application, resumes, applicationOptions] = await Promise.all([
     prisma.application.findUnique({
-    where: { id },
-    include: {
-      interviews: {
-        orderBy: { scheduledAt: "asc" },
-        include: { reflection: true },
+      where: { id },
+      include: {
+        interviews: { orderBy: { scheduledAt: "asc" }, include: { reflection: true } },
+        emailLogs: { orderBy: { createdAt: "desc" }, take: 20 },
+        followups: { orderBy: { sentAt: "desc" }, include: { result: true } },
+        events: { orderBy: { occurredAt: "desc" } },
+        resumes: { include: { resume: true } },
       },
-      emailLogs: {
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      },
-      followups: {
-        orderBy: { sentAt: "desc" },
-        include: { result: true },
-      },
-      events: { orderBy: { occurredAt: "desc" } },
-      resumes: { include: { resume: true } },
-    },
     }),
-    prisma.resume.findMany({
-      orderBy: { createdAt: "desc" },
-      select: { id: true, name: true },
-    }),
+    prisma.resume.findMany({ orderBy: { createdAt: "desc" }, select: { id: true, name: true } }),
     prisma.application.findMany({
       orderBy: { updatedAt: "desc" },
-      select: {
-        companyName: true,
-        roleTitle: true,
-        careersPageUrl: true,
-        roleFamily: true,
-        roleLevel: true,
-        compensation: true,
-      },
+      select: { companyName: true, roleTitle: true, careersPageUrl: true, roleFamily: true, roleLevel: true, compensation: true },
     }),
   ]);
 
-  if (!application) {
-    notFound();
-  }
+  if (!application) notFound();
 
   const nextFollowupAttemptIndex =
     application.followups.length > 0
@@ -68,40 +50,28 @@ export default async function ApplicationDetailPage({
       : 1;
 
   const uniqueValues = (values: Array<string | null>) =>
-    Array.from(
-      new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]),
-    ).sort((a, b) => a.localeCompare(b));
+    Array.from(new Set(values.map(v => v?.trim()).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b));
 
   const autocompleteOptions = {
-    companies: uniqueValues(applicationOptions.map((item) => item.companyName)),
-    roleTitles: uniqueValues(applicationOptions.map((item) => item.roleTitle)),
-    careersPageUrls: uniqueValues(applicationOptions.map((item) => item.careersPageUrl)),
-    roleFamilies: uniqueValues(applicationOptions.map((item) => item.roleFamily)),
-    roleLevels: uniqueValues(applicationOptions.map((item) => item.roleLevel)),
-    compensations: uniqueValues(applicationOptions.map((item) => item.compensation)),
+    companies: uniqueValues(applicationOptions.map(a => a.companyName)),
+    roleTitles: uniqueValues(applicationOptions.map(a => a.roleTitle)),
+    careersPageUrls: uniqueValues(applicationOptions.map(a => a.careersPageUrl)),
+    roleFamilies: uniqueValues(applicationOptions.map(a => a.roleFamily)),
+    roleLevels: uniqueValues(applicationOptions.map(a => a.roleLevel)),
+    compensations: uniqueValues(applicationOptions.map(a => a.compensation)),
   };
 
   return (
-    <section className="stack-xl">
-      <div>
-        <Link
+    <Stack spacing={3}>
+      <Box>
+        <Button
+          component={Link}
           href="/applications"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            textDecoration: "none",
-            border: "none",
-            background: "transparent",
-            color: "var(--brand-strong)",
-            borderRadius: "10px",
-            padding: "0.43rem 0.75rem",
-            lineHeight: 1.2,
-          }}
+          startIcon={<ArrowBackIosIcon sx={{ fontSize: "0.8rem !important" }} />}
         >
-          <ArrowBackIosIcon sx={{ fontSize: "0.8rem", mr: 0.5 }} />
           Back to Applications
-        </Link>
-      </div>
+        </Button>
+      </Box>
 
       <ApplicationHeader
         applicationId={application.id}
@@ -117,30 +87,30 @@ export default async function ApplicationDetailPage({
       <ApplicationDetailTabs
         details={
           <ApplicationEditDeleteForm
-              application={{
-                id: application.id,
-                companyName: application.companyName,
-                roleTitle: application.roleTitle,
-                careersPageUrl: application.careersPageUrl,
-                postingDetails: application.postingDetails,
-                compensation: application.compensation,
-                genericStatus: application.genericStatus,
-                preciseStatus: application.preciseStatus,
-                roleFamily: application.roleFamily,
-                roleLevel: application.roleLevel,
-                appliedAtIso: application.appliedAt.toISOString(),
-                notes: application.notes,
-                coverLetter: application.coverLetter,
-                linkedResumeIds: application.resumes.map((entry) => entry.resumeId),
-              }}
-              resumes={resumes}
-              autocompleteOptions={autocompleteOptions}
-            />
+            application={{
+              id: application.id,
+              companyName: application.companyName,
+              roleTitle: application.roleTitle,
+              careersPageUrl: application.careersPageUrl,
+              postingDetails: application.postingDetails,
+              compensation: application.compensation,
+              genericStatus: application.genericStatus,
+              preciseStatus: application.preciseStatus,
+              roleFamily: application.roleFamily,
+              roleLevel: application.roleLevel,
+              appliedAtIso: application.appliedAt.toISOString(),
+              notes: application.notes,
+              coverLetter: application.coverLetter,
+              linkedResumeIds: application.resumes.map(entry => entry.resumeId),
+            }}
+            resumes={resumes}
+            autocompleteOptions={autocompleteOptions}
+          />
         }
         activity={
           <ActivitySection
             applicationId={application.id}
-            followups={application.followups.map((followup) => ({
+            followups={application.followups.map(followup => ({
               id: followup.id,
               applicationId: followup.applicationId,
               attemptIndex: followup.attemptIndex,
@@ -150,7 +120,7 @@ export default async function ApplicationDetailPage({
               responseType: followup.result?.responseType ?? null,
               resolvedAtIso: followup.result?.resolvedAt?.toISOString() ?? null,
             }))}
-            events={application.events.map((event) => ({
+            events={application.events.map(event => ({
               id: event.id,
               applicationId: event.applicationId,
               eventType: event.eventType,
@@ -161,15 +131,9 @@ export default async function ApplicationDetailPage({
         }
         communication={
           <ApplicationCommunicationSection
-            applications={[
-              {
-                id: application.id,
-                companyName: application.companyName,
-                roleTitle: application.roleTitle,
-              },
-            ]}
+            applications={[{ id: application.id, companyName: application.companyName, roleTitle: application.roleTitle }]}
             defaultApplicationId={application.id}
-            communicationLogs={application.emailLogs.map((email) => ({
+            communicationLogs={application.emailLogs.map(email => ({
               id: email.id,
               applicationId: email.applicationId,
               companyName: application.companyName,
@@ -187,7 +151,7 @@ export default async function ApplicationDetailPage({
           <InterviewsSection
             applications={[{ id: application.id, companyName: application.companyName, roleTitle: application.roleTitle }]}
             defaultApplicationId={application.id}
-            interviews={application.interviews.map((interview) => ({
+            interviews={application.interviews.map(interview => ({
               id: interview.id,
               applicationId: interview.applicationId,
               companyName: application.companyName,
@@ -200,19 +164,23 @@ export default async function ApplicationDetailPage({
           />
         }
         resumes={
-          <div className="card">
-            <h2>Resumes</h2>
-            <ApplicationResumeLinksManager
-              applicationId={application.id}
-              linkedResumes={application.resumes.map((entry) => ({
-                resumeId: entry.resumeId,
-                name: entry.resume.name,
-              }))}
-              allResumes={resumes}
-            />
-          </div>
+          <Paper
+            sx={{
+              transition: "box-shadow 220ms ease, transform 220ms ease",
+              "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" },
+            }}
+          >
+            <Stack spacing={1.5}>
+              <Typography variant="h2">Resumes</Typography>
+              <ApplicationResumeLinksManager
+                applicationId={application.id}
+                linkedResumes={application.resumes.map(entry => ({ resumeId: entry.resumeId, name: entry.resume.name }))}
+                allResumes={resumes}
+              />
+            </Stack>
+          </Paper>
         }
       />
-    </section>
+    </Stack>
   );
 }

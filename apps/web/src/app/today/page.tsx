@@ -1,6 +1,15 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { InterviewList } from "@/components/InterviewList";
 import { Timeline } from "@/components/Timeline";
 import { prisma } from "@/lib/db";
@@ -9,20 +18,28 @@ import { GENERIC_APPLICATION_STATUSES } from "@job-tracker/shared";
 import { LocalDate } from "@/components/LocalDate";
 
 function startOfDay(date: Date) {
-  const nextDate = new Date(date);
-  nextDate.setHours(0, 0, 0, 0);
-  return nextDate;
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 function addDays(date: Date, days: number) {
-  const nextDate = new Date(date);
-  nextDate.setDate(nextDate.getDate() + days);
-  return nextDate;
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
 }
 
 function pluralize(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
+
+const CARD_HOVER_SX = {
+  transition: "box-shadow 220ms ease, transform 220ms ease",
+  "&:hover": {
+    boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)",
+    transform: "translateY(-2px)",
+  },
+};
 
 export default async function TodayPage() {
   const now = new Date();
@@ -43,10 +60,7 @@ export default async function TodayPage() {
     applicationStatusCounts,
   ] = await Promise.all([
     prisma.interview.findMany({
-      where: {
-        scheduledAt: { gte: now },
-        status: "scheduled",
-      },
+      where: { scheduledAt: { gte: now }, status: "scheduled" },
       include: { application: true },
       orderBy: { scheduledAt: "asc" },
       take: 5,
@@ -69,112 +83,36 @@ export default async function TodayPage() {
     prisma.application.findMany({
       orderBy: { updatedAt: "desc" },
       take: 20,
-      select: {
-        id: true,
-        companyName: true,
-        roleTitle: true,
-        genericStatus: true,
-        updatedAt: true,
-      },
+      select: { id: true, companyName: true, roleTitle: true, genericStatus: true, updatedAt: true },
     }),
-    prisma.application.count({
-      where: {
-        appliedAt: {
-          gte: todayStart,
-          lt: tomorrowStart,
-        },
-      },
-    }),
-    prisma.followupAttempt.count({
-      where: {
-        sentAt: {
-          gte: todayStart,
-          lt: tomorrowStart,
-        },
-      },
-    }),
-    prisma.emailLog.count({
-      where: {
-        createdAt: {
-          gte: todayStart,
-          lt: tomorrowStart,
-        },
-      },
-    }),
-    prisma.engagementEvent.count({
-      where: {
-        occurredAt: {
-          gte: todayStart,
-          lt: tomorrowStart,
-        },
-      },
-    }),
-    prisma.interview.count({
-      where: {
-        scheduledAt: {
-          gte: todayStart,
-          lt: tomorrowStart,
-        },
-        status: "scheduled",
-      },
-    }),
-    prisma.application.groupBy({
-      by: ["genericStatus"],
-      _count: {
-        _all: true,
-      },
-    }),
+    prisma.application.count({ where: { appliedAt: { gte: todayStart, lt: tomorrowStart } } }),
+    prisma.followupAttempt.count({ where: { sentAt: { gte: todayStart, lt: tomorrowStart } } }),
+    prisma.emailLog.count({ where: { createdAt: { gte: todayStart, lt: tomorrowStart } } }),
+    prisma.engagementEvent.count({ where: { occurredAt: { gte: todayStart, lt: tomorrowStart } } }),
+    prisma.interview.count({ where: { scheduledAt: { gte: todayStart, lt: tomorrowStart }, status: "scheduled" } }),
+    prisma.application.groupBy({ by: ["genericStatus"], _count: { _all: true } }),
   ]);
 
   const todaysFacts = [
-    {
-      label: "Applied Today",
-      value: applicationsAppliedToday,
-      detail: pluralize(applicationsAppliedToday, "application"),
-      href: "/applications?status=applied",
-    },
-    {
-      label: "Follow-ups Sent",
-      value: followupsSentToday,
-      detail: pluralize(followupsSentToday, "attempt"),
-      href: "/applications",
-    },
-    {
-      label: "Emails Logged",
-      value: emailsLoggedToday,
-      detail: pluralize(emailsLoggedToday, "communication"),
-      href: "/emails",
-    },
-    {
-      label: "Engagement Events",
-      value: engagementEventsToday,
-      detail: pluralize(engagementEventsToday, "event"),
-      href: "/applications",
-    },
-    {
-      label: "Interviews Today",
-      value: interviewsScheduledToday,
-      detail: pluralize(interviewsScheduledToday, "scheduled interview"),
-      href: "/interviews",
-    },
+    { label: "Applied Today", value: applicationsAppliedToday, detail: pluralize(applicationsAppliedToday, "application"), href: "/applications?status=applied" },
+    { label: "Follow-ups Sent", value: followupsSentToday, detail: pluralize(followupsSentToday, "attempt"), href: "/applications" },
+    { label: "Emails Logged", value: emailsLoggedToday, detail: pluralize(emailsLoggedToday, "communication"), href: "/emails" },
+    { label: "Engagement Events", value: engagementEventsToday, detail: pluralize(engagementEventsToday, "event"), href: "/applications" },
+    { label: "Interviews Today", value: interviewsScheduledToday, detail: pluralize(interviewsScheduledToday, "scheduled interview"), href: "/interviews" },
   ];
 
-  const statusCountMap = new Map(
-    applicationStatusCounts.map(item => [item.genericStatus, item._count._all]),
-  );
+  const statusCountMap = new Map(applicationStatusCounts.map(item => [item.genericStatus, item._count._all]));
   const statusCounts = GENERIC_APPLICATION_STATUSES.map(status => ({
     status,
     count: statusCountMap.get(status) ?? 0,
-  })).sort((a, b) =>
-    toTitleCaseLabel(a.status).localeCompare(toTitleCaseLabel(b.status)),
-  );
+  })).sort((a, b) => toTitleCaseLabel(a.status).localeCompare(toTitleCaseLabel(b.status)));
 
   const timeline = [
-    ...recentApplications.slice(0, 5).map(application => ({
-      id: `application_${application.id}_${application.updatedAt.toISOString()}`,
-      label: `${application.companyName}: ${application.roleTitle} — ${toTitleCaseLabel(application.genericStatus)}`,
-      occurredAtIso: application.updatedAt.toISOString(),
-      applicationId: application.id,
+    ...recentApplications.slice(0, 5).map(app => ({
+      id: `application_${app.id}_${app.updatedAt.toISOString()}`,
+      label: `${app.companyName}: ${app.roleTitle} — ${toTitleCaseLabel(app.genericStatus)}`,
+      occurredAtIso: app.updatedAt.toISOString(),
+      applicationId: app.id,
     })),
     ...engagementEvents.map(event => ({
       id: `event_${event.id}`,
@@ -200,79 +138,134 @@ export default async function TodayPage() {
     .slice(0, 10);
 
   return (
-    <section className="stack-xl">
-      <div className="page-header">
-        <h1>
+    <Stack spacing={3}>
+      {/* Page header */}
+      <Box>
+        <Typography variant="h1">
           Today{" "}
-          <span className="today-date">
+          <Typography
+            component="span"
+            sx={{ fontSize: "0.55em", fontWeight: 400, color: "text.secondary", letterSpacing: "0.01em", ml: 1, verticalAlign: "middle" }}
+          >
             <LocalDate />
-          </span>
-        </h1>
-        <p className="muted">
-          Review today&apos;s logged activity, current statuses, and recent
-          facts.
-        </p>
-      </div>
+          </Typography>
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mt={0.5}>
+          Review today&apos;s logged activity, current statuses, and recent facts.
+        </Typography>
+      </Box>
 
-      <section className="stack-md">
-        <h2>At a Glance</h2>
-        <div className="dashboard-grid">
+      {/* At a Glance */}
+      <Stack spacing={1.5}>
+        <Typography variant="h2">At a Glance</Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 1,
+            gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(5, 1fr)" },
+          }}
+        >
           {todaysFacts.map(fact => (
-            <Link key={fact.label} href={fact.href} className="metric-card dashboard-metric metric-card-link">
-              <span className="metric-label">{fact.label}</span>
-              <strong>{fact.value}</strong>
-              <span className="muted">{fact.detail}</span>
-            </Link>
+            <Card
+              key={fact.label}
+              component={Link}
+              href={fact.href}
+              sx={{
+                textDecoration: "none",
+                color: "inherit",
+                minHeight: 106,
+                display: "flex",
+                alignItems: "center",
+                border: "1px solid rgba(15, 74, 134, 0.18)",
+                background: "rgba(255, 255, 255, 0.82)",
+                cursor: "pointer",
+                transition: "transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease",
+                "&:hover": {
+                  transform: "translateY(-3px) scale(1.03)",
+                  boxShadow: 7,
+                  borderColor: "rgba(15, 74, 134, 0.35)",
+                },
+              }}
+            >
+              <Box sx={{ p: "0.6rem 0.72rem", width: "100%" }}>
+                <Typography variant="caption" display="block" color="text.secondary">
+                  {fact.label}
+                </Typography>
+                <Typography sx={{ fontSize: "1.75rem", fontWeight: 700, lineHeight: 1.2 }}>
+                  {fact.value}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {fact.detail}
+                </Typography>
+              </Box>
+            </Card>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Stack>
 
-      <div className="card stack-md">
-        <h2 className="no-margin">Upcoming Interviews</h2>
-        <div style={{ maxHeight: "220px", overflowY: "auto" }}>
-          <InterviewList
-            interviews={interviews.map(interview => ({
-              id: interview.id,
-              applicationId: interview.applicationId,
-              applicationCompany: interview.application.companyName,
-              roundLabel: interview.roundLabel,
-              scheduledAtIso: interview.scheduledAt.toISOString(),
-              status: interview.status,
-            }))}
-          />
-        </div>
-      </div>
+      {/* Upcoming Interviews */}
+      <Paper sx={CARD_HOVER_SX}>
+        <Stack spacing={1.5}>
+          <Typography variant="h2">Upcoming Interviews</Typography>
+          <Box sx={{ maxHeight: 220, overflowY: "auto" }}>
+            <InterviewList
+              interviews={interviews.map(interview => ({
+                id: interview.id,
+                applicationId: interview.applicationId,
+                applicationCompany: interview.application.companyName,
+                roundLabel: interview.roundLabel,
+                scheduledAtIso: interview.scheduledAt.toISOString(),
+                status: interview.status,
+              }))}
+            />
+          </Box>
+        </Stack>
+      </Paper>
 
-      <div className="layout-split" style={{ alignItems: "stretch" }}>
-        <div className="card stack-md">
-          <h2 className="no-margin">Recent Activity</h2>
-          <div className="scroll-hidden" style={{ maxHeight: "412px", overflowY: "auto" }}>
-            <Timeline entries={timeline} />
-          </div>
-        </div>
+      {/* Recent Activity + Application Status split */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1.85fr 1fr" },
+          gap: 1.5,
+          alignItems: "start",
+        }}
+      >
+        <Paper sx={CARD_HOVER_SX}>
+          <Stack spacing={1.5}>
+            <Typography variant="h2">Recent Activity</Typography>
+            <Box
+              sx={{ maxHeight: 412, overflowY: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}
+            >
+              <Timeline entries={timeline} />
+            </Box>
+          </Stack>
+        </Paper>
 
-        <aside>
-          <div className="card stack-md">
-            <h2 className="no-margin">Application Status</h2>
-            <ul className="clean-list">
+        <Paper sx={CARD_HOVER_SX}>
+          <Stack spacing={1.5}>
+            <Typography variant="h2">Application Status</Typography>
+            <List>
               {statusCounts.map(item => (
-                <li
-                  key={item.status}
-                  className="list-row list-row-link list-row-lg"
-                >
-                  <Link
+                <ListItem key={item.status} disablePadding>
+                  <ListItemButton
+                    component={Link}
                     href={`/applications?status=${item.status}`}
-                    className="list-row-inner"
                   >
-                    <span>{toTitleCaseLabel(item.status)}</span>
-                    <strong>{item.count}</strong>
-                  </Link>
-                </li>
+                    <ListItemText
+                      primary={toTitleCaseLabel(item.status)}
+                      slotProps={{ primary: { fontSize: "1.05rem" } }}
+                    />
+                    <Typography fontWeight={700} fontSize="1.05rem">
+                      {item.count}
+                    </Typography>
+                  </ListItemButton>
+                </ListItem>
               ))}
-            </ul>
-          </div>
-        </aside>
-      </div>
-    </section>
+            </List>
+          </Stack>
+        </Paper>
+      </Box>
+    </Stack>
   );
 }

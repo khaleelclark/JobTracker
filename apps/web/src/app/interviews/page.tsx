@@ -1,5 +1,8 @@
 export const dynamic = "force-dynamic";
 
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { prisma } from "@/lib/db";
 import { InterviewsSection } from "@/components/InterviewsSection";
 
@@ -10,26 +13,24 @@ export default async function InterviewsPage() {
       include: { application: true },
     }),
     prisma.application.findMany({
-      where: {
-        genericStatus: {
-          notIn: ["rejected", "withdrawn", "archived"],
-        },
-      },
+      where: { genericStatus: { notIn: ["rejected", "withdrawn", "archived"] } },
       orderBy: { updatedAt: "desc" },
       select: { id: true, companyName: true, roleTitle: true },
     }),
   ]);
 
   return (
-    <section className="stack-xl">
-      <header className="page-header">
-        <h1>Interviews</h1>
-        <p className="muted">Track round details and outcomes as they occur.</p>
-      </header>
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="h1">Interviews</Typography>
+        <Typography variant="body2" color="text.secondary" mt={0.5}>
+          Track round details and outcomes as they occur.
+        </Typography>
+      </Box>
 
       <InterviewsSection
         applications={applications}
-        interviews={interviews.map((interview) => ({
+        interviews={interviews.map(interview => ({
           id: interview.id,
           applicationId: interview.applicationId,
           companyName: interview.application.companyName,
@@ -40,6 +41,6 @@ export default async function InterviewsPage() {
           notes: interview.notes ?? null,
         }))}
       />
-    </section>
+    </Stack>
   );
 }

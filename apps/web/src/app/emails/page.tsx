@@ -1,5 +1,8 @@
 export const dynamic = "force-dynamic";
 
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { prisma } from "@/lib/db";
 import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 
@@ -17,16 +20,18 @@ export default async function EmailsPage() {
   ]);
 
   return (
-    <section className="stack-xl">
-      <header className="page-header">
-        <h1>Communication Logs</h1>
-        <p className="muted">Store communication history for context and follow-through.</p>
-      </header>
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="h1">Communication Logs</Typography>
+        <Typography variant="body2" color="text.secondary" mt={0.5}>
+          Store communication history for context and follow-through.
+        </Typography>
+      </Box>
 
       <ApplicationCommunicationSection
         applications={applications}
         defaultApplicationId={applications[0]?.id ?? ""}
-        communicationLogs={emails.map((email) => ({
+        communicationLogs={emails.map(email => ({
           id: email.id,
           applicationId: email.applicationId,
           companyName: email.companyName ?? email.application?.companyName ?? "Unknown Company",
@@ -39,7 +44,6 @@ export default async function EmailsPage() {
           createdAtIso: email.createdAt.toISOString(),
         }))}
       />
-    </section>
+    </Stack>
   );
 }
-
