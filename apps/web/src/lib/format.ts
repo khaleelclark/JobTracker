@@ -16,6 +16,42 @@ export function cleanPostingText(raw: string): string {
   return text.trim();
 }
 
+export function fmtLocalDate(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
+  }).format(new Date(iso));
+}
+
+export function fmtLocalDateTime(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
+
+export function todayDateInputValue(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function nowDateTimeLocalValue(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${m}-${day}T${h}:${min}`;
+}
+
 export function toTitleCaseLabel(value: string | null | undefined): string {
   const normalized = String(value ?? "").trim();
   if (!normalized) {

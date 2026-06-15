@@ -3,11 +3,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataGrid, GridColDef, GridPaginationModel, GridRenderCellParams, GridRowId } from "@mui/x-data-grid";
-import { Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, ListItemText, MenuItem, Select, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, ListItemText, MenuItem, Select, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import CloseIcon from "@mui/icons-material/Close";
 import { toTitleCaseLabel } from "@/lib/format";
 
@@ -51,10 +50,10 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
       ...emails.map((email) => email.companyName),
     ]),
   ).sort((a, b) => a.localeCompare(b));
+  const [viewingEmail, setViewingEmail] = useState<EmailLogRow | null>(null);
   const [editingEmail, setEditingEmail] = useState<EmailLogRow | null>(null);
   const [editTargetMode, setEditTargetMode] = useState<"application" | "applications" | "company">("application");
   const [editApplicationIds, setEditApplicationIds] = useState<string[]>([]);
-  const [viewingEmail, setViewingEmail] = useState<EmailLogRow | null>(null);
   const [deleteEmail, setDeleteEmail] = useState<EmailLogRow | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -162,31 +161,6 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
 
   const columns: GridColDef<EmailLogRow>[] = [
     {
-      field: "view",
-      headerName: "View",
-      sortable: false,
-      filterable: false,
-      width: 80,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params: GridRenderCellParams<EmailLogRow>) => {
-        const email = params.row;
-        return (
-          <IconButton
-            size="small"
-            aria-label={`View communication log ${email.subject}`}
-            title="View"
-            onClick={() => {
-              setViewingEmail(email);
-              setError(null);
-            }}
-          >
-            <VisibilityIcon sx={{ fontSize: "1rem" }} />
-          </IconButton>
-        );
-      },
-    },
-    {
       field: "companyName",
       headerName: "Company",
       flex: 1,
@@ -214,42 +188,18 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
     },
     {
       field: "subject",
-      headerName: "Message",
+      headerName: "Subject",
       flex: 1.6,
       minWidth: isMobile ? 180 : 260,
       headerAlign: "center",
       align: "left",
-      renderCell: (params: GridRenderCellParams<EmailLogRow>) => {
-        const notes = params.row.notes?.trim();
-        return (
-          <Box sx={{ width: "100%", py: 0.35, textAlign: "left" }}>
-            <span
-              style={{
-                display: "block",
-                fontWeight: 500,
-                whiteSpace: "normal",
-                wordBreak: "break-word",
-              }}
-            >
-              {params.row.subject}
-            </span>
-            {notes ? (
-              <span
-                style={{
-                  display: "block",
-                  marginTop: "0.2rem",
-                  whiteSpace: "normal",
-                  wordBreak: "break-word",
-                  fontSize: "0.8rem",
-                  color: "rgba(19, 33, 48, 0.72)",
-                }}
-              >
-                {notes}
-              </span>
-            ) : null}
-          </Box>
-        );
-      },
+      renderCell: (params: GridRenderCellParams<EmailLogRow>) => (
+        <Box sx={{ width: "100%", minWidth: 0, overflow: "hidden" }} title={params.row.subject}>
+          <span style={{ display: "block", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {params.row.subject}
+          </span>
+        </Box>
+      ),
     },
     {
       field: "createdAtIso",
@@ -277,12 +227,13 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
       renderCell: (params: GridRenderCellParams<EmailLogRow>) => {
         const email = params.row;
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+          <Box sx={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: 0.5 }}>
             <IconButton
-              size="small"
+              size={isMobile ? "small" : "medium"}
               aria-label={`Edit communication log ${email.subject}`}
               title="Edit"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setEditingEmail(email);
                 if (email.applicationId) {
                   setEditTargetMode("application");
@@ -293,21 +244,24 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
                 }
                 setError(null);
               }}
+              sx={{ backgroundColor: "transparent", border: 0, boxShadow: "none", "&:hover": { backgroundColor: "transparent" } }}
             >
               <EditIcon sx={{ fontSize: "1rem" }} />
             </IconButton>
             <IconButton
-              size="small"
+              size={isMobile ? "small" : "medium"}
               aria-label={`Delete communication log ${email.subject}`}
               title="Delete"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setDeleteEmail(email);
                 setError(null);
               }}
+              sx={{ backgroundColor: "transparent", border: 0, boxShadow: "none", "&:hover": { backgroundColor: "transparent" } }}
             >
               <DeleteIcon sx={{ fontSize: "1rem" }} />
             </IconButton>
-          </div>
+          </Box>
         );
       },
     },
@@ -321,38 +275,47 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
     <>
       {success ? <p className="success-text">{success}</p> : null}
       {error ? <p className="error-text">{error}</p> : null}
-      <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+      <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden", border: "1px solid rgba(15, 74, 134, 0.22)", borderRadius: "8px" }}>
         <DataGrid
           rows={emails}
           columns={columns}
           autoHeight
           getRowId={(row: EmailLogRow): GridRowId => row.id}
+          onRowClick={(params) => { setViewingEmail(params.row); setError(null); }}
           disableRowSelectionOnClick
           disableColumnResize
-          getRowHeight={() => "auto"}
+          rowHeight={58}
           columnVisibilityModel={{
             companyName: !isMobile || !isTablet,
           }}
           pageSizeOptions={isMobile ? [5, 10, 25] : [10, 25, 50]}
-          density="compact"
           initialState={{
             pagination: { paginationModel },
           }}
           sx={{
             backgroundColor: "#fff",
+            border: "none",
             width: "100%",
             maxWidth: "100%",
-            "& .MuiDataGrid-columnHeaderTitleContainer, & .MuiDataGrid-cell": {
-              justifyContent: "center",
-              alignItems: "center",
-            },
+            "& .MuiDataGrid-columnHeader, & .MuiDataGrid-scrollbarFiller": { backgroundColor: "rgba(15, 74, 134, 0.06)" },
+            "--DataGrid-t-color-border-base": "rgba(15, 74, 134, 0.22)",
+            "& .MuiDataGrid-footerContainer": { backgroundColor: "rgba(15, 74, 134, 0.04)" },
+            "& .MuiDataGrid-row": { cursor: "pointer" },
+            "& .MuiDataGrid-row:hover": { backgroundColor: "rgba(15, 74, 134, 0.13)" },
             "& .MuiDataGrid-cell": {
               display: "flex",
-              textAlign: "center",
+              alignItems: "center",
+              overflow: "hidden",
+              minWidth: 0,
+            },
+            "& .MuiDataGrid-columnHeaderTitleContainer": {
+              justifyContent: "center",
             },
             "& .MuiDataGrid-cell[data-field='companyName'], & .MuiDataGrid-cell[data-field='subject']": {
               justifyContent: "flex-start",
-              textAlign: "left",
+            },
+            "& .MuiDataGrid-cell[data-field='direction'], & .MuiDataGrid-cell[data-field='channel'], & .MuiDataGrid-cell[data-field='createdAtIso'], & .MuiDataGrid-cell[data-field='actions']": {
+              justifyContent: "center",
             },
             "& .MuiDataGrid-cell, & .MuiDataGrid-columnHeaderTitleContainer": {
               px: isMobile ? 1 : 2,
@@ -361,101 +324,60 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         />
       </Box>
 
-      <Dialog
-        open={Boolean(viewingEmail)}
-        onClose={(_event, reason) => {
-          if (reason === "backdropClick") {
-            return;
-          }
-          setViewingEmail(null);
-        }}
-        maxWidth="md"
-        fullWidth
-      >
+      {/* View */}
+      <Dialog open={Boolean(viewingEmail)} onClose={() => setViewingEmail(null)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
-          Communication Log Details
-          <IconButton
-            size="small"
-            aria-label="Close communication log details dialog"
-            title="Close"
-            onClick={() => setViewingEmail(null)}
-          >
+          {viewingEmail?.companyName} — {viewingEmail?.subject}
+          <IconButton size="small" onClick={() => setViewingEmail(null)}>
             <CloseIcon sx={{ fontSize: "1rem" }} />
           </IconButton>
         </DialogTitle>
         <DialogContent>
           {viewingEmail ? (
             <Box sx={{ display: "grid", gap: 2 }}>
-              <Box>
-                <Typography variant="overline" sx={{ color: "text.secondary", letterSpacing: 0.4 }}>
-                  {viewingEmail.companyName}
-                </Typography>
-                <Typography variant="h6" sx={{ lineHeight: 1.3 }}>
-                  {viewingEmail.subject}
-                </Typography>
-              </Box>
-
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                <Chip size="small" label={`Channel: ${toTitleCaseLabel(viewingEmail.channel)}`} />
-                <Chip size="small" label={`Direction: ${toTitleCaseLabel(viewingEmail.direction)}`} />
+                <Chip size="small" label={toTitleCaseLabel(viewingEmail.channel)} />
+                <Chip size="small" label={toTitleCaseLabel(viewingEmail.direction)} />
                 <Chip size="small" label={viewingEmail.isHuman ? "Human" : "Automated"} />
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label={`Created: ${new Intl.DateTimeFormat(undefined, {
-                    month: "numeric",
-                    day: "numeric",
-                    year: "2-digit",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  }).format(new Date(viewingEmail.createdAtIso))}`}
-                />
+                <Chip size="small" variant="outlined" label={new Intl.DateTimeFormat(undefined, { month: "numeric", day: "numeric", year: "2-digit", hour: "numeric", minute: "2-digit" }).format(new Date(viewingEmail.createdAtIso))} />
               </Box>
-
               {viewingEmail.notes ? (
-                <Box
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 1.5,
-                    px: 1.5,
-                    py: 1.1,
-                    backgroundColor: "rgba(15, 23, 42, 0.02)",
-                  }}
-                >
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    Notes
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 0.4 }}>
-                    {viewingEmail.notes}
-                  </Typography>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Notes</Typography>
+                  <Typography variant="body2">{viewingEmail.notes}</Typography>
                 </Box>
               ) : null}
-
-              <Divider />
-
               <Box>
-                <Typography variant="subtitle2" sx={{ mb: 0.8 }}>
-                  Message
-                </Typography>
-                <Box
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 1.5,
-                    px: 1.5,
-                    py: 1.2,
-                    backgroundColor: "#fff",
-                  }}
-                >
-                  <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
-                    {viewingEmail.body}
-                  </Typography>
+                <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Message</Typography>
+                <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1.5, px: 1.5, py: 1.2, backgroundColor: "#fff" }}>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{viewingEmail.body}</Typography>
                 </Box>
               </Box>
             </Box>
           ) : null}
         </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              const email = viewingEmail;
+              setViewingEmail(null);
+              if (email) {
+                setEditingEmail(email);
+                if (email.applicationId) {
+                  setEditTargetMode("application");
+                  setEditApplicationIds([email.applicationId]);
+                } else {
+                  setEditTargetMode("company");
+                  setEditApplicationIds([]);
+                }
+              }
+            }}
+            endIcon={<EditIcon sx={{ fontSize: "1rem" }} />}
+          >
+            Edit
+          </Button>
+          <Button onClick={() => setViewingEmail(null)}>Close</Button>
+        </DialogActions>
       </Dialog>
 
       <Dialog

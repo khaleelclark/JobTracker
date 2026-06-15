@@ -58,6 +58,7 @@ export async function POST(request: Request) {
       roleLevel: parsed.data.roleLevel,
       appliedAt: parsed.data.appliedAt,
       notes: parsed.data.notes,
+      coverLetter: parsed.data.coverLetter,
       resumes: {
         create: parsed.data.linkedResumeIds.map((resumeId) => ({
           resume: { connect: { id: resumeId } },

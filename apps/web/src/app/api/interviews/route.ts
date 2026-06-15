@@ -26,10 +26,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const interview = await prisma.$transaction(async (tx) => {
-    const createdInterview = await tx.interview.create({
-      data: parsed.data,
-    });
+  let interview;
+  try {
+    interview = await prisma.$transaction(async (tx) => {
+      const createdInterview = await tx.interview.create({
+        data: parsed.data,
+      });
 
     await tx.application.update({
       where: { id: parsed.data.applicationId },
@@ -46,8 +48,18 @@ export async function POST(request: Request) {
       });
     }
 
-    return createdInterview;
-  });
+      return createdInterview;
+    });
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code;
+    if (code === "P2002") {
+      return NextResponse.json(
+        { error: `Round ${parsed.data.roundIndex} already exists for this application. Use a different round number.` },
+        { status: 409 },
+      );
+    }
+    throw err;
+  }
 
   return NextResponse.json({ interview }, { status: 201 });
 }

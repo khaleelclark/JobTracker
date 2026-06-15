@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { Autocomplete, TextField } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 
 interface ApplicationOption {
@@ -37,6 +38,7 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedApplications, setSelectedApplications] = useState<ApplicationOption[]>([]);
 
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null;
@@ -52,13 +54,11 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
     const form = event.currentTarget;
     const data = new FormData(form);
 
-    const selectedIds = data
-      .getAll("linkedApplicationIds")
-      .map(value => String(value));
+    const selectedIds = selectedApplications.map((a) => a.id);
 
     const payload: {
       name: string;
-      filePath?: string;
+
       fileName?: string;
       fileBase64?: string;
       extractedText: string | null;
@@ -68,11 +68,6 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
       extractedText: String(data.get("extractedText") ?? "").trim() || null,
       linkedApplicationIds: selectedIds,
     };
-
-    const filePath = String(data.get("filePath") ?? "").trim();
-    if (filePath) {
-      payload.filePath = filePath;
-    }
 
     try {
       if (selectedFile) {
@@ -97,6 +92,7 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
 
       form.reset();
       setSelectedFile(null);
+      setSelectedApplications([]);
       setSuccess("Resume saved.");
       router.refresh();
     } catch (submitError) {
@@ -113,30 +109,19 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
       <div className="form-header">
         <h2>Add Resume</h2>
         <p className="muted">
-          Upload file content or provide an existing file path.
+          Upload a resume file and link it to applications.
         </p>
       </div>
 
-      <div className="form-grid form-grid-2">
-        <label>
-          Display Name
-          <input
-            name="name"
-            required
-            maxLength={200}
-            placeholder="Resume - Product - Jan 2026"
-          />
-        </label>
-
-        <label>
-          Existing File Path (optional)
-          <input
-            name="filePath"
-            maxLength={1000}
-            placeholder="C:\\resumes\\pm.pdf"
-          />
-        </label>
-      </div>
+      <label>
+        Display Name
+        <input
+          name="name"
+          required
+          maxLength={200}
+          placeholder="Resume - Product - Jan 2026"
+        />
+      </label>
 
       <label>
         Upload File (optional)
@@ -148,20 +133,16 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
         />
       </label>
 
-      <label>
-        Link to Applications
-        <select
-          name="linkedApplicationIds"
-          multiple
-          size={Math.min(8, Math.max(3, applications.length))}
-        >
-          {applications.map(application => (
-            <option key={application.id} value={application.id}>
-              {application.companyName} - {application.roleTitle}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Autocomplete
+        multiple
+        options={applications}
+        getOptionLabel={(o) => `${o.companyName} - ${o.roleTitle}`}
+        value={selectedApplications}
+        onChange={(_, val) => setSelectedApplications(val)}
+        isOptionEqualToValue={(o, v) => o.id === v.id}
+        renderOption={(props, option) => <li {...props} key={option.id}>{option.companyName} - {option.roleTitle}</li>}
+        renderInput={(params) => <TextField {...params} label="Link to Applications" size="small" />}
+      />
 
       <label>
         Extracted Text (optional)

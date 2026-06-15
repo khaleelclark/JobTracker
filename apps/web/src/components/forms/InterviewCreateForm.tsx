@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
-import { toTitleCaseLabel } from "@/lib/format";
+import { toTitleCaseLabel, nowDateTimeLocalValue } from "@/lib/format";
 
 interface ApplicationOption {
   id: string;
@@ -11,8 +11,14 @@ interface ApplicationOption {
   roleTitle: string;
 }
 
+interface ExistingInterview {
+  applicationId: string;
+  roundIndex: number;
+}
+
 interface InterviewCreateFormProps {
   applications: ApplicationOption[];
+  existingInterviews?: ExistingInterview[];
   defaultApplicationId?: string;
   hideHeader?: boolean;
   onSaved?: () => void;
@@ -28,11 +34,17 @@ function toIsoFromDateTime(raw: string): string {
   return new Date(raw).toISOString();
 }
 
-export function InterviewCreateForm({ applications, defaultApplicationId, hideHeader, onSaved }: InterviewCreateFormProps) {
+export function InterviewCreateForm({ applications, existingInterviews = [], defaultApplicationId, hideHeader, onSaved }: InterviewCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [selectedAppId, setSelectedAppId] = useState(defaultApplicationId ?? "");
+
+  function nextRoundIndex(appId: string): number {
+    const rounds = existingInterviews.filter((iv) => iv.applicationId === appId).map((iv) => iv.roundIndex);
+    return rounds.length === 0 ? 1 : Math.max(...rounds) + 1;
+  }
 
   useEffect(() => {
     if (!success && !error) {
@@ -103,7 +115,12 @@ export function InterviewCreateForm({ applications, defaultApplicationId, hideHe
       <div className="form-grid form-grid-2">
         <label>
           Application
-          <select name="applicationId" required defaultValue={defaultApplicationId ?? ""}>
+          <select
+            name="applicationId"
+            required
+            value={selectedAppId}
+            onChange={(e) => setSelectedAppId(e.target.value)}
+          >
             <option value="" disabled>
               Select application
             </option>
@@ -117,7 +134,15 @@ export function InterviewCreateForm({ applications, defaultApplicationId, hideHe
 
         <label>
           Round Index
-          <input name="roundIndex" type="number" min={1} max={20} defaultValue={1} required />
+          <input
+            key={selectedAppId}
+            name="roundIndex"
+            type="number"
+            min={1}
+            max={20}
+            defaultValue={selectedAppId ? nextRoundIndex(selectedAppId) : 1}
+            required
+          />
         </label>
 
         <label>
@@ -139,7 +164,7 @@ export function InterviewCreateForm({ applications, defaultApplicationId, hideHe
 
       <label>
         Scheduled At
-        <input name="scheduledAt" type="datetime-local" required />
+        <input name="scheduledAt" type="datetime-local" required defaultValue={nowDateTimeLocalValue()} />
       </label>
 
       <label>

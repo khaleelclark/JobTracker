@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { InterviewCreateForm } from "@/components/forms/InterviewCreateForm";
 import { ReflectionCreateForm } from "@/components/forms/ReflectionCreateForm";
@@ -35,27 +34,9 @@ export function InterviewsSection({ applications, interviews, defaultApplication
       <div className="section-head">
         <h2 className="no-margin">Interview Log</h2>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <IconButton
-            size="small"
-            aria-label="Add interview"
-            title="Add interview"
-            onClick={() => setIsAddOpen(true)}
-            sx={{ borderRadius: "999px", border: "1px solid rgba(19, 33, 48, 0.18)", px: 1.1, py: 0.45, gap: 0.45 }}
-          >
-            <AddIcon sx={{ fontSize: "1.15rem" }} />
-            <span style={{ fontSize: "0.85rem", lineHeight: 1.1 }}>Add Interview</span>
-          </IconButton>
+          <Button onClick={() => setIsAddOpen(true)}>+ Add Interview</Button>
           {reflectionOptions.length > 0 && (
-            <IconButton
-              size="small"
-              aria-label="Log reflection"
-              title="Log reflection"
-              onClick={() => setIsReflectionOpen(true)}
-              sx={{ borderRadius: "999px", border: "1px solid rgba(19, 33, 48, 0.18)", px: 1.1, py: 0.45, gap: 0.45 }}
-            >
-              <AddIcon sx={{ fontSize: "1.15rem" }} />
-              <span style={{ fontSize: "0.85rem", lineHeight: 1.1 }}>Log Reflection</span>
-            </IconButton>
+            <Button onClick={() => setIsReflectionOpen(true)}>+ Log Reflection</Button>
           )}
         </div>
       </div>
@@ -78,6 +59,7 @@ export function InterviewsSection({ applications, interviews, defaultApplication
         <DialogContent>
           <InterviewCreateForm
             applications={applications}
+            existingInterviews={interviews.map((iv) => ({ applicationId: iv.applicationId, roundIndex: iv.roundIndex }))}
             defaultApplicationId={defaultApplicationId}
             hideHeader
             onSaved={() => setIsAddOpen(false)}

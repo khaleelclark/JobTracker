@@ -3,15 +3,17 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  TextField,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
-import { toTitleCaseLabel } from "@/lib/format";
+import { toTitleCaseLabel, todayDateInputValue } from "@/lib/format";
 
 const STATUS_OPTIONS = [
   "applied",
@@ -45,7 +47,9 @@ function toIsoFromDateInput(raw: string): string {
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
-function normalizedCareersPageUrl(value: FormDataEntryValue | null): string | null {
+function normalizedCareersPageUrl(
+  value: FormDataEntryValue | null,
+): string | null {
   const raw = String(value ?? "").trim();
   if (!raw) {
     return null;
@@ -69,6 +73,7 @@ export function ApplicationCreateForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [selectedResumes, setSelectedResumes] = useState<ResumeOption[]>([]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -91,7 +96,10 @@ export function ApplicationCreateForm({
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
       notes: String(data.get("notes") ?? "").trim() || null,
-      linkedResumeIds: data.getAll("linkedResumeIds").map((value) => String(value)),
+      coverLetter: String(data.get("coverLetter") ?? "").trim() || null,
+      linkedResumeIds: data
+        .getAll("linkedResumeIds")
+        .map(value => String(value)),
     };
 
     try {
@@ -113,6 +121,7 @@ export function ApplicationCreateForm({
       }
 
       form.reset();
+      setSelectedResumes([]);
       setSuccess("Application saved.");
       setIsDialogOpen(false);
       router.refresh();
@@ -127,7 +136,7 @@ export function ApplicationCreateForm({
 
   return (
     <>
-      <Button onClick={() => setIsDialogOpen(true)}>Add Application</Button>
+      <Button onClick={() => setIsDialogOpen(true)}>+ Add Application</Button>
 
       <Dialog
         open={isDialogOpen}
@@ -169,40 +178,34 @@ export function ApplicationCreateForm({
         </DialogTitle>
         <DialogContent sx={{ pt: 1 }}>
           <form className="form-card" onSubmit={handleSubmit}>
-            <div className="form-header">
-              <p className="muted">
-                Create a factual record. No ranking or automation is applied.
-              </p>
-            </div>
-
             <div className="form-grid form-grid-2">
               <datalist id="application-company-options">
-                {autocompleteOptions.companies.map((value) => (
+                {autocompleteOptions.companies.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-role-title-options">
-                {autocompleteOptions.roleTitles.map((value) => (
+                {autocompleteOptions.roleTitles.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-careers-page-options">
-                {autocompleteOptions.careersPageUrls.map((value) => (
+                {autocompleteOptions.careersPageUrls.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-role-family-options">
-                {autocompleteOptions.roleFamilies.map((value) => (
+                {autocompleteOptions.roleFamilies.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-role-level-options">
-                {autocompleteOptions.roleLevels.map((value) => (
+                {autocompleteOptions.roleLevels.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
               <datalist id="application-compensation-options">
-                {autocompleteOptions.compensations.map((value) => (
+                {autocompleteOptions.compensations.map(value => (
                   <option key={value} value={value} />
                 ))}
               </datalist>
@@ -252,7 +255,7 @@ export function ApplicationCreateForm({
 
               <label>
                 Applied Date
-                <input name="appliedAt" type="date" />
+                <input name="appliedAt" type="date" defaultValue={todayDateInputValue()} />
               </label>
 
               <label>
@@ -305,20 +308,20 @@ export function ApplicationCreateForm({
               />
             </label>
 
-            <label>
-              Linked Resumes
-              <select
-                name="linkedResumeIds"
-                multiple
-                size={Math.min(6, Math.max(3, resumes.length))}
-              >
-                {resumes.map((resume) => (
-                  <option key={resume.id} value={resume.id}>
-                    {resume.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <label>Linked Resumes</label>
+            <Autocomplete
+              multiple
+              options={resumes}
+              getOptionLabel={(o) => o.name}
+              value={selectedResumes}
+              onChange={(_, val) => setSelectedResumes(val)}
+              isOptionEqualToValue={(o, v) => o.id === v.id}
+              renderOption={(props, option) => <li {...props} key={option.id}>{option.name}</li>}
+              renderInput={(params) => <TextField {...params} placeholder="Search resumes..." size="small" />}
+            />
+            {selectedResumes.map((r) => (
+              <input key={r.id} type="hidden" name="linkedResumeIds" value={r.id} />
+            ))}
 
             <label>
               Notes
@@ -327,6 +330,16 @@ export function ApplicationCreateForm({
                 rows={4}
                 maxLength={4000}
                 placeholder="Any factual notes from the posting or application"
+              />
+            </label>
+
+            <label>
+              Cover Letter
+              <textarea
+                name="coverLetter"
+                rows={6}
+                maxLength={20000}
+                placeholder="Paste or write your cover letter here..."
               />
             </label>
 

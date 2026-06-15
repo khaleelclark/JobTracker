@@ -3,11 +3,13 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  TextField,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
@@ -37,6 +39,7 @@ interface ApplicationEditDeleteFormProps {
     roleLevel: string | null;
     appliedAtIso: string;
     notes: string | null;
+    coverLetter: string | null;
     linkedResumeIds: string[];
   };
   resumes: Array<{ id: string; name: string }>;
@@ -87,6 +90,9 @@ export function ApplicationEditDeleteForm({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [selectedResumes, setSelectedResumes] = useState(
+    resumes.filter((r) => application.linkedResumeIds.includes(r.id)),
+  );
 
   useEffect(() => {
     if (!success) {
@@ -122,7 +128,8 @@ export function ApplicationEditDeleteForm({
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
       notes: String(data.get("notes") ?? "").trim() || null,
-      linkedResumeIds: data.getAll("linkedResumeIds").map((value) => String(value)),
+      coverLetter: String(data.get("coverLetter") ?? "").trim() || null,
+      linkedResumeIds: selectedResumes.map((r) => r.id),
     };
 
     try {
@@ -342,21 +349,16 @@ export function ApplicationEditDeleteForm({
         />
       </label>
 
-      <label>
-        Linked Resumes
-        <select
-          name="linkedResumeIds"
-          multiple
-          defaultValue={application.linkedResumeIds}
-          size={Math.min(6, Math.max(3, resumes.length))}
-        >
-          {resumes.map((resume) => (
-            <option key={resume.id} value={resume.id}>
-              {resume.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Autocomplete
+        multiple
+        options={resumes}
+        getOptionLabel={(o) => o.name}
+        value={selectedResumes}
+        onChange={(_, val) => setSelectedResumes(val)}
+        isOptionEqualToValue={(o, v) => o.id === v.id}
+        renderOption={(props, option) => <li {...props} key={option.id}>{option.name}</li>}
+        renderInput={(params) => <TextField {...params} label="Linked Resumes" size="small" />}
+      />
 
       <label>
         Notes
@@ -365,6 +367,17 @@ export function ApplicationEditDeleteForm({
           rows={4}
           maxLength={4000}
           defaultValue={application.notes ?? ""}
+        />
+      </label>
+
+      <label>
+        Cover Letter
+        <textarea
+          name="coverLetter"
+          rows={6}
+          maxLength={20000}
+          placeholder="Paste or write your cover letter here..."
+          defaultValue={application.coverLetter ?? ""}
         />
       </label>
 
