@@ -218,7 +218,7 @@ p {
 
 .layout-split {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(0, 1.2fr);
+  grid-template-columns: 1.85fr 1fr;
   gap: 1rem;
   align-items: start;
 }
