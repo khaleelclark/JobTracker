@@ -3,12 +3,14 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  TextField,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel, todayDateInputValue } from "@/lib/format";
@@ -71,6 +73,7 @@ export function ApplicationCreateForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [selectedResumes, setSelectedResumes] = useState<ResumeOption[]>([]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -93,6 +96,7 @@ export function ApplicationCreateForm({
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
       notes: String(data.get("notes") ?? "").trim() || null,
+      coverLetter: String(data.get("coverLetter") ?? "").trim() || null,
       linkedResumeIds: data
         .getAll("linkedResumeIds")
         .map(value => String(value)),
@@ -117,6 +121,7 @@ export function ApplicationCreateForm({
       }
 
       form.reset();
+      setSelectedResumes([]);
       setSuccess("Application saved.");
       setIsDialogOpen(false);
       router.refresh();
@@ -303,20 +308,20 @@ export function ApplicationCreateForm({
               />
             </label>
 
-            <label>
-              Linked Resumes
-              <select
-                name="linkedResumeIds"
-                multiple
-                size={Math.min(6, Math.max(3, resumes.length))}
-              >
-                {resumes.map(resume => (
-                  <option key={resume.id} value={resume.id}>
-                    {resume.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <label>Linked Resumes</label>
+            <Autocomplete
+              multiple
+              options={resumes}
+              getOptionLabel={(o) => o.name}
+              value={selectedResumes}
+              onChange={(_, val) => setSelectedResumes(val)}
+              isOptionEqualToValue={(o, v) => o.id === v.id}
+              renderOption={(props, option) => <li {...props} key={option.id}>{option.name}</li>}
+              renderInput={(params) => <TextField {...params} placeholder="Search resumes..." size="small" />}
+            />
+            {selectedResumes.map((r) => (
+              <input key={r.id} type="hidden" name="linkedResumeIds" value={r.id} />
+            ))}
 
             <label>
               Notes
@@ -325,6 +330,16 @@ export function ApplicationCreateForm({
                 rows={4}
                 maxLength={4000}
                 placeholder="Any factual notes from the posting or application"
+              />
+            </label>
+
+            <label>
+              Cover Letter
+              <textarea
+                name="coverLetter"
+                rows={6}
+                maxLength={20000}
+                placeholder="Paste or write your cover letter here..."
               />
             </label>
 
