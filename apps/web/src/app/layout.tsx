@@ -5,6 +5,7 @@ import path from "node:path";
 import { AppNav } from "@/components/AppNav";
 import { MuiProvider } from "@/components/MuiProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import Box from "@mui/material/Box";
 
 const headingFont = Sora({
   subsets: ["latin"],
@@ -39,7 +40,19 @@ export default function RootLayout({
           <MuiProvider>
             <div className="bg-layer" aria-hidden />
             <AppNav dbLabel={dbLabel} />
-            <main className="page-shell">{children}</main>
+            <Box
+              component="main"
+              sx={{
+                width: "min(1220px, 100%)",
+                mx: "auto",
+                px: { xs: "0.8rem", sm: "1.2rem" },
+                py: { xs: "1rem", sm: "2rem" },
+                pb: { xs: "2rem", sm: "3rem" },
+                animation: "riseIn 300ms ease both",
+              }}
+            >
+              {children}
+            </Box>
           </MuiProvider>
         </AppRouterCacheProvider>
       </body>
