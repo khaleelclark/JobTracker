@@ -167,7 +167,7 @@ export function GoalsProfileForm({ initialProfile }: GoalsProfileFormProps) {
               name="compensationPreference"
               maxLength={300}
               defaultValue={initialProfile.compensationPreference}
-              placeholder="$140k-$170k base, equity preferred"
+              placeholder="$70,000 - $100,000 + bonus + benefits."
             />
           </label>
 
@@ -177,7 +177,7 @@ export function GoalsProfileForm({ initialProfile }: GoalsProfileFormProps) {
               name="preferredLocations"
               maxLength={500}
               defaultValue={initialProfile.preferredLocations}
-              placeholder="Austin, TX; Remote (US)"
+              placeholder="Sacramento, CA; Remote (US)"
             />
           </label>
         </div>

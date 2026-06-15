@@ -4,7 +4,9 @@ import path from "node:path";
 
 const DATA_DIR = process.env.JOBTRACKER_DATA_DIR
   ? path.resolve(process.env.JOBTRACKER_DATA_DIR)
-  : "/data";
+  : fs.existsSync("/data")
+    ? "/data"
+    : path.dirname(process.env.DATABASE_URL?.replace(/^file:/, "") ?? "") || (process.env.HOME ?? process.cwd());
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -18,6 +20,7 @@ export async function GET(req: Request) {
   try {
     const entries = fs.readdirSync(resolved, { withFileTypes: true });
     const files = entries
+      .filter((e) => e.isDirectory() || e.name.endsWith(".sqlite") || e.name.endsWith(".db"))
       .map((e) => {
         const fullPath = path.join(resolved, e.name);
         return {

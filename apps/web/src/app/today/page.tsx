@@ -131,26 +131,31 @@ export default async function TodayPage() {
       label: "Applied Today",
       value: applicationsAppliedToday,
       detail: pluralize(applicationsAppliedToday, "application"),
+      href: "/applications?status=applied",
     },
     {
       label: "Follow-ups Sent",
       value: followupsSentToday,
       detail: pluralize(followupsSentToday, "attempt"),
+      href: "/applications",
     },
     {
       label: "Emails Logged",
       value: emailsLoggedToday,
       detail: pluralize(emailsLoggedToday, "communication"),
+      href: "/emails",
     },
     {
       label: "Engagement Events",
       value: engagementEventsToday,
       detail: pluralize(engagementEventsToday, "event"),
+      href: "/applications",
     },
     {
       label: "Interviews Today",
       value: interviewsScheduledToday,
       detail: pluralize(interviewsScheduledToday, "scheduled interview"),
+      href: "/interviews",
     },
   ];
 
@@ -213,11 +218,11 @@ export default async function TodayPage() {
         <h2>At a Glance</h2>
         <div className="dashboard-grid">
           {todaysFacts.map(fact => (
-            <div key={fact.label} className="metric-card dashboard-metric">
+            <Link key={fact.label} href={fact.href} className="metric-card dashboard-metric metric-card-link">
               <span className="metric-label">{fact.label}</span>
               <strong>{fact.value}</strong>
               <span className="muted">{fact.detail}</span>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -241,7 +246,7 @@ export default async function TodayPage() {
       <div className="layout-split" style={{ alignItems: "stretch" }}>
         <div className="card stack-md">
           <h2 className="no-margin">Recent Activity</h2>
-          <div style={{ maxHeight: "412px", overflowY: "auto" }}>
+          <div className="scroll-hidden" style={{ maxHeight: "412px", overflowY: "auto" }}>
             <Timeline entries={timeline} />
           </div>
         </div>

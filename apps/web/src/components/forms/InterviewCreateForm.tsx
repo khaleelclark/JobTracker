@@ -24,7 +24,11 @@ interface InterviewCreateFormProps {
   onSaved?: () => void;
 }
 
-const INTERVIEW_STATUS_OPTIONS = ["scheduled", "completed", "cancelled"] as const;
+const INTERVIEW_STATUS_OPTIONS = [
+  "scheduled",
+  "completed",
+  "cancelled",
+] as const;
 
 function toIsoFromDateTime(raw: string): string {
   if (!raw) {
@@ -34,15 +38,25 @@ function toIsoFromDateTime(raw: string): string {
   return new Date(raw).toISOString();
 }
 
-export function InterviewCreateForm({ applications, existingInterviews = [], defaultApplicationId, hideHeader, onSaved }: InterviewCreateFormProps) {
+export function InterviewCreateForm({
+  applications,
+  existingInterviews = [],
+  defaultApplicationId,
+  hideHeader,
+  onSaved,
+}: InterviewCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [selectedAppId, setSelectedAppId] = useState(defaultApplicationId ?? "");
+  const [selectedAppId, setSelectedAppId] = useState(
+    defaultApplicationId ?? "",
+  );
 
   function nextRoundIndex(appId: string): number {
-    const rounds = existingInterviews.filter((iv) => iv.applicationId === appId).map((iv) => iv.roundIndex);
+    const rounds = existingInterviews
+      .filter(iv => iv.applicationId === appId)
+      .map(iv => iv.roundIndex);
     return rounds.length === 0 ? 1 : Math.max(...rounds) + 1;
   }
 
@@ -85,8 +99,14 @@ export function InterviewCreateForm({ applications, existingInterviews = [], def
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
-        throw new Error(typeof body.error === "string" ? body.error : "Unable to save interview");
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: unknown;
+        };
+        throw new Error(
+          typeof body.error === "string"
+            ? body.error
+            : "Unable to save interview",
+        );
       }
 
       if (!defaultApplicationId) {
@@ -96,7 +116,8 @@ export function InterviewCreateForm({ applications, existingInterviews = [], def
       router.refresh();
       onSaved?.();
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Unknown error";
+      const message =
+        submitError instanceof Error ? submitError.message : "Unknown error";
       setError(message);
     } finally {
       setSubmitting(false);
@@ -108,7 +129,7 @@ export function InterviewCreateForm({ applications, existingInterviews = [], def
       {!hideHeader && (
         <div className="form-header">
           <h2>Log Interview</h2>
-          <p className="muted">Track each round and status as factual events.</p>
+          <p className="muted">Track each round and status as events.</p>
         </div>
       )}
 
@@ -119,12 +140,12 @@ export function InterviewCreateForm({ applications, existingInterviews = [], def
             name="applicationId"
             required
             value={selectedAppId}
-            onChange={(e) => setSelectedAppId(e.target.value)}
+            onChange={e => setSelectedAppId(e.target.value)}
           >
             <option value="" disabled>
               Select application
             </option>
-            {applications.map((application) => (
+            {applications.map(application => (
               <option key={application.id} value={application.id}>
                 {application.companyName} - {application.roleTitle}
               </option>
@@ -147,13 +168,18 @@ export function InterviewCreateForm({ applications, existingInterviews = [], def
 
         <label>
           Round Label
-          <input name="roundLabel" required maxLength={100} placeholder="Phone Screen" />
+          <input
+            name="roundLabel"
+            required
+            maxLength={100}
+            placeholder="Phone Screen"
+          />
         </label>
 
         <label>
           Status
           <select name="status" defaultValue="scheduled">
-            {INTERVIEW_STATUS_OPTIONS.map((status) => (
+            {INTERVIEW_STATUS_OPTIONS.map(status => (
               <option key={status} value={status}>
                 {toTitleCaseLabel(status)}
               </option>
@@ -164,24 +190,47 @@ export function InterviewCreateForm({ applications, existingInterviews = [], def
 
       <label>
         Scheduled At
-        <input name="scheduledAt" type="datetime-local" required defaultValue={nowDateTimeLocalValue()} />
+        <input
+          name="scheduledAt"
+          type="datetime-local"
+          required
+          defaultValue={nowDateTimeLocalValue()}
+        />
       </label>
 
       <label>
         Notes
-        <textarea name="notes" rows={3} maxLength={4000} placeholder="Meeting link, interviewer name, prep notes…" />
+        <textarea
+          name="notes"
+          rows={3}
+          maxLength={4000}
+          placeholder="Meeting link, interviewer name, prep notes…"
+        />
       </label>
 
       <div className="form-actions">
-        <button type="submit" disabled={submitting || applications.length === 0}>
-          {submitting ? "Saving..." : (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+        <button
+          type="submit"
+          disabled={submitting || applications.length === 0}
+        >
+          {submitting ? (
+            "Saving..."
+          ) : (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+              }}
+            >
               Save Interview
               <SaveIcon sx={{ fontSize: "1rem" }} />
             </span>
           )}
         </button>
-        {applications.length === 0 ? <span className="error-text">Create an application first.</span> : null}
+        {applications.length === 0 ? (
+          <span className="error-text">Create an application first.</span>
+        ) : null}
         {success ? <span className="success-text">{success}</span> : null}
         {error ? <span className="error-text">{error}</span> : null}
       </div>

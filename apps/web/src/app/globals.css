@@ -42,6 +42,12 @@ body {
   background-size: 42px 42px;
   opacity: 0.65;
   z-index: -1;
+  animation: gridDrift 30s linear infinite;
+}
+
+@keyframes gridDrift {
+  from { background-position: 0 0; }
+  to   { background-position: 42px 42px; }
 }
 
 a {
@@ -52,6 +58,7 @@ a {
   width: min(1220px, 100%);
   margin: 0 auto;
   padding: 2rem 1.2rem 3rem;
+  animation: riseIn 300ms ease both;
 }
 
 .app-nav {
@@ -140,12 +147,13 @@ a {
   color: var(--ink-soft);
   border-radius: 999px;
   padding: 0.36rem 0.8rem;
-  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
 .nav-link:hover {
   color: var(--ink-strong);
   border-color: var(--line);
+  transform: translateY(-1px);
 }
 
 .nav-link.active {
@@ -276,6 +284,13 @@ p {
   border-radius: 16px;
   padding: 1rem;
   box-shadow: var(--shadow);
+  transition: box-shadow 220ms ease, transform 220ms ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  box-shadow: 0 24px 56px rgba(13, 34, 66, 0.15);
+  transform: translateY(-2px);
 }
 
 .interactive {
@@ -527,6 +542,11 @@ button:hover:not(:disabled) {
   background: rgba(15, 74, 134, 0.06);
 }
 
+button:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: transform 80ms ease;
+}
+
 button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -570,6 +590,23 @@ button:disabled {
   padding: 0.6rem 0.72rem;
   background: rgba(255, 255, 255, 0.82);
   min-width: 96px;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 28px rgba(15, 74, 134, 0.13);
+  border-color: rgba(15, 74, 134, 0.35);
+}
+
+.metric-card-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.metric-card-link:active {
+  transform: translateY(-1px) scale(1.01);
 }
 
 .metric-label {
@@ -621,12 +658,13 @@ button:disabled {
 .list-row-link {
   padding: 0;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
 
 .list-row-link:hover {
   background: rgba(99, 130, 255, 0.07);
   border-color: rgba(99, 130, 255, 0.25);
+  transform: translateX(3px);
 }
 
 .list-row-inner {
@@ -754,6 +792,14 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.scroll-hidden {
+  scrollbar-width: none;
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes riseIn {
   from {
     transform: translateY(8px);
@@ -838,9 +884,18 @@ button:disabled {
 
 @media (prefers-reduced-motion: reduce) {
   .reveal,
-  .interactive {
+  .interactive,
+  .page-shell,
+  .bg-layer {
     animation: none;
     transition: none;
+  }
+
+  .card:hover,
+  .metric-card:hover,
+  .list-row-link:hover,
+  .nav-link:hover {
+    transform: none;
   }
 }
 

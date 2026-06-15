@@ -189,6 +189,20 @@ model FollowupResult {
   @@map("followup_results")
 }
 
+model GoalsProfile {
+  id                       String   @id @default("singleton")
+  missionStatement         String   @default("") @map("mission_statement")
+  weeklyApplicationsTarget Int?     @map("weekly_applications_target")
+  compensationPreference   String   @default("") @map("compensation_preference")
+  preferredLocations       String   @default("") @map("preferred_locations")
+  employmentTypes          String   @default("[]") @map("employment_types")
+  workplaceModes           String   @default("[]") @map("workplace_modes")
+  priorityNotes            String   @default("") @map("priority_notes")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@map("goals_profile")
+}
+
 model EngagementEvent {
   id            String              @id @default(uuid())
   applicationId String              @map("application_id")
