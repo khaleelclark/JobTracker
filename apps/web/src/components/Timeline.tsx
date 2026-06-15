@@ -46,7 +46,7 @@ export function Timeline({ entries }: TimelineProps) {
           </>
         );
         return (
-          <li key={entry.id} className={entry.applicationId ? "list-row list-row-link" : "list-row"} style={{ minWidth: 0, overflow: "hidden" }}>
+          <li key={entry.id} className={entry.applicationId ? "list-row list-row-link list-row-lg" : "list-row list-row-lg"} style={{ minWidth: 0, overflow: "hidden" }}>
             {entry.applicationId ? (
               <Link href={`/applications/${entry.applicationId}`} className="list-row-inner">
                 {inner}
