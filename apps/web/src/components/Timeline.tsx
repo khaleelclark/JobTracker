@@ -17,8 +17,7 @@ export function Timeline({ entries }: TimelineProps) {
   }
 
   return (
-    <div className="card">
-      <ul className="clean-list">
+    <ul className="clean-list">
         {entries.map((entry) => (
           <li key={entry.id} className={entry.applicationId ? "list-row list-row-link" : "list-row"}>
             {entry.applicationId ? (
@@ -34,7 +33,6 @@ export function Timeline({ entries }: TimelineProps) {
             )}
           </li>
         ))}
-      </ul>
-    </div>
+    </ul>
   );
 }

@@ -185,6 +185,15 @@ p {
   gap: 1rem;
 }
 
+.today-date {
+  font-size: 0.55em;
+  font-weight: 400;
+  color: var(--ink-soft);
+  letter-spacing: 0.01em;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
 
 .stack-xl {
   display: grid;
@@ -493,7 +502,7 @@ button:disabled {
 .dashboard-grid {
   display: grid;
   gap: 0.7rem;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
 }
 
 .metric-card {
@@ -572,6 +581,12 @@ button:disabled {
   width: 100%;
   text-decoration: none;
   color: inherit;
+}
+
+.list-row-lg .list-row-inner,
+.list-row-lg:not(.list-row-link) {
+  padding: 0.8rem 1rem;
+  font-size: 1.05rem;
 }
 
 .resume-library-text {
@@ -702,6 +717,16 @@ button:disabled {
   .page-header.with-action {
     align-items: start;
     flex-direction: column;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

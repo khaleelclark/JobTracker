@@ -5,6 +5,7 @@ import { InterviewList } from "@/components/InterviewList";
 import { Timeline } from "@/components/Timeline";
 import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
+import { GENERIC_APPLICATION_STATUSES } from "@job-tracker/shared";
 
 function startOfDay(date: Date) {
   const nextDate = new Date(date);
@@ -47,7 +48,7 @@ export default async function TodayPage() {
       },
       include: { application: true },
       orderBy: { scheduledAt: "asc" },
-      take: 25,
+      take: 5,
     }),
     prisma.engagementEvent.findMany({
       orderBy: { occurredAt: "desc" },
@@ -152,33 +153,36 @@ export default async function TodayPage() {
     },
   ];
 
-  const statusCounts = applicationStatusCounts
-    .map((item) => ({
-      status: item.genericStatus,
-      count: item._count._all,
-    }))
-    .sort((a, b) => toTitleCaseLabel(a.status).localeCompare(toTitleCaseLabel(b.status)));
+  const statusCountMap = new Map(
+    applicationStatusCounts.map(item => [item.genericStatus, item._count._all]),
+  );
+  const statusCounts = GENERIC_APPLICATION_STATUSES.map(status => ({
+    status,
+    count: statusCountMap.get(status) ?? 0,
+  })).sort((a, b) =>
+    toTitleCaseLabel(a.status).localeCompare(toTitleCaseLabel(b.status)),
+  );
 
   const timeline = [
-    ...recentApplications.map((application) => ({
+    ...recentApplications.map(application => ({
       id: `application_${application.id}_${application.updatedAt.toISOString()}`,
       label: `${application.companyName}: application updated (${application.roleTitle}, ${toTitleCaseLabel(application.genericStatus)})`,
       occurredAt: application.updatedAt,
       applicationId: application.id,
     })),
-    ...engagementEvents.map((event) => ({
+    ...engagementEvents.map(event => ({
       id: `event_${event.id}`,
       label: `${event.application.companyName}: ${event.eventType}`,
       occurredAt: event.occurredAt,
       applicationId: event.applicationId,
     })),
-    ...followups.map((followup) => ({
+    ...followups.map(followup => ({
       id: `followup_${followup.id}`,
       label: `${followup.application.companyName}: follow-up via ${followup.channel}`,
       occurredAt: followup.sentAt,
       applicationId: followup.applicationId,
     })),
-    ...emails.map((email) => ({
+    ...emails.map(email => ({
       id: `email_${email.id}`,
       label: `${email.companyName ?? email.application?.companyName ?? "Unknown Company"}: ${email.direction} ${email.channel} communication (${email.subject})`,
       occurredAt: email.createdAt,
@@ -186,24 +190,31 @@ export default async function TodayPage() {
     })),
   ]
     .sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime())
-    .slice(0, 40);
+    .slice(0, 10);
 
   return (
     <section className="stack-xl">
-      <div className="page-header with-action">
-        <div>
-          <h1>Today</h1>
-          <p className="muted">Review today&apos;s logged activity, current statuses, and recent facts.</p>
-        </div>
+      <div className="page-header">
+        <h1>
+          Today{" "}
+          <span className="today-date">
+            {now.toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </span>
+        </h1>
+        <p className="muted">
+          Review today&apos;s logged activity, current statuses, and recent
+          facts.
+        </p>
       </div>
 
       <section className="stack-md">
-        <div className="section-head">
-          <h2>At a Glance</h2>
-          <span className="muted">{now.toLocaleDateString()}</span>
-        </div>
+        <h2>At a Glance</h2>
         <div className="dashboard-grid">
-          {todaysFacts.map((fact) => (
+          {todaysFacts.map(fact => (
             <div key={fact.label} className="metric-card dashboard-metric">
               <span className="metric-label">{fact.label}</span>
               <strong>{fact.value}</strong>
@@ -213,51 +224,52 @@ export default async function TodayPage() {
         </div>
       </section>
 
-      <div className="layout-split">
-        <div className="stack-md">
-          <section>
-            <h2>Upcoming Interviews</h2>
-            <InterviewList
-              interviews={interviews.map((interview) => ({
-                id: interview.id,
-                applicationId: interview.applicationId,
-                applicationCompany: interview.application.companyName,
-                roundLabel: interview.roundLabel,
-                scheduledAtIso: interview.scheduledAt.toISOString(),
-                status: interview.status,
-              }))}
-            />
-          </section>
+      <div className="card stack-md">
+        <h2 className="no-margin">Upcoming Interviews</h2>
+        <div style={{ maxHeight: "220px", overflowY: "auto" }}>
+          <InterviewList
+            interviews={interviews.map(interview => ({
+              id: interview.id,
+              applicationId: interview.applicationId,
+              applicationCompany: interview.application.companyName,
+              roundLabel: interview.roundLabel,
+              scheduledAtIso: interview.scheduledAt.toISOString(),
+              status: interview.status,
+            }))}
+          />
+        </div>
+      </div>
 
-          <section>
-            <h2>Recent Activity</h2>
+      <div className="layout-split" style={{ alignItems: "stretch" }}>
+        <div className="card stack-md">
+          <h2 className="no-margin">Recent Activity</h2>
+          <div style={{ maxHeight: "412px", overflowY: "auto" }}>
             <Timeline entries={timeline} />
-          </section>
+          </div>
         </div>
 
-        <aside className="stack-md">
-          <section>
-            <h2>Application Status</h2>
-            <div className="card">
-              {statusCounts.length > 0 ? (
-                <ul className="clean-list">
-                  {statusCounts.map((item) => (
-                    <li key={item.status} className="list-row list-row-link">
-                      <Link href={`/applications?status=${item.status}`} className="list-row-inner">
-                        <span>{toTitleCaseLabel(item.status)}</span>
-                        <strong>{item.count}</strong>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted">No applications logged yet.</p>
-              )}
-            </div>
-          </section>
+        <aside>
+          <div className="card stack-md">
+            <h2 className="no-margin">Application Status</h2>
+            <ul className="clean-list">
+              {statusCounts.map(item => (
+                <li
+                  key={item.status}
+                  className="list-row list-row-link list-row-lg"
+                >
+                  <Link
+                    href={`/applications?status=${item.status}`}
+                    className="list-row-inner"
+                  >
+                    <span>{toTitleCaseLabel(item.status)}</span>
+                    <strong>{item.count}</strong>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </aside>
       </div>
     </section>
   );
 }
-
