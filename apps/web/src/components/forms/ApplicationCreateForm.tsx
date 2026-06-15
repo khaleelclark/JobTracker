@@ -136,7 +136,7 @@ export function ApplicationCreateForm({
 
   return (
     <>
-      <Button onClick={() => setIsDialogOpen(true)}>Add Application</Button>
+      <Button onClick={() => setIsDialogOpen(true)}>+ Add Application</Button>
 
       <Dialog
         open={isDialogOpen}
