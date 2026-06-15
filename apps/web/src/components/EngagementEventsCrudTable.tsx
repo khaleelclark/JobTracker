@@ -203,6 +203,7 @@ export function EngagementEventsCrudTable({ events }: EngagementEventsCrudTableP
             "--DataGrid-t-color-border-base": "rgba(15, 74, 134, 0.22)",
             "& .MuiDataGrid-footerContainer": { backgroundColor: "rgba(15, 74, 134, 0.04)" },
             "& .MuiDataGrid-row": { cursor: "pointer" },
+            "& .MuiDataGrid-row:hover": { backgroundColor: "rgba(15, 74, 134, 0.13)" },
             "& .MuiDataGrid-cell": { display: "flex", alignItems: "center" },
           }}
         />
