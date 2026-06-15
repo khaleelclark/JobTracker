@@ -4,6 +4,7 @@ import "./globals.css";
 import path from "node:path";
 import { AppNav } from "@/components/AppNav";
 import { MuiProvider } from "@/components/MuiProvider";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 
 const headingFont = Sora({
   subsets: ["latin"],
@@ -34,11 +35,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body>
-        <MuiProvider>
-          <div className="bg-layer" aria-hidden />
-          <AppNav dbLabel={dbLabel} />
-          <main className="page-shell">{children}</main>
-        </MuiProvider>
+        <AppRouterCacheProvider>
+          <MuiProvider>
+            <div className="bg-layer" aria-hidden />
+            <AppNav dbLabel={dbLabel} />
+            <main className="page-shell">{children}</main>
+          </MuiProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
