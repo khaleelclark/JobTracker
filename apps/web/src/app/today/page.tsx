@@ -83,29 +83,80 @@ export default async function TodayPage() {
     prisma.application.findMany({
       orderBy: { updatedAt: "desc" },
       take: 20,
-      select: { id: true, companyName: true, roleTitle: true, genericStatus: true, updatedAt: true },
+      select: {
+        id: true,
+        companyName: true,
+        roleTitle: true,
+        genericStatus: true,
+        updatedAt: true,
+      },
     }),
-    prisma.application.count({ where: { appliedAt: { gte: todayStart, lt: tomorrowStart } } }),
-    prisma.followupAttempt.count({ where: { sentAt: { gte: todayStart, lt: tomorrowStart } } }),
-    prisma.emailLog.count({ where: { createdAt: { gte: todayStart, lt: tomorrowStart } } }),
-    prisma.engagementEvent.count({ where: { occurredAt: { gte: todayStart, lt: tomorrowStart } } }),
-    prisma.interview.count({ where: { scheduledAt: { gte: todayStart, lt: tomorrowStart }, status: "scheduled" } }),
-    prisma.application.groupBy({ by: ["genericStatus"], _count: { _all: true } }),
+    prisma.application.count({
+      where: { appliedAt: { gte: todayStart, lt: tomorrowStart } },
+    }),
+    prisma.followupAttempt.count({
+      where: { sentAt: { gte: todayStart, lt: tomorrowStart } },
+    }),
+    prisma.emailLog.count({
+      where: { createdAt: { gte: todayStart, lt: tomorrowStart } },
+    }),
+    prisma.engagementEvent.count({
+      where: { occurredAt: { gte: todayStart, lt: tomorrowStart } },
+    }),
+    prisma.interview.count({
+      where: {
+        scheduledAt: { gte: todayStart, lt: tomorrowStart },
+        status: "scheduled",
+      },
+    }),
+    prisma.application.groupBy({
+      by: ["genericStatus"],
+      _count: { _all: true },
+    }),
   ]);
 
   const todaysFacts = [
-    { label: "Applied Today", value: applicationsAppliedToday, detail: pluralize(applicationsAppliedToday, "application"), href: "/applications?status=applied" },
-    { label: "Follow-ups Sent", value: followupsSentToday, detail: pluralize(followupsSentToday, "attempt"), href: "/applications" },
-    { label: "Emails Logged", value: emailsLoggedToday, detail: pluralize(emailsLoggedToday, "communication"), href: "/emails" },
-    { label: "Engagement Events", value: engagementEventsToday, detail: pluralize(engagementEventsToday, "event"), href: "/applications" },
-    { label: "Interviews Today", value: interviewsScheduledToday, detail: pluralize(interviewsScheduledToday, "scheduled interview"), href: "/interviews" },
+    {
+      label: "Applied Today",
+      value: applicationsAppliedToday,
+      detail: pluralize(applicationsAppliedToday, "application"),
+      href: "/applications?status=applied",
+    },
+    {
+      label: "Follow-ups Sent",
+      value: followupsSentToday,
+      detail: pluralize(followupsSentToday, "attempt"),
+      href: "/applications",
+    },
+    {
+      label: "Emails Logged",
+      value: emailsLoggedToday,
+      detail: pluralize(emailsLoggedToday, "communication"),
+      href: "/emails",
+    },
+    {
+      label: "Engagement Events",
+      value: engagementEventsToday,
+      detail: pluralize(engagementEventsToday, "event"),
+      href: "/applications",
+    },
+    {
+      label: "Interviews Today",
+      value: interviewsScheduledToday,
+      detail: pluralize(interviewsScheduledToday, "scheduled interview"),
+      href: "/interviews",
+    },
   ];
 
-  const statusCountMap = new Map(applicationStatusCounts.map(item => [item.genericStatus, item._count._all]));
+  const statusCountMap = new Map(
+    applicationStatusCounts.map(item => [item.genericStatus, item._count._all]),
+  );
   const statusCounts = GENERIC_APPLICATION_STATUSES.map(status => ({
     status,
     count: statusCountMap.get(status) ?? 0,
-  })).sort((a, b) => toTitleCaseLabel(a.status).localeCompare(toTitleCaseLabel(b.status)));
+  })).sort((a, b) =>
+    toTitleCaseLabel(a.status).localeCompare(toTitleCaseLabel(b.status)),
+  );
 
   const timeline = [
     ...recentApplications.slice(0, 5).map(app => ({
@@ -134,7 +185,11 @@ export default async function TodayPage() {
       applicationId: email.applicationId ?? undefined,
     })),
   ]
-    .sort((a, b) => new Date(b.occurredAtIso).getTime() - new Date(a.occurredAtIso).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.occurredAtIso).getTime() -
+        new Date(a.occurredAtIso).getTime(),
+    )
     .slice(0, 10);
 
   return (
@@ -145,13 +200,21 @@ export default async function TodayPage() {
           Today{" "}
           <Typography
             component="span"
-            sx={{ fontSize: "0.55em", fontWeight: 400, color: "text.secondary", letterSpacing: "0.01em", ml: 1, verticalAlign: "middle" }}
+            sx={{
+              fontSize: "0.55em",
+              fontWeight: 400,
+              color: "text.secondary",
+              letterSpacing: "0.01em",
+              ml: 1,
+              verticalAlign: "middle",
+            }}
           >
             <LocalDate />
           </Typography>
         </Typography>
         <Typography variant="body2" color="text.secondary" mt={0.5}>
-          Review today&apos;s logged activity, current statuses, and recent facts.
+          Review today&apos;s logged activity, current statuses, and recent
+          facts.
         </Typography>
       </Box>
 
@@ -162,7 +225,11 @@ export default async function TodayPage() {
           sx={{
             display: "grid",
             gap: 1,
-            gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(5, 1fr)" },
+            gridTemplateColumns: {
+              xs: "repeat(2, 1fr)",
+              sm: "repeat(3, 1fr)",
+              md: "repeat(5, 1fr)",
+            },
           }}
         >
           {todaysFacts.map(fact => (
@@ -179,7 +246,8 @@ export default async function TodayPage() {
                 border: "1px solid rgba(15, 74, 134, 0.18)",
                 background: "rgba(255, 255, 255, 0.82)",
                 cursor: "pointer",
-                transition: "transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease",
+                transition:
+                  "transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease",
                 "&:hover": {
                   transform: "translateY(-3px) scale(1.03)",
                   boxShadow: 7,
@@ -188,10 +256,16 @@ export default async function TodayPage() {
               }}
             >
               <Box sx={{ p: "0.6rem 0.72rem", width: "100%" }}>
-                <Typography variant="caption" display="block" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  display="block"
+                  color="text.secondary"
+                >
                   {fact.label}
                 </Typography>
-                <Typography sx={{ fontSize: "1.75rem", fontWeight: 700, lineHeight: 1.2 }}>
+                <Typography
+                  sx={{ fontSize: "1.75rem", fontWeight: 700, lineHeight: 1.2 }}
+                >
                   {fact.value}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -235,7 +309,12 @@ export default async function TodayPage() {
           <Stack spacing={1.5}>
             <Typography variant="h2">Recent Activity</Typography>
             <Box
-              sx={{ maxHeight: 412, overflowY: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}
+              sx={{
+                maxHeight: 447,
+                overflowY: "auto",
+                scrollbarWidth: "none",
+                "&::-webkit-scrollbar": { display: "none" },
+              }}
             >
               <Timeline entries={timeline} />
             </Box>
