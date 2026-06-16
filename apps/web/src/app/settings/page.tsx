@@ -1,25 +1,36 @@
 export const dynamic = "force-dynamic";
 
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { DbPathPicker } from "@/components/DbPathPicker";
 
 export default async function SettingsPage() {
   const currentUrl = process.env.DATABASE_URL ?? "";
 
   return (
-    <section className="stack-xl">
-      <header className="page-header">
-        <h1>Settings</h1>
-      </header>
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="h1">Settings</Typography>
+      </Box>
 
-      <div className="card stack-md">
-        <div>
-          <h2>Database</h2>
-          <p className="muted" style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>
-            Path to the active SQLite database. In Docker, changes restart the container.
-          </p>
-        </div>
-        <DbPathPicker currentUrl={currentUrl} />
-      </div>
-    </section>
+      <Paper
+        sx={{
+          transition: "box-shadow 220ms ease, transform 220ms ease",
+          "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" },
+        }}
+      >
+        <Stack spacing={1.5}>
+          <Box>
+            <Typography variant="h2">Database</Typography>
+            <Typography variant="body2" color="text.secondary" mt={0.5}>
+              Path to the active SQLite database. In Docker, changes restart the container.
+            </Typography>
+          </Box>
+          <DbPathPicker currentUrl={currentUrl} />
+        </Stack>
+      </Paper>
+    </Stack>
   );
 }

@@ -2,19 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel, nowDateTimeLocalValue } from "@/lib/format";
 
-interface ApplicationOption {
-  id: string;
-  companyName: string;
-  roleTitle: string;
-}
-
-interface ExistingInterview {
-  applicationId: string;
-  roundIndex: number;
-}
+interface ApplicationOption { id: string; companyName: string; roleTitle: string; }
+interface ExistingInterview { applicationId: string; roundIndex: number; }
 
 interface InterviewCreateFormProps {
   applications: ApplicationOption[];
@@ -24,53 +23,29 @@ interface InterviewCreateFormProps {
   onSaved?: () => void;
 }
 
-const INTERVIEW_STATUS_OPTIONS = [
-  "scheduled",
-  "completed",
-  "cancelled",
-] as const;
+const INTERVIEW_STATUS_OPTIONS = ["scheduled", "completed", "cancelled"] as const;
 
 function toIsoFromDateTime(raw: string): string {
-  if (!raw) {
-    return new Date().toISOString();
-  }
-
+  if (!raw) return new Date().toISOString();
   return new Date(raw).toISOString();
 }
 
-export function InterviewCreateForm({
-  applications,
-  existingInterviews = [],
-  defaultApplicationId,
-  hideHeader,
-  onSaved,
-}: InterviewCreateFormProps) {
+export function InterviewCreateForm({ applications, existingInterviews = [], defaultApplicationId, hideHeader, onSaved }: InterviewCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [selectedAppId, setSelectedAppId] = useState(
-    defaultApplicationId ?? "",
-  );
+  const [selectedAppId, setSelectedAppId] = useState(defaultApplicationId ?? "");
 
   function nextRoundIndex(appId: string): number {
-    const rounds = existingInterviews
-      .filter(iv => iv.applicationId === appId)
-      .map(iv => iv.roundIndex);
+    const rounds = existingInterviews.filter(iv => iv.applicationId === appId).map(iv => iv.roundIndex);
     return rounds.length === 0 ? 1 : Math.max(...rounds) + 1;
   }
 
   useEffect(() => {
-    if (!success && !error) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setSuccess(null);
-      setError(null);
-    }, 3000);
-
-    return () => window.clearTimeout(timeoutId);
+    if (!success && !error) return;
+    const id = window.setTimeout(() => { setSuccess(null); setError(null); }, 3000);
+    return () => window.clearTimeout(id);
   }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -81,7 +56,6 @@ export function InterviewCreateForm({
 
     const form = event.currentTarget;
     const data = new FormData(form);
-
     const payload = {
       applicationId: String(data.get("applicationId") ?? ""),
       roundIndex: Number(data.get("roundIndex") ?? 1),
@@ -97,143 +71,79 @@ export function InterviewCreateForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as {
-          error?: unknown;
-        };
-        throw new Error(
-          typeof body.error === "string"
-            ? body.error
-            : "Unable to save interview",
-        );
+        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
+        throw new Error(typeof body.error === "string" ? body.error : "Unable to save interview");
       }
-
-      if (!defaultApplicationId) {
-        form.reset();
-      }
+      if (!defaultApplicationId) form.reset();
       setSuccess("Interview logged.");
       router.refresh();
       onSaved?.();
-    } catch (submitError) {
-      const message =
-        submitError instanceof Error ? submitError.message : "Unknown error";
-      setError(message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form className="form-card" onSubmit={handleSubmit}>
-      {!hideHeader && (
-        <div className="form-header">
-          <h2>Log Interview</h2>
-          <p className="muted">Track each round and status as events.</p>
-        </div>
-      )}
+    <Paper component="form" onSubmit={handleSubmit}
+      sx={{
+        transition: "box-shadow 220ms ease, transform 220ms ease",
+        "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" },
+      }}
+    >
+      <Stack spacing={2}>
+        {!hideHeader && (
+          <Box>
+            <Typography variant="h2">Log Interview</Typography>
+            <Typography variant="body2" color="text.secondary" mt={0.5}>Track each round and status as events.</Typography>
+          </Box>
+        )}
 
-      <div className="form-grid form-grid-2">
-        <label>
-          Application
-          <select
-            name="applicationId"
-            required
-            value={selectedAppId}
-            onChange={e => setSelectedAppId(e.target.value)}
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 1.5 }}>
+          <TextField
+            select label="Application" name="applicationId" required size="small" fullWidth
+            value={selectedAppId} onChange={e => setSelectedAppId(e.target.value)}
           >
-            <option value="" disabled>
-              Select application
-            </option>
-            {applications.map(application => (
-              <option key={application.id} value={application.id}>
-                {application.companyName} - {application.roleTitle}
-              </option>
+            <MenuItem value="" disabled>Select application</MenuItem>
+            {applications.map(a => (
+              <MenuItem key={a.id} value={a.id}>{a.companyName} - {a.roleTitle}</MenuItem>
             ))}
-          </select>
-        </label>
+          </TextField>
 
-        <label>
-          Round Index
-          <input
+          <TextField
             key={selectedAppId}
-            name="roundIndex"
-            type="number"
-            min={1}
-            max={20}
+            label="Round Index" name="roundIndex" type="number" required size="small" fullWidth
             defaultValue={selectedAppId ? nextRoundIndex(selectedAppId) : 1}
-            required
+            slotProps={{ htmlInput: { min: 1, max: 20 } }}
           />
-        </label>
 
-        <label>
-          Round Label
-          <input
-            name="roundLabel"
-            required
-            maxLength={100}
-            placeholder="Phone Screen"
-          />
-        </label>
+          <TextField label="Round Label" name="roundLabel" required size="small" fullWidth
+            placeholder="Phone Screen" slotProps={{ htmlInput: { maxLength: 100 } }} />
 
-        <label>
-          Status
-          <select name="status" defaultValue="scheduled">
-            {INTERVIEW_STATUS_OPTIONS.map(status => (
-              <option key={status} value={status}>
-                {toTitleCaseLabel(status)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+          <TextField select label="Status" name="status" defaultValue="scheduled" size="small" fullWidth>
+            {INTERVIEW_STATUS_OPTIONS.map(s => <MenuItem key={s} value={s}>{toTitleCaseLabel(s)}</MenuItem>)}
+          </TextField>
+        </Box>
 
-      <label>
-        Scheduled At
-        <input
-          name="scheduledAt"
-          type="datetime-local"
-          required
-          defaultValue={nowDateTimeLocalValue()}
-        />
-      </label>
+        <TextField label="Scheduled At" name="scheduledAt" type="datetime-local" required size="small" fullWidth
+          defaultValue={nowDateTimeLocalValue()} />
 
-      <label>
-        Notes
-        <textarea
-          name="notes"
-          rows={3}
-          maxLength={4000}
+        <TextField multiline rows={3} label="Notes" name="notes" size="small" fullWidth
           placeholder="Meeting link, interviewer name, prep notes…"
-        />
-      </label>
+          slotProps={{ htmlInput: { maxLength: 4000 } }} />
 
-      <div className="form-actions">
-        <button
-          type="submit"
-          disabled={submitting || applications.length === 0}
-        >
-          {submitting ? (
-            "Saving..."
-          ) : (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.35rem",
-              }}
-            >
-              Save Interview
-              <SaveIcon sx={{ fontSize: "1rem" }} />
-            </span>
-          )}
-        </button>
-        {applications.length === 0 ? (
-          <span className="error-text">Create an application first.</span>
-        ) : null}
-        {success ? <span className="success-text">{success}</span> : null}
-        {error ? <span className="error-text">{error}</span> : null}
-      </div>
-    </form>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Button type="submit" disabled={submitting || applications.length === 0}
+            endIcon={<SaveIcon sx={{ fontSize: "1rem !important" }} />}>
+            {submitting ? "Saving..." : "Save Interview"}
+          </Button>
+          {applications.length === 0 && <Typography variant="body2" color="error">Create an application first.</Typography>}
+          {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+          {error && <Typography variant="body2" color="error">{error}</Typography>}
+        </Box>
+      </Stack>
+    </Paper>
   );
 }

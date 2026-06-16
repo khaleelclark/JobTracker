@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 import { Tab, Tabs } from "@mui/material";
 
 interface ApplicationDetailTabsProps {
@@ -29,11 +31,11 @@ export function ApplicationDetailTabs({
   const panels = [details, activity, communication, interviews, resumes];
 
   return (
-    <div className="stack-md">
+    <Stack spacing={1.5}>
       <Tabs
         value={tab}
         onChange={handleTabChange}
-        sx={{ borderBottom: "1px solid var(--line)" }}
+        sx={{ borderBottom: "1px solid", borderColor: "divider" }}
       >
         <Tab label="Details" />
         <Tab label="Activity" />
@@ -44,11 +46,11 @@ export function ApplicationDetailTabs({
 
       {panels.map((panel, i) =>
         visited.has(i) ? (
-          <div key={i} hidden={tab !== i}>
+          <Box key={i} hidden={tab !== i}>
             {panel}
-          </div>
+          </Box>
         ) : null,
       )}
-    </div>
+    </Stack>
   );
 }

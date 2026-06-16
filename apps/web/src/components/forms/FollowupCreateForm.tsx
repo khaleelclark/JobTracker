@@ -2,6 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import SaveIcon from "@mui/icons-material/Save";
 import { toTitleCaseLabel, todayDateInputValue } from "@/lib/format";
 
@@ -15,10 +22,7 @@ interface FollowupCreateFormProps {
 const FOLLOWUP_CHANNEL_OPTIONS = ["email", "linkedin", "portal", "other"] as const;
 
 function toIsoFromDate(raw: string): string {
-  if (!raw) {
-    return new Date().toISOString();
-  }
-
+  if (!raw) return new Date().toISOString();
   return new Date(`${raw}T12:00:00`).toISOString();
 }
 
@@ -29,16 +33,9 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex, hideHea
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!success && !error) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setSuccess(null);
-      setError(null);
-    }, 3000);
-
-    return () => window.clearTimeout(timeoutId);
+    if (!success && !error) return;
+    const id = window.setTimeout(() => { setSuccess(null); setError(null); }, 3000);
+    return () => window.clearTimeout(id);
   }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -49,7 +46,6 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex, hideHea
 
     const form = event.currentTarget;
     const data = new FormData(form);
-
     const payload = {
       applicationId,
       attemptIndex: Number(data.get("attemptIndex") ?? defaultAttemptIndex),
@@ -63,70 +59,47 @@ export function FollowupCreateForm({ applicationId, defaultAttemptIndex, hideHea
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: unknown };
         throw new Error(typeof body.error === "string" ? body.error : "Unable to log follow-up");
       }
-
       const attemptField = form.elements.namedItem("attemptIndex") as HTMLInputElement | null;
-      if (attemptField) {
-        attemptField.value = String(payload.attemptIndex + 1);
-      }
+      if (attemptField) attemptField.value = String(payload.attemptIndex + 1);
       setSuccess("Follow-up logged.");
       router.refresh();
       onSaved?.();
-    } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Unknown error";
-      setError(message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form className="form-card compact" onSubmit={handleSubmit}>
-      {!hideHeader && (
-        <div className="form-header">
-          <h3>Log Follow-up</h3>
-        </div>
-      )}
+    <Paper component="form" onSubmit={handleSubmit} elevation={0}
+      sx={{ border: "1px solid", borderColor: "divider", boxShadow: "none" }}>
+      <Stack spacing={2}>
+        {!hideHeader && <Typography variant="h3">Log Follow-up</Typography>}
 
-      <div className="form-grid form-grid-2">
-        <label>
-          Attempt Index
-          <input name="attemptIndex" type="number" min={1} max={20} defaultValue={defaultAttemptIndex} required />
-        </label>
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 1.5 }}>
+          <TextField label="Attempt Index" name="attemptIndex" type="number" required size="small" fullWidth
+            defaultValue={defaultAttemptIndex} slotProps={{ htmlInput: { min: 1, max: 20 } }} />
+          <TextField select label="Channel" name="channel" defaultValue="email" size="small" fullWidth>
+            {FOLLOWUP_CHANNEL_OPTIONS.map(c => <MenuItem key={c} value={c}>{toTitleCaseLabel(c)}</MenuItem>)}
+          </TextField>
+        </Box>
 
-        <label>
-          Channel
-          <select name="channel" defaultValue="email">
-            {FOLLOWUP_CHANNEL_OPTIONS.map((channel) => (
-              <option key={channel} value={channel}>
-                {toTitleCaseLabel(channel)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+        <TextField label="Sent Date" name="sentAt" type="date" size="small" fullWidth
+          defaultValue={todayDateInputValue()} />
 
-      <label>
-        Sent Date
-        <input name="sentAt" type="date" defaultValue={todayDateInputValue()} />
-      </label>
-
-      <div className="form-actions">
-        <button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              Save
-              <SaveIcon sx={{ fontSize: "1rem" }} />
-            </span>
-          )}
-        </button>
-        {success ? <span className="success-text">{success}</span> : null}
-        {error ? <span className="error-text">{error}</span> : null}
-      </div>
-    </form>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Button type="submit" disabled={submitting} endIcon={<SaveIcon sx={{ fontSize: "1rem !important" }} />}>
+            {submitting ? "Saving..." : "Save"}
+          </Button>
+          {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+          {error && <Typography variant="body2" color="error">{error}</Typography>}
+        </Box>
+      </Stack>
+    </Paper>
   );
 }

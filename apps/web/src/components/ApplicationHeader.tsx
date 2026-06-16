@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { ApplicationStatusPill } from "@/components/ApplicationStatusPill";
 import { MarkdownContent } from "@/components/MarkdownContent";
 import { cleanPostingText } from "@/lib/format";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 interface ApplicationHeaderProps {
   applicationId: string;
@@ -17,22 +23,6 @@ interface ApplicationHeaderProps {
   postingDetails: string | null;
   notes: string | null;
 }
-
-const btnStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "0.3rem",
-  textDecoration: "none",
-  border: "none",
-  background: "none",
-  color: "var(--brand-strong)",
-  borderRadius: "10px",
-  padding: "0.43rem 0.75rem",
-  lineHeight: 1.2,
-  fontSize: "0.875rem",
-  cursor: "pointer",
-  opacity: 0.8,
-};
 
 export function ApplicationHeader({
   applicationId,
@@ -47,51 +37,63 @@ export function ApplicationHeader({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="card stack-md">
-      <h1 className="no-margin">{companyName}</h1>
-      <p>
-        {roleTitle} -{" "}
-        <ApplicationStatusPill applicationId={applicationId} initialStatus={genericStatus} />
-      </p>
-      {compensation ? <p className="muted">Compensation: {compensation}</p> : null}
+    <Paper sx={{ transition: "box-shadow 220ms ease, transform 220ms ease", "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" } }}>
+      <Stack spacing={1.5}>
+        <Typography variant="h1">{companyName}</Typography>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
-        <button type="button" style={btnStyle} onClick={() => setOpen((v) => !v)}>
-          <ExpandMoreIcon
-            sx={{
-              fontSize: "1rem",
-              transition: "transform 0.2s",
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            }}
-          />
-          {open ? "Hide Posting Details" : "Show Posting Details"}
-        </button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+          <Typography>{roleTitle}</Typography>
+          <ApplicationStatusPill applicationId={applicationId} initialStatus={genericStatus} />
+        </Box>
 
-        {careersPageUrl ? (
-          <a href={careersPageUrl} target="_blank" rel="noopener noreferrer" style={btnStyle}>
-            Open Careers Page
-            <OpenInNewIcon sx={{ fontSize: "0.85rem" }} />
-          </a>
-        ) : null}
-      </div>
+        {compensation && (
+          <Typography variant="body2" color="text.secondary">Compensation: {compensation}</Typography>
+        )}
 
-      {open ? (
-        <div className="stack-md" style={{ borderTop: "1px solid var(--line)", paddingTop: "0.75rem" }}>
-          {postingDetails ? (
-            <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6, fontSize: "0.9rem", margin: 0 }}>
-              {cleanPostingText(postingDetails)}
-            </p>
-          ) : (
-            <p className="muted">No posting details.</p>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+          <Button
+            startIcon={<ExpandMoreIcon sx={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />}
+            onClick={() => setOpen((v) => !v)}
+            sx={{ opacity: 0.8 }}
+          >
+            {open ? "Hide Posting Details" : "Show Posting Details"}
+          </Button>
+
+          {careersPageUrl && (
+            <Button
+              component="a"
+              href={careersPageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              endIcon={<OpenInNewIcon sx={{ fontSize: "0.85rem !important" }} />}
+              sx={{ opacity: 0.8 }}
+            >
+              Open Careers Page
+            </Button>
           )}
-          {notes ? (
-            <>
-              <h3>Notes</h3>
-              <MarkdownContent markdown={notes} />
-            </>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
+        </Box>
+
+        {open && (
+          <>
+            <Divider />
+            <Stack spacing={1.5}>
+              {postingDetails ? (
+                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+                  {cleanPostingText(postingDetails)}
+                </Typography>
+              ) : (
+                <Typography variant="body2" color="text.secondary">No posting details.</Typography>
+              )}
+              {notes && (
+                <>
+                  <Typography variant="h3">Notes</Typography>
+                  <MarkdownContent markdown={notes} />
+                </>
+              )}
+            </Stack>
+          </>
+        )}
+      </Stack>
+    </Paper>
   );
 }

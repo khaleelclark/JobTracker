@@ -11,6 +11,10 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -175,13 +179,13 @@ export function EngagementEventsCrudTable({ events }: EngagementEventsCrudTableP
   );
 
   if (events.length === 0) {
-    return <p className="muted">No engagement events.</p>;
+    return <Typography variant="body2" color="text.secondary">No engagement events.</Typography>;
   }
 
   return (
     <>
-      {success ? <p className="success-text">{success}</p> : null}
-      {error && !editingEvent && !deleteEvent ? <p className="error-text">{error}</p> : null}
+      {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+      {error && !editingEvent && !deleteEvent && <Typography variant="body2" color="error">{error}</Typography>}
 
       <Box sx={{ width: "100%", overflowX: "hidden", border: "1px solid rgba(15, 74, 134, 0.22)", borderRadius: "8px" }}>
         <DataGrid
@@ -241,22 +245,17 @@ export function EngagementEventsCrudTable({ events }: EngagementEventsCrudTableP
         <DialogTitle>Edit Engagement Event</DialogTitle>
         <DialogContent>
           {editingEvent ? (
-            <form id="edit-event-form" className="form-card" onSubmit={handleEditSubmit}>
-              <label>
-                Event Type
-                <select name="eventType" defaultValue={editingEvent.eventType}>
-                  {EVENT_TYPES.map((eventType) => (
-                    <option key={eventType} value={eventType}>{toTitleCaseLabel(eventType)}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Occurred Date
-                <input name="occurredAt" type="date" required defaultValue={toDateInputValue(editingEvent.occurredAtIso)} />
-              </label>
-            </form>
+            <Stack id="edit-event-form" component="form" spacing={2} onSubmit={handleEditSubmit} sx={{ pt: 0.5 }}>
+              <TextField select label="Event Type" name="eventType" size="small" fullWidth defaultValue={editingEvent.eventType}>
+                {EVENT_TYPES.map((eventType) => (
+                  <MenuItem key={eventType} value={eventType}>{toTitleCaseLabel(eventType)}</MenuItem>
+                ))}
+              </TextField>
+              <TextField label="Occurred Date" name="occurredAt" type="date" required size="small" fullWidth
+                defaultValue={toDateInputValue(editingEvent.occurredAtIso)} />
+            </Stack>
           ) : null}
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setEditingEvent(null); setError(null); }} disabled={saving}>Cancel</Button>
@@ -276,7 +275,7 @@ export function EngagementEventsCrudTable({ events }: EngagementEventsCrudTableP
         <DialogTitle>Delete Event?</DialogTitle>
         <DialogContent>
           Delete <strong>{deleteEvent ? toTitleCaseLabel(deleteEvent.eventType) : ""}</strong>?
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setDeleteEvent(null); setError(null); }} disabled={deleting}>Cancel</Button>

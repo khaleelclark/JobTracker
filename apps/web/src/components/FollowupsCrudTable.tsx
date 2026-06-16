@@ -11,6 +11,10 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -217,13 +221,13 @@ export function FollowupsCrudTable({ followups }: FollowupsCrudTableProps) {
   );
 
   if (followups.length === 0) {
-    return <p className="muted">No follow-up attempts.</p>;
+    return <Typography variant="body2" color="text.secondary">No follow-up attempts.</Typography>;
   }
 
   return (
     <>
-      {success ? <p className="success-text">{success}</p> : null}
-      {error && !editingFollowup && !deleteFollowup ? <p className="error-text">{error}</p> : null}
+      {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+      {error && !editingFollowup && !deleteFollowup && <Typography variant="body2" color="error">{error}</Typography>}
 
       <Box sx={{ width: "100%", overflowX: "hidden", border: "1px solid rgba(15, 74, 134, 0.22)", borderRadius: "8px" }}>
         <DataGrid
@@ -292,52 +296,40 @@ export function FollowupsCrudTable({ followups }: FollowupsCrudTableProps) {
         <DialogTitle>Edit Follow-up</DialogTitle>
         <DialogContent>
           {editingFollowup ? (
-            <form id="edit-followup-form" className="form-card" onSubmit={handleEditSubmit}>
-              <div className="form-grid form-grid-2">
-                <label>
-                  Attempt Index
-                  <input name="attemptIndex" type="number" min={1} max={20} required defaultValue={editingFollowup.attemptIndex} />
-                </label>
-                <label>
-                  Channel
-                  <select name="channel" defaultValue={editingFollowup.channel}>
-                    {FOLLOWUP_CHANNELS.map((ch) => (
-                      <option key={ch} value={ch}>{toTitleCaseLabel(ch)}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <label>
-                Sent Date
-                <input name="sentAt" type="date" required defaultValue={toDateInputValue(editingFollowup.sentAtIso)} />
-              </label>
-              <p className="muted" style={{ fontSize: "0.8rem", margin: "0.75rem 0 0.25rem" }}>Result</p>
-              <div className="form-grid form-grid-2">
-                <label>
-                  Status
-                  <select name="resultStatus" defaultValue={editingFollowup.resultStatus}>
-                    {RESULT_STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s}>{toTitleCaseLabel(s)}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Response Type
-                  <select name="responseType" defaultValue={editingFollowup.responseType ?? ""}>
-                    <option value="">None</option>
-                    {RESPONSE_TYPE_OPTIONS.map((r) => (
-                      <option key={r} value={r}>{toTitleCaseLabel(r)}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Resolved Date
-                  <input name="resolvedAt" type="date" defaultValue={editingFollowup.resolvedAtIso ? toDateInputValue(editingFollowup.resolvedAtIso) : ""} />
-                </label>
-              </div>
-            </form>
+            <Stack id="edit-followup-form" component="form" spacing={2} onSubmit={handleEditSubmit} sx={{ pt: 0.5 }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 1.5 }}>
+                <TextField
+                  label="Attempt Index" name="attemptIndex" type="number" required size="small" fullWidth
+                  defaultValue={editingFollowup.attemptIndex}
+                  slotProps={{ htmlInput: { min: 1, max: 20 } }}
+                />
+                <TextField select label="Channel" name="channel" size="small" fullWidth defaultValue={editingFollowup.channel}>
+                  {FOLLOWUP_CHANNELS.map((ch) => (
+                    <MenuItem key={ch} value={ch}>{toTitleCaseLabel(ch)}</MenuItem>
+                  ))}
+                </TextField>
+              </Box>
+              <TextField label="Sent Date" name="sentAt" type="date" required size="small" fullWidth
+                defaultValue={toDateInputValue(editingFollowup.sentAtIso)} />
+              <Typography variant="body2" color="text.secondary">Result</Typography>
+              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 1.5 }}>
+                <TextField select label="Result Status" name="resultStatus" size="small" fullWidth defaultValue={editingFollowup.resultStatus}>
+                  {RESULT_STATUS_OPTIONS.map((s) => (
+                    <MenuItem key={s} value={s}>{toTitleCaseLabel(s)}</MenuItem>
+                  ))}
+                </TextField>
+                <TextField select label="Response Type" name="responseType" size="small" fullWidth defaultValue={editingFollowup.responseType ?? ""}>
+                  <MenuItem value="">None</MenuItem>
+                  {RESPONSE_TYPE_OPTIONS.map((r) => (
+                    <MenuItem key={r} value={r}>{toTitleCaseLabel(r)}</MenuItem>
+                  ))}
+                </TextField>
+                <TextField label="Resolved Date" name="resolvedAt" type="date" size="small" fullWidth
+                  defaultValue={editingFollowup.resolvedAtIso ? toDateInputValue(editingFollowup.resolvedAtIso) : ""} />
+              </Box>
+            </Stack>
           ) : null}
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setEditingFollowup(null); setError(null); }} disabled={saving}>Cancel</Button>
@@ -357,7 +349,7 @@ export function FollowupsCrudTable({ followups }: FollowupsCrudTableProps) {
         <DialogTitle>Delete Follow-up?</DialogTitle>
         <DialogContent>
           Delete follow-up attempt <strong>#{deleteFollowup?.attemptIndex}</strong>?
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setDeleteFollowup(null); setError(null); }} disabled={deleting}>Cancel</Button>

@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataGrid, GridColDef, GridPaginationModel, GridRenderCellParams, GridRowId } from "@mui/x-data-grid";
-import { Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, ListItemText, MenuItem, Select, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, ListItemText, MenuItem, Select, Stack, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
@@ -156,7 +156,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
   }
 
   if (emails.length === 0) {
-    return <p className="muted">No communication logs yet.</p>;
+    return <Typography variant="body2" color="text.secondary">No communication logs yet.</Typography>;
   }
 
   const columns: GridColDef<EmailLogRow>[] = [
@@ -273,8 +273,8 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
 
   return (
     <>
-      {success ? <p className="success-text">{success}</p> : null}
-      {error ? <p className="error-text">{error}</p> : null}
+      {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+      {error && <Typography variant="body2" color="error">{error}</Typography>}
       <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden", border: "1px solid rgba(15, 74, 134, 0.22)", borderRadius: "8px" }}>
         <DataGrid
           rows={emails}
@@ -411,44 +411,37 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         </DialogTitle>
         <DialogContent>
           {editingEmail ? (
-            <form id="edit-email-log-form" className="form-card" onSubmit={handleEditSubmit}>
-              <label>
-                Link To
-                <select
-                  name="targetMode"
-                  value={editTargetMode}
-                  onChange={(event) => {
-                    const nextMode = event.target.value as "application" | "applications" | "company";
-                    setEditTargetMode(nextMode);
-                    if (nextMode === "applications" && editingEmail?.applicationId) {
-                      setEditApplicationIds([editingEmail.applicationId]);
-                    }
-                  }}
-                >
-                  <option value="application">Single Application</option>
-                  <option value="applications">Multiple Applications</option>
-                  <option value="company">Company</option>
-                </select>
-              </label>
+            <Stack id="edit-email-log-form" component="form" spacing={2} onSubmit={handleEditSubmit} sx={{ pt: 0.5 }}>
+              <TextField
+                select label="Link To" name="targetMode" size="small" fullWidth
+                value={editTargetMode}
+                onChange={(e) => {
+                  const nextMode = e.target.value as "application" | "applications" | "company";
+                  setEditTargetMode(nextMode);
+                  if (nextMode === "applications" && editingEmail?.applicationId) {
+                    setEditApplicationIds([editingEmail.applicationId]);
+                  }
+                }}
+              >
+                <MenuItem value="application">Single Application</MenuItem>
+                <MenuItem value="applications">Multiple Applications</MenuItem>
+                <MenuItem value="company">Company</MenuItem>
+              </TextField>
 
-              {editTargetMode === "application" ? (
-                <label>
-                  Application
-                  <select name="applicationId" required defaultValue={editingEmail.applicationId ?? ""}>
-                    <option value="" disabled>
-                      Select application
-                    </option>
-                    {applications.map((application) => (
-                      <option key={application.id} value={application.id}>
-                        {application.companyName} - {application.roleTitle}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
+              {editTargetMode === "application" && (
+                <TextField select label="Application" name="applicationId" required size="small" fullWidth
+                  defaultValue={editingEmail.applicationId ?? ""}>
+                  <MenuItem value="" disabled>Select application</MenuItem>
+                  {applications.map((application) => (
+                    <MenuItem key={application.id} value={application.id}>
+                      {application.companyName} - {application.roleTitle}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
 
-              {editTargetMode === "applications" ? (
-                <FormControl>
+              {editTargetMode === "applications" && (
+                <FormControl size="small">
                   <InputLabel id="edit-application-ids-label">Applications</InputLabel>
                   <Select
                     labelId="edit-application-ids-label"
@@ -475,59 +468,44 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
                     ))}
                   </Select>
                 </FormControl>
-              ) : null}
+              )}
 
-              {editTargetMode === "company" ? (
-                <label>
-                  Company
-                  <select name="companyName" required defaultValue={editingEmail.companyName}>
-                    {companyOptions.map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
+              {editTargetMode === "company" && (
+                <TextField select label="Company" name="companyName" required size="small" fullWidth
+                  defaultValue={editingEmail.companyName}>
+                  {companyOptions.map((name) => (
+                    <MenuItem key={name} value={name}>{name}</MenuItem>
+                  ))}
+                </TextField>
+              )}
 
-              <label>
-                Channel
-                <select name="channel" defaultValue={editingEmail.channel}>
-                  <option value="email">Email</option>
-                  <option value="linkedin">LinkedIn</option>
-                </select>
-              </label>
+              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 1.5 }}>
+                <TextField select label="Channel" name="channel" size="small" fullWidth defaultValue={editingEmail.channel}>
+                  <MenuItem value="email">Email</MenuItem>
+                  <MenuItem value="linkedin">LinkedIn</MenuItem>
+                </TextField>
+                <TextField select label="Direction" name="direction" size="small" fullWidth defaultValue={editingEmail.direction}>
+                  <MenuItem value="inbound">Inbound</MenuItem>
+                  <MenuItem value="outbound">Outbound</MenuItem>
+                </TextField>
+              </Box>
 
-              <label>
-                Direction
-                <select name="direction" defaultValue={editingEmail.direction}>
-                  <option value="inbound">Inbound</option>
-                  <option value="outbound">Outbound</option>
-                </select>
-              </label>
+              <FormControlLabel
+                control={<Checkbox name="isHuman" defaultChecked={editingEmail.isHuman} size="small" />}
+                label="Human sender/recipient"
+              />
 
-              <label className="checkbox-row">
-                <input name="isHuman" type="checkbox" defaultChecked={editingEmail.isHuman} />
-                Human sender/recipient
-              </label>
+              <TextField label="Subject" name="subject" required size="small" fullWidth
+                defaultValue={editingEmail.subject} slotProps={{ htmlInput: { maxLength: 300 } }} />
 
-              <label>
-                Subject
-                <input name="subject" maxLength={300} required defaultValue={editingEmail.subject} />
-              </label>
+              <TextField multiline rows={6} label="Body" name="body" required size="small" fullWidth
+                defaultValue={editingEmail.body} slotProps={{ htmlInput: { maxLength: 12000 } }} />
 
-              <label>
-                Body
-                <textarea name="body" rows={6} maxLength={12000} required defaultValue={editingEmail.body} />
-              </label>
-
-              <label>
-                Notes (optional)
-                <textarea name="notes" rows={3} maxLength={4000} defaultValue={editingEmail.notes ?? ""} />
-              </label>
-            </form>
+              <TextField multiline rows={3} label="Notes (optional)" name="notes" size="small" fullWidth
+                defaultValue={editingEmail.notes ?? ""} slotProps={{ htmlInput: { maxLength: 4000 } }} />
+            </Stack>
           ) : null}
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditingEmail(null)} disabled={saving}>
@@ -554,7 +532,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
         <DialogTitle>Delete Communication Log?</DialogTitle>
         <DialogContent>
           Delete <strong>{deleteEmail?.subject}</strong>?
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteEmail(null)} disabled={deleting}>

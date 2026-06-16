@@ -1,6 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { ApplicationTable } from "@/components/ApplicationTable";
 import { prisma } from "@/lib/db";
 import { toTitleCaseLabel } from "@/lib/format";
@@ -15,7 +20,7 @@ async function autoArchiveStaleApplications() {
   if (stale.length === 0) return;
   const archiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   await Promise.all(
-    stale.map((app) =>
+    stale.map(app =>
       prisma.application.update({
         where: { id: app.id },
         data: {
@@ -36,14 +41,10 @@ export default async function ApplicationsPage({
 }) {
   const { status: initialStatus } = await searchParams;
   await autoArchiveStaleApplications();
+
   const [applications, resumes] = await Promise.all([
-    prisma.application.findMany({
-      orderBy: { appliedAt: "desc" },
-    }),
-    prisma.resume.findMany({
-      orderBy: { createdAt: "desc" },
-      select: { id: true, name: true },
-    }),
+    prisma.application.findMany({ orderBy: { appliedAt: "desc" } }),
+    prisma.resume.findMany({ orderBy: { createdAt: "desc" }, select: { id: true, name: true } }),
   ]);
 
   const summary = applications.reduce(
@@ -55,72 +56,110 @@ export default async function ApplicationsPage({
   );
 
   const statusSortRank: Record<string, number> = {
-    offered: 0,
-    interviewing: 1,
-    under_review: 2,
-    applied: 3,
-    archived: 4,
-    rejected: 5,
-    withdrawn: 6,
+    offered: 0, interviewing: 1, under_review: 2, applied: 3, archived: 4, rejected: 5, withdrawn: 6,
   };
 
   const sortedApplications = [...applications].sort((a, b) => {
     const rankA = statusSortRank[a.genericStatus] ?? Number.MAX_SAFE_INTEGER;
     const rankB = statusSortRank[b.genericStatus] ?? Number.MAX_SAFE_INTEGER;
-    if (rankA !== rankB) {
-      return rankA - rankB;
-    }
-
+    if (rankA !== rankB) return rankA - rankB;
     return b.appliedAt.getTime() - a.appliedAt.getTime();
   });
 
   const uniqueValues = (values: Array<string | null>) =>
-    Array.from(
-      new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]),
-    ).sort((a, b) => a.localeCompare(b));
+    Array.from(new Set(values.map(v => v?.trim()).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b));
 
   const autocompleteOptions = {
-    companies: uniqueValues(applications.map((application) => application.companyName)),
-    roleTitles: uniqueValues(applications.map((application) => application.roleTitle)),
-    careersPageUrls: uniqueValues(applications.map((application) => application.careersPageUrl)),
-    roleFamilies: uniqueValues(applications.map((application) => application.roleFamily)),
-    roleLevels: uniqueValues(applications.map((application) => application.roleLevel)),
-    compensations: uniqueValues(applications.map((application) => application.compensation)),
+    companies: uniqueValues(applications.map(a => a.companyName)),
+    roleTitles: uniqueValues(applications.map(a => a.roleTitle)),
+    careersPageUrls: uniqueValues(applications.map(a => a.careersPageUrl)),
+    roleFamilies: uniqueValues(applications.map(a => a.roleFamily)),
+    roleLevels: uniqueValues(applications.map(a => a.roleLevel)),
+    compensations: uniqueValues(applications.map(a => a.compensation)),
   };
 
   return (
-    <section className="stack-xl">
-      <header className="page-header">
-        <h1>Applications</h1>
-        <p className="muted">Capture each role as a structured fact record.</p>
-      </header>
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="h1">Applications</Typography>
+        <Typography variant="body2" color="text.secondary" mt={0.5}>
+          Capture each role as a structured fact record.
+        </Typography>
+      </Box>
 
-      <div className="stats-row" style={{ display: "grid", gridTemplateColumns: `repeat(${Object.keys(summary).length + 1}, 1fr)` }}>
-        <Link href="/applications" className="metric-card metric-card-link">
-          <span className="metric-label">Total</span>
-          <strong>{applications.length}</strong>
-        </Link>
+      {/* Metric cards */}
+      <Box
+        sx={{
+          display: "grid",
+          gap: 1,
+          gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+        }}
+      >
+        <Card
+          component={Link}
+          href="/applications"
+          sx={{
+            textDecoration: "none",
+            color: "inherit",
+            border: "1px solid rgba(15, 74, 134, 0.18)",
+            background: "rgba(255, 255, 255, 0.82)",
+            cursor: "pointer",
+            minHeight: 96,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            transition: "transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease",
+            "&:hover": { transform: "translateY(-3px) scale(1.03)", boxShadow: 7, borderColor: "rgba(15, 74, 134, 0.35)" },
+          }}
+        >
+          <Box sx={{ p: "0.6rem 0.72rem" }}>
+            <Typography variant="caption" display="block" color="text.secondary">Total</Typography>
+            <Typography sx={{ fontSize: "1.14rem", fontWeight: 700 }}>{applications.length}</Typography>
+          </Box>
+        </Card>
         {Object.entries(summary).map(([status, count]) => (
-          <Link key={status} href={`/applications?status=${status}`} className="metric-card metric-card-link">
-            <span className="metric-label">{toTitleCaseLabel(status)}</span>
-            <strong>{count}</strong>
-          </Link>
+          <Card
+            key={status}
+            component={Link}
+            href={`/applications?status=${status}`}
+            sx={{
+              textDecoration: "none",
+              color: "inherit",
+              border: "1px solid rgba(15, 74, 134, 0.18)",
+              background: "rgba(255, 255, 255, 0.82)",
+              cursor: "pointer",
+              minHeight: 96,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              transition: "transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease",
+              "&:hover": { transform: "translateY(-3px) scale(1.03)", boxShadow: 7, borderColor: "rgba(15, 74, 134, 0.35)" },
+            }}
+          >
+            <Box sx={{ p: "0.6rem 0.72rem" }}>
+              <Typography variant="caption" display="block" color="text.secondary">
+                {toTitleCaseLabel(status)}
+              </Typography>
+              <Typography sx={{ fontSize: "1.14rem", fontWeight: 700 }}>{count}</Typography>
+            </Box>
+          </Card>
         ))}
-      </div>
+      </Box>
 
-      <div className="card stack-md">
+      <Paper
+        sx={{
+          transition: "box-shadow 220ms ease, transform 220ms ease",
+          "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" },
+        }}
+      >
         <ApplicationTable
           title="Application Records"
-          applications={sortedApplications.map((application) => ({
-            ...application,
-            appliedAt: application.appliedAt.toISOString(),
-          }))}
+          applications={sortedApplications.map(app => ({ ...app, appliedAt: app.appliedAt.toISOString() }))}
           resumes={resumes}
           autocompleteOptions={autocompleteOptions}
           initialStatusFilter={initialStatus}
         />
-      </div>
-    </section>
+      </Paper>
+    </Stack>
   );
 }
-

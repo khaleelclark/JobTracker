@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import SaveIcon from "@mui/icons-material/Save";
 
-interface InterviewOption {
-  id: string;
-  roundLabel: string;
-  scheduledAtIso: string;
-}
+interface InterviewOption { id: string; roundLabel: string; scheduledAtIso: string; }
 
 interface ReflectionCreateFormProps {
   interviews: InterviewOption[];
@@ -24,16 +27,9 @@ export function ReflectionCreateForm({ interviews, defaultInterviewId, hideHeade
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!success && !error) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setSuccess(null);
-      setError(null);
-    }, 3000);
-
-    return () => window.clearTimeout(timeoutId);
+    if (!success && !error) return;
+    const id = window.setTimeout(() => { setSuccess(null); setError(null); }, 3000);
+    return () => window.clearTimeout(id);
   }, [success, error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -44,7 +40,6 @@ export function ReflectionCreateForm({ interviews, defaultInterviewId, hideHeade
 
     const form = event.currentTarget;
     const data = new FormData(form);
-
     const payload = {
       interviewId: String(data.get("interviewId") ?? ""),
       outcome: String(data.get("outcome") ?? "pending"),
@@ -57,73 +52,59 @@ export function ReflectionCreateForm({ interviews, defaultInterviewId, hideHeade
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: unknown };
         throw new Error(typeof body.error === "string" ? body.error : "Unable to save reflection");
       }
-
       form.reset();
       setSuccess("Reflection saved.");
       onSaved?.();
       router.refresh();
-    } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Unknown error";
-      setError(message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form className="form-card compact" onSubmit={handleSubmit}>
-      {!hideHeader && (
-        <div className="form-header">
-          <h3>Log Reflection</h3>
-        </div>
-      )}
+    <Paper component="form" onSubmit={handleSubmit} elevation={0}
+      sx={{ border: "1px solid", borderColor: "divider", boxShadow: "none" }}>
+      <Stack spacing={2}>
+        {!hideHeader && <Typography variant="h3">Log Reflection</Typography>}
 
-      <div className="form-grid form-grid-2">
-        <label>
-          Interview
-          <select name="interviewId" required defaultValue={defaultInterviewId ?? ""}>
-            {!defaultInterviewId && <option value="" disabled>Select interview</option>}
-            {interviews.map((interview) => (
-              <option key={interview.id} value={interview.id}>
-                {interview.roundLabel} - {new Date(interview.scheduledAtIso).toLocaleDateString()}
-              </option>
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 1.5 }}>
+          <TextField select label="Interview" name="interviewId" required size="small" fullWidth
+            defaultValue={defaultInterviewId ?? ""}>
+            {!defaultInterviewId && <MenuItem value="" disabled>Select interview</MenuItem>}
+            {interviews.map(iv => (
+              <MenuItem key={iv.id} value={iv.id}>
+                {iv.roundLabel} — {new Date(iv.scheduledAtIso).toLocaleDateString()}
+              </MenuItem>
             ))}
-          </select>
-        </label>
+          </TextField>
 
-        <label>
-          Outcome
-          <select name="outcome" defaultValue="pending">
-            <option value="pending">pending</option>
-            <option value="advanced">advanced</option>
-            <option value="rejected">rejected</option>
-          </select>
-        </label>
-      </div>
+          <TextField select label="Outcome" name="outcome" defaultValue="pending" size="small" fullWidth>
+            <MenuItem value="pending">Pending</MenuItem>
+            <MenuItem value="advanced">Advanced</MenuItem>
+            <MenuItem value="rejected">Rejected</MenuItem>
+          </TextField>
+        </Box>
 
-      <label>
-        Summary
-        <textarea name="summary" rows={4} required maxLength={5000} placeholder="What happened in this round?" />
-      </label>
+        <TextField multiline rows={4} label="Summary" name="summary" required size="small" fullWidth
+          placeholder="What happened in this round?"
+          slotProps={{ htmlInput: { maxLength: 5000 } }} />
 
-      <div className="form-actions">
-        <button type="submit" disabled={submitting || interviews.length === 0}>
-          {submitting ? "Saving..." : (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              Save
-              <SaveIcon sx={{ fontSize: "1rem" }} />
-            </span>
-          )}
-        </button>
-        {interviews.length === 0 ? <span className="error-text">No interviews available.</span> : null}
-        {success ? <span className="success-text">{success}</span> : null}
-        {error ? <span className="error-text">{error}</span> : null}
-      </div>
-    </form>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Button type="submit" disabled={submitting || interviews.length === 0}
+            endIcon={<SaveIcon sx={{ fontSize: "1rem !important" }} />}>
+            {submitting ? "Saving..." : "Save"}
+          </Button>
+          {interviews.length === 0 && <Typography variant="body2" color="error">No interviews available.</Typography>}
+          {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+          {error && <Typography variant="body2" color="error">{error}</Typography>}
+        </Box>
+      </Stack>
+    </Paper>
   );
 }

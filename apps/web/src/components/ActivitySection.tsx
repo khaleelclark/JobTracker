@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { FollowupCreateForm } from "@/components/forms/FollowupCreateForm";
@@ -22,22 +26,26 @@ export function ActivitySection({ applicationId, followups, events, nextFollowup
   const [isEventOpen, setIsEventOpen] = useState(false);
 
   return (
-    <div className="stack-md">
-      <div className="card table-shell stack-md">
-        <div className="section-head">
-          <h2 className="no-margin">Follow-ups</h2>
-          <Button onClick={() => setIsFollowupOpen(true)}>+ Add Follow-up</Button>
-        </div>
-        <FollowupsCrudTable followups={followups} />
-      </div>
+    <Stack spacing={1.5}>
+      <Paper sx={{ transition: "box-shadow 220ms ease, transform 220ms ease", "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" } }}>
+        <Stack spacing={1.5}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+            <Typography variant="h2">Follow-ups</Typography>
+            <Button onClick={() => setIsFollowupOpen(true)}>+ Add Follow-up</Button>
+          </Box>
+          <FollowupsCrudTable followups={followups} />
+        </Stack>
+      </Paper>
 
-      <div className="card table-shell stack-md">
-        <div className="section-head">
-          <h2 className="no-margin">Engagement Events</h2>
-          <Button onClick={() => setIsEventOpen(true)}>+ Log Event</Button>
-        </div>
-        <EngagementEventsCrudTable events={events} />
-      </div>
+      <Paper sx={{ transition: "box-shadow 220ms ease, transform 220ms ease", "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" } }}>
+        <Stack spacing={1.5}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+            <Typography variant="h2">Engagement Events</Typography>
+            <Button onClick={() => setIsEventOpen(true)}>+ Log Event</Button>
+          </Box>
+          <EngagementEventsCrudTable events={events} />
+        </Stack>
+      </Paper>
 
       <Dialog
         open={isFollowupOpen}
@@ -93,6 +101,6 @@ export function ActivitySection({ applicationId, followups, events, nextFollowup
           <Button onClick={() => setIsEventOpen(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Stack>
   );
 }

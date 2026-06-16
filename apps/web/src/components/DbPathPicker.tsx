@@ -13,8 +13,10 @@ import {
   Divider,
   FormControlLabel,
   IconButton,
+  Stack,
   TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -167,16 +169,16 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
   const pendingFilename = pendingPath?.split("/").pop() ?? pendingPath;
 
   return (
-    <Box className="stack-md">
+    <Stack spacing={1.5}>
 
       {/* Active database */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, p: 1.2, border: "1px solid rgba(15,74,134,0.18)", borderRadius: "12px", background: "rgba(15,74,134,0.04)" }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ fontSize: "0.7rem", color: "var(--ink-soft)", mb: 0.3, textTransform: "uppercase", letterSpacing: "0.06em" }}>Active database</Box>
+          <Box sx={{ fontSize: "0.7rem", color: "text.secondary", mb: 0.3, textTransform: "uppercase", letterSpacing: "0.06em" }}>Active Database</Box>
           <Box sx={{ fontFamily: "monospace", fontSize: "0.875rem", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {currentFilename}
           </Box>
-          <Box sx={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--ink-soft)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", mt: 0.2 }}>
+          <Box sx={{ fontFamily: "monospace", fontSize: "0.72rem", color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", mt: 0.2 }}>
             {currentPath}
           </Box>
         </Box>
@@ -191,8 +193,8 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
               <ContentCopyIcon sx={{ fontSize: "1rem" }} />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Delete this database">
-            <IconButton size="small" onClick={() => { setDeleteChecked(false); setDeleteStatus("idle"); setDeleteError(""); setShowDeleteModal(true); }} sx={{ color: "var(--danger)" }}>
+          <Tooltip title="Delete">
+            <IconButton size="small" onClick={() => { setDeleteChecked(false); setDeleteStatus("idle"); setDeleteError(""); setShowDeleteModal(true); }} sx={{ color: "error.main" }}>
               <DeleteIcon sx={{ fontSize: "1rem" }} />
             </IconButton>
           </Tooltip>
@@ -200,30 +202,30 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
       </Box>
 
       {copyStatus === "done" && copyPath && (
-        <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>
-          Copy saved to <span style={{ fontFamily: "monospace" }}>{copyPath}</span>
-        </p>
+        <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>
+          Copy saved to <Box component="span" sx={{ fontFamily: "monospace" }}>{copyPath}</Box>
+        </Typography>
       )}
 
-      <Divider><Chip label="Switch database" size="small" /></Divider>
+      <Divider><Chip label="Switch Database" size="small" /></Divider>
 
       {/* Action buttons */}
       {mode === "idle" && (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button startIcon={<FolderOpenIcon />} onClick={openBrowse} disabled={busy} sx={{ flex: 1, border: "1px solid var(--line) !important", justifyContent: "center" }}>
-            Open existing
+          <Button startIcon={<FolderOpenIcon />} onClick={openBrowse} disabled={busy} sx={{ flex: 1, border: "1px solid rgba(19, 33, 48, 0.14) !important", justifyContent: "center" }}>
+            Open Existing
           </Button>
-          <Button startIcon={<AddIcon />} onClick={openNew} disabled={busy} sx={{ flex: 1, border: "1px solid var(--line) !important", justifyContent: "center" }}>
-            Create new
+          <Button startIcon={<AddIcon />} onClick={openNew} disabled={busy} sx={{ flex: 1, border: "1px solid rgba(19, 33, 48, 0.14) !important", justifyContent: "center" }}>
+            Create New
           </Button>
         </Box>
       )}
 
       {/* Browse panel */}
       {mode === "browse" && (
-        <Box sx={{ border: "1px solid var(--line)", borderRadius: "12px", overflow: "hidden" }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: 1.5, py: 1, borderBottom: "1px solid var(--line)", background: "rgba(15,74,134,0.04)" }}>
-            <Box sx={{ fontFamily: "monospace", fontSize: "0.75rem", color: "var(--ink-soft)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: "12px", overflow: "hidden" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: 1.5, py: 1, borderBottom: "1px solid", borderColor: "divider", background: "rgba(15,74,134,0.04)" }}>
+            <Box sx={{ fontFamily: "monospace", fontSize: "0.75rem", color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {browseResult?.dir ?? "Loading…"}
             </Box>
             <Button onClick={cancel} size="small">Cancel</Button>
@@ -254,7 +256,7 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
                         width: "100%", textAlign: "left", px: 1.5, py: 0.8,
                         border: "none", gap: 2,
                         background: isSelected ? "rgba(15,74,134,0.08)" : "none",
-                        color: isSelected ? "var(--brand-strong)" : "inherit",
+                        color: isSelected ? "primary.main" : "inherit",
                         cursor: selectable ? "pointer" : "default",
                         opacity: selectable ? 1 : 0.35,
                         "&:hover": selectable ? { background: "rgba(15,74,134,0.05)" } : {},
@@ -262,7 +264,7 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
                     >
                       <span>{f.isDir ? `${f.name}/` : f.name}</span>
                       {!f.isDir && f.size !== null && (
-                        <span style={{ color: "var(--ink-soft)", fontSize: "0.72rem" }}>{formatSize(f.size)}</span>
+                        <Box component="span" sx={{ color: "text.secondary", fontSize: "0.72rem" }}>{formatSize(f.size)}</Box>
                       )}
                     </Box>
                   );
@@ -275,10 +277,10 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
 
       {/* New database panel */}
       {mode === "new" && (
-        <Box sx={{ border: "1px solid var(--line)", borderRadius: "12px", p: 1.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <Box sx={{ fontSize: "0.85rem", fontWeight: 600 }}>Create new database</Box>
+        <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: "12px", p: 1.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Box sx={{ fontSize: "0.85rem", fontWeight: 600 }}>Create New Database</Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Box sx={{ fontFamily: "monospace", fontSize: "0.78rem", color: "var(--ink-soft)", whiteSpace: "nowrap" }}>{dataDir ?? "…"}/</Box>
+            <Box sx={{ fontFamily: "monospace", fontSize: "0.78rem", color: "text.secondary", whiteSpace: "nowrap" }}>{dataDir ?? "…"}/</Box>
             <TextField
               inputRef={newInputRef}
               size="small"
@@ -288,7 +290,7 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
               placeholder="my-database"
               sx={{ flex: 1, "& input": { fontFamily: "monospace", fontSize: "0.8rem" } }}
             />
-            <Box sx={{ fontFamily: "monospace", fontSize: "0.78rem", color: "var(--ink-soft)" }}>.sqlite</Box>
+            <Box sx={{ fontFamily: "monospace", fontSize: "0.78rem", color: "text.secondary" }}>.sqlite</Box>
           </Box>
           <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
             <Button onClick={cancel} size="small">Cancel</Button>
@@ -303,11 +305,11 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
       {pendingPath && pendingPath !== currentPath && mode === "idle" && (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.2, border: "1px solid rgba(15,74,134,0.25)", borderRadius: "12px", background: "rgba(15,74,134,0.04)" }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ fontSize: "0.7rem", color: "var(--ink-soft)", mb: 0.3, textTransform: "uppercase", letterSpacing: "0.06em" }}>Switch to</Box>
+            <Box sx={{ fontSize: "0.7rem", color: "text.secondary", mb: 0.3, textTransform: "uppercase", letterSpacing: "0.06em" }}>Switch to</Box>
             <Box sx={{ fontFamily: "monospace", fontSize: "0.875rem", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {pendingFilename}
             </Box>
-            <Box sx={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--ink-soft)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", mt: 0.2 }}>
+            <Box sx={{ fontFamily: "monospace", fontSize: "0.72rem", color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", mt: 0.2 }}>
               {pendingPath}
             </Box>
           </Box>
@@ -325,24 +327,24 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
         </Box>
       )}
 
-      {errorMsg && <p style={{ fontSize: "0.8rem", color: "var(--danger)", margin: 0 }}>{errorMsg}</p>}
-      {status === "restarting" && <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>Container is restarting — page will reload automatically.</p>}
+      {errorMsg && <Typography variant="body2" color="error" sx={{ fontSize: "0.8rem" }}>{errorMsg}</Typography>}
+      {status === "restarting" && <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>Container is restarting — page will reload automatically.</Typography>}
 
       {/* Delete dialog */}
       <Dialog open={showDeleteModal} onClose={() => { if (deleteStatus === "idle" || deleteStatus === "error") setShowDeleteModal(false); }} maxWidth="xs" fullWidth>
-        <DialogTitle>Delete database?</DialogTitle>
+        <DialogTitle>Delete Database?</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             <Box sx={{ fontFamily: "monospace", fontSize: "0.8rem", wordBreak: "break-all" }}>{currentPath}</Box>
-            <Box sx={{ p: 1.2, borderRadius: "8px", background: "rgba(185,28,28,0.07)", border: "1px solid rgba(185,28,28,0.2)", fontSize: "0.85rem", color: "var(--danger)" }}>
+            <Box sx={{ p: 1.2, borderRadius: "8px", background: "rgba(185,28,28,0.07)", border: "1px solid rgba(185,28,28,0.2)", fontSize: "0.85rem", color: "error.main" }}>
               ⚠ All data in this database will be permanently deleted and cannot be undone.
             </Box>
             <FormControlLabel
               control={<Checkbox checked={deleteChecked} onChange={(e) => setDeleteChecked(e.target.checked)} disabled={deleteStatus !== "idle" && deleteStatus !== "error"} size="small" />}
               label={<span style={{ fontSize: "0.875rem" }}>I understand <strong>{currentFilename}</strong> will be deleted forever</span>}
             />
-            {deleteError && <p style={{ fontSize: "0.8rem", color: "var(--danger)", margin: 0 }}>{deleteError}</p>}
-            {deleteStatus === "restarting" && <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>Container is restarting…</p>}
+            {deleteError && <Typography variant="body2" color="error" sx={{ fontSize: "0.8rem" }}>{deleteError}</Typography>}
+            {deleteStatus === "restarting" && <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>Container is restarting…</Typography>}
           </Box>
         </DialogContent>
         <DialogActions>
@@ -350,12 +352,12 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
           <Button
             onClick={() => void handleDelete()}
             disabled={!deleteChecked || deleteStatus === "deleting" || deleteStatus === "restarting"}
-            sx={{ color: "var(--danger) !important" }}
+            sx={{ color: "#b91c1c !important" }}
           >
-            {deleteStatus === "deleting" ? "Deleting…" : deleteStatus === "restarting" ? "Restarting…" : "Delete database"}
+            {deleteStatus === "deleting" ? "Deleting…" : deleteStatus === "restarting" ? "Restarting…" : "Delete Database"}
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Stack>
   );
 }

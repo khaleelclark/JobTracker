@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { InterviewCreateForm } from "@/components/forms/InterviewCreateForm";
@@ -30,16 +34,17 @@ export function InterviewsSection({ applications, interviews, defaultApplication
   }));
 
   return (
-    <div className="card table-shell stack-md">
-      <div className="section-head">
-        <h2 className="no-margin">Interview Log</h2>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+    <Paper sx={{ transition: "box-shadow 220ms ease, transform 220ms ease", "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" } }}>
+      <Stack spacing={1.5}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+        <Typography variant="h2">Interview Log</Typography>
+        <Box sx={{ display: "flex", gap: 0.5 }}>
           <Button onClick={() => setIsAddOpen(true)}>+ Add Interview</Button>
           {reflectionOptions.length > 0 && (
             <Button onClick={() => setIsReflectionOpen(true)}>+ Log Reflection</Button>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       <Dialog
         open={isAddOpen}
@@ -98,6 +103,7 @@ export function InterviewsSection({ applications, interviews, defaultApplication
       </Dialog>
 
       <InterviewsCrudTable interviews={interviews} applications={applications} />
-    </div>
+      </Stack>
+    </Paper>
   );
 }
