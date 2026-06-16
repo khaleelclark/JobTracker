@@ -1,6 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Box from "@mui/material/Box";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import Typography from "@mui/material/Typography";
 import { fmtLocalDate, fmtLocalDateTime } from "@/lib/format";
 
 interface TimelineEntry {
@@ -15,48 +20,47 @@ interface TimelineProps {
   entries: TimelineEntry[];
 }
 
-const labelStyle: React.CSSProperties = {
-  flex: 1,
-  minWidth: 0,
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-};
-
-const dateStyle: React.CSSProperties = {
-  whiteSpace: "nowrap",
-  flexShrink: 0,
-};
-
 export function Timeline({ entries }: TimelineProps) {
   if (entries.length === 0) {
-    return <p className="muted">No recent activity.</p>;
+    return <Typography variant="body2" color="text.secondary">No recent activity.</Typography>;
   }
 
   return (
-    <ul className="clean-list">
+    <List>
       {entries.map((entry) => {
         const dateStr = entry.dateOnly
           ? fmtLocalDate(entry.occurredAtIso)
           : fmtLocalDateTime(entry.occurredAtIso);
+
         const inner = (
           <>
-            <span style={labelStyle} title={entry.label}>{entry.label}</span>
-            <span className="muted" style={dateStyle}>{dateStr}</span>
+            <Typography noWrap sx={{ flex: 1, minWidth: 0, fontSize: "1.05rem" }} title={entry.label}>
+              {entry.label}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "nowrap", flexShrink: 0 }}>
+              {dateStr}
+            </Typography>
           </>
         );
+
         return (
-          <li key={entry.id} className={entry.applicationId ? "list-row list-row-link list-row-lg" : "list-row list-row-lg"} style={{ minWidth: 0, overflow: "hidden" }}>
+          <ListItem key={entry.id} disablePadding>
             {entry.applicationId ? (
-              <Link href={`/applications/${entry.applicationId}`} className="list-row-inner">
+              <ListItemButton
+                component={Link}
+                href={`/applications/${entry.applicationId}`}
+                sx={{ display: "flex", justifyContent: "space-between", gap: 1.5 }}
+              >
                 {inner}
-              </Link>
+              </ListItemButton>
             ) : (
-              <div className="list-row-inner">{inner}</div>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1.5, px: "0.6rem", py: "0.7rem", width: "100%" }}>
+                {inner}
+              </Box>
             )}
-          </li>
+          </ListItem>
         );
       })}
-    </ul>
+    </List>
   );
 }

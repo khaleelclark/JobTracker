@@ -12,7 +12,9 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridPaginationModel, GridRenderCellParams } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -155,7 +157,7 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
       align: "center",
       renderCell: (params: GridRenderCellParams<ResumeOption>) => {
         const count = params.row.linkedApplicationIds.length;
-        if (count === 0) return <span className="muted">—</span>;
+        if (count === 0) return <Typography variant="body2" color="text.secondary">—</Typography>;
         return <Chip label={count} size="small" />;
       },
     },
@@ -206,7 +208,7 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
   ];
 
   if (resumes.length === 0) {
-    return <p className="muted">No resumes uploaded yet.</p>;
+    return <Typography variant="body2" color="text.secondary">No resumes uploaded yet.</Typography>;
   }
 
   return (
@@ -236,15 +238,15 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         <DialogTitle>{previewResume?.name}</DialogTitle>
         <DialogContent>
           {previewResume ? (
-            <div className="stack-md">
+            <Stack spacing={2}>
               <iframe
                 title={`Preview ${previewResume.name}`}
                 src={`/api/resumes/${previewResume.id}/preview`}
                 className="resume-preview-frame"
               />
               <Divider />
-              <div className="stack-sm">
-                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem" }}>Linked Applications</p>
+              <Stack spacing={1}>
+                <Typography variant="subtitle2">Linked Applications</Typography>
                 <Autocomplete
                   multiple
                   options={applications}
@@ -255,9 +257,9 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
                   renderOption={(props, option) => <li {...props} key={option.id}>{option.companyName} - {option.roleTitle}</li>}
                   renderInput={(params) => <TextField {...params} placeholder="Search applications..." size="small" />}
                 />
-                {error ? <p className="error-text">{error}</p> : null}
-              </div>
-            </div>
+                {error && <Typography variant="body2" color="error">{error}</Typography>}
+              </Stack>
+            </Stack>
           ) : null}
         </DialogContent>
         <DialogActions>
@@ -285,15 +287,11 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         <DialogTitle>Edit Resume</DialogTitle>
         <DialogContent>
           {editingResume ? (
-            <form id="edit-resume-form" className="form-card" onSubmit={handleEditSubmit}>
-              <label>
-                Display Name
-                <input name="name" maxLength={200} required defaultValue={editingResume.name} />
-              </label>
-              <label>
-                File Path
-                <input name="filePath" maxLength={1000} required defaultValue={editingResume.filePath} />
-              </label>
+            <Stack id="edit-resume-form" component="form" spacing={2} onSubmit={handleEditSubmit} sx={{ pt: 0.5 }}>
+              <TextField label="Display Name" name="name" required size="small" fullWidth
+                defaultValue={editingResume.name} slotProps={{ htmlInput: { maxLength: 200 } }} />
+              <TextField label="File Path" name="filePath" required size="small" fullWidth
+                defaultValue={editingResume.filePath} slotProps={{ htmlInput: { maxLength: 1000 } }} />
               <Autocomplete
                 multiple
                 options={applications}
@@ -304,13 +302,11 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
                 renderOption={(props, option) => <li {...props} key={option.id}>{option.companyName} - {option.roleTitle}</li>}
                 renderInput={(params) => <TextField {...params} label="Link to Applications" size="small" />}
               />
-              <label>
-                Extracted Text (optional)
-                <textarea name="extractedText" rows={5} maxLength={50000} defaultValue={editingResume.extractedText ?? ""} />
-              </label>
-            </form>
+              <TextField multiline rows={5} label="Extracted Text (optional)" name="extractedText" size="small" fullWidth
+                defaultValue={editingResume.extractedText ?? ""} slotProps={{ htmlInput: { maxLength: 50000 } }} />
+            </Stack>
           ) : null}
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setEditingResume(null); setError(null); }} disabled={saving}>Cancel</Button>
@@ -330,7 +326,7 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         <DialogTitle>Delete Resume?</DialogTitle>
         <DialogContent>
           Delete <strong>{deleteResume?.name}</strong> and remove its application links?
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setDeleteResume(null); setError(null); }} disabled={deleting}>Cancel</Button>

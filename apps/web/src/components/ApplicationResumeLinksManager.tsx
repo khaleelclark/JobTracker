@@ -2,6 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Box from "@mui/material/Box";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import { Button, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
@@ -118,63 +125,57 @@ export function ApplicationResumeLinksManager({
   }
 
   return (
-    <div className="stack-md">
+    <Stack spacing={1.5}>
       {selectedResumes.length === 0 ? (
-        <p className="muted">No linked resumes.</p>
+        <Typography variant="body2" color="text.secondary">No linked resumes.</Typography>
       ) : (
-        <ul className="clean-list">
+        <List>
           {selectedResumes.map((resume) => (
-            <li key={resume.resumeId} className="list-row">
-              <span>{resume.name}</span>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                <IconButton
-                  size="small"
-                  title="Download"
-                  aria-label={`Download resume ${resume.name}`}
-                  component="a"
-                  href={`/api/resumes/${resume.resumeId}/download`}
-                >
-                  <DownloadIcon sx={{ fontSize: "1rem" }} />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  title="Unlink"
-                  onClick={() => removeLink(resume.resumeId)}
-                  aria-label={`Unlink resume ${resume.name}`}
-                >
-                  <DeleteIcon sx={{ fontSize: "1rem" }} />
-                </IconButton>
-              </div>
-            </li>
+            <ListItem
+              key={resume.resumeId}
+              disablePadding
+              secondaryAction={
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+                  <IconButton size="small" title="Download" aria-label={`Download resume ${resume.name}`} component="a" href={`/api/resumes/${resume.resumeId}/download`}>
+                    <DownloadIcon sx={{ fontSize: "1rem" }} />
+                  </IconButton>
+                  <IconButton size="small" title="Unlink" onClick={() => removeLink(resume.resumeId)} aria-label={`Unlink resume ${resume.name}`}>
+                    <DeleteIcon sx={{ fontSize: "1rem" }} />
+                  </IconButton>
+                </Box>
+              }
+              sx={{ pr: "88px" }}
+            >
+              <Typography sx={{ px: "0.6rem", py: "0.7rem" }}>{resume.name}</Typography>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-        <select
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <TextField
+          select
+          label="Add resume"
+          size="small"
           value={pendingResumeId}
-          onChange={(event) => setPendingResumeId(event.target.value)}
-          style={{ minWidth: "260px" }}
+          onChange={(e) => setPendingResumeId(e.target.value)}
+          sx={{ minWidth: 260 }}
         >
-          <option value="">Select resume to link</option>
+          <MenuItem value="" disabled>Select resume to link</MenuItem>
           {availableResumes.map((resume) => (
-            <option key={resume.id} value={resume.id}>
-              {resume.name}
-            </option>
+            <MenuItem key={resume.id} value={resume.id}>{resume.name}</MenuItem>
           ))}
-        </select>
-        <Button onClick={addLink} disabled={!pendingResumeId}>
-          Add Link
-        </Button>
-      </div>
+        </TextField>
+        <Button onClick={addLink} disabled={!pendingResumeId}>Add Link</Button>
+      </Box>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Button onClick={() => void saveLinks()} disabled={saving} endIcon={<SaveIcon sx={{ fontSize: "1rem" }} />}>
           {saving ? "Saving..." : "Save Resume Links"}
         </Button>
-        {success ? <span className="success-text">{success}</span> : null}
-        {error ? <span className="error-text">{error}</span> : null}
-      </div>
-    </div>
+        {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+        {error && <Typography variant="body2" color="error">{error}</Typography>}
+      </Box>
+    </Stack>
   );
 }

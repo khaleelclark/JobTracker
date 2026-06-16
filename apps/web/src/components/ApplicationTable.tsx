@@ -10,6 +10,9 @@ import {
   GridRenderCellParams,
   GridRowId,
 } from "@mui/x-data-grid";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import {
   Box,
   Button,
@@ -20,6 +23,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
+import { STATUS_SX } from "@/components/ApplicationStatusPill";
 import { toTitleCaseLabel } from "@/lib/format";
 
 interface ApplicationRow {
@@ -127,26 +131,14 @@ export function ApplicationTable({
         align: "center",
         renderCell: (params: GridRenderCellParams<ApplicationRow>) => {
           const application = params.row;
+          const colors = STATUS_SX[application.genericStatus] ?? { bgcolor: "rgba(19,33,48,0.1)", color: "#132130" };
           return (
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <span
-                className={`pill status-${application.genericStatus}`}
-                style={{
-                  lineHeight: 1.2,
-                  alignItems: "center",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {toTitleCaseLabel(application.genericStatus)}
-              </span>
+            <Box sx={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <Chip
+                label={toTitleCaseLabel(application.genericStatus)}
+                size="small"
+                sx={{ ...colors, border: "none", fontSize: "0.75rem", fontWeight: 500, height: "auto", py: "0.23rem" }}
+              />
             </Box>
           );
         },
@@ -247,8 +239,8 @@ export function ApplicationTable({
   }
 
   const header = (
-    <div className="section-head">
-      <h2 className="no-margin">{title}</h2>
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+      <Typography variant="h2">{title}</Typography>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         {hiddenCount > 0 && (
           <Button size="small" variant="text" onClick={() => setShowArchived((v) => !v)}>
@@ -260,25 +252,27 @@ export function ApplicationTable({
           autocompleteOptions={autocompleteOptions}
         />
       </Box>
-    </div>
+    </Box>
   );
 
   if (visibleApplications.length === 0) {
     return (
-      <div className="stack-md">
+      <Stack spacing={1.5}>
         {header}
-        <p className="muted">{showArchived ? "No applications logged yet." : "No active applications. Use \"Show Archived & Rejected\" to see hidden records."}</p>
+        <Typography variant="body2" color="text.secondary">
+          {showArchived ? "No applications logged yet." : "No active applications. Use \"Show Archived & Rejected\" to see hidden records."}
+        </Typography>
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button onClick={handleExportCsv} disabled>
             Export Applications
           </Button>
         </Box>
-      </div>
+      </Stack>
     );
   }
 
   return (
-    <div className="stack-md">
+    <Stack spacing={1.5}>
       {header}
       <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden", border: "1px solid rgba(15, 74, 134, 0.22)", borderRadius: "8px" }}>
         <DataGrid
@@ -328,6 +322,6 @@ export function ApplicationTable({
       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
         <Button onClick={handleExportCsv}>Export Applications</Button>
       </Box>
-    </div>
+    </Stack>
   );
 }

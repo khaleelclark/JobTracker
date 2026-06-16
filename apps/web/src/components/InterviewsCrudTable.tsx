@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataGrid, GridColDef, GridPaginationModel, GridRenderCellParams, GridRowId } from "@mui/x-data-grid";
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Stack, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
@@ -126,7 +126,7 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
   }
 
   if (interviews.length === 0) {
-    return <p className="muted">No interviews logged.</p>;
+    return <Typography variant="body2" color="text.secondary">No interviews logged.</Typography>;
   }
 
   const columns: GridColDef<InterviewRow>[] = [
@@ -206,8 +206,8 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
 
   return (
     <>
-      {success ? <p className="success-text">{success}</p> : null}
-      {error && !editingInterview && !deleteInterview ? <p className="error-text">{error}</p> : null}
+      {success && <Typography variant="body2" color="success.main">{success}</Typography>}
+      {error && !editingInterview && !deleteInterview && <Typography variant="body2" color="error">{error}</Typography>}
 
       <Box sx={{ width: "100%", overflowX: "hidden", border: "1px solid rgba(15, 74, 134, 0.22)", borderRadius: "8px" }}>
         <DataGrid
@@ -282,34 +282,26 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
         </DialogTitle>
         <DialogContent>
           {editingInterview ? (
-            <form id="edit-interview-form" className="form-card" onSubmit={handleEditSubmit}>
-              <label>
-                Round Index
-                <input name="roundIndex" type="number" min={1} max={20} required defaultValue={editingInterview.roundIndex} />
-              </label>
-              <label>
-                Round Label
-                <input name="roundLabel" maxLength={100} required defaultValue={editingInterview.roundLabel} />
-              </label>
-              <label>
-                Scheduled At
-                <input name="scheduledAt" type="datetime-local" required defaultValue={toDateTimeLocalValue(editingInterview.scheduledAtIso)} />
-              </label>
-              <label>
-                Status
-                <select name="status" defaultValue={editingInterview.status}>
+            <Stack id="edit-interview-form" component="form" spacing={2} onSubmit={handleEditSubmit} sx={{ pt: 0.5 }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 1.5 }}>
+                <TextField label="Round Index" name="roundIndex" type="number" required size="small" fullWidth
+                  defaultValue={editingInterview.roundIndex} slotProps={{ htmlInput: { min: 1, max: 20 } }} />
+                <TextField label="Round Label" name="roundLabel" required size="small" fullWidth
+                  defaultValue={editingInterview.roundLabel} slotProps={{ htmlInput: { maxLength: 100 } }} />
+                <TextField label="Scheduled At" name="scheduledAt" type="datetime-local" required size="small" fullWidth
+                  defaultValue={toDateTimeLocalValue(editingInterview.scheduledAtIso)} />
+                <TextField select label="Status" name="status" size="small" fullWidth defaultValue={editingInterview.status}>
                   {STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>{toTitleCaseLabel(s)}</option>
+                    <MenuItem key={s} value={s}>{toTitleCaseLabel(s)}</MenuItem>
                   ))}
-                </select>
-              </label>
-              <label>
-                Notes
-                <textarea name="notes" rows={3} maxLength={4000} defaultValue={editingInterview.notes ?? ""} placeholder="Meeting link, interviewer name, prep notes…" />
-              </label>
-            </form>
+                </TextField>
+              </Box>
+              <TextField multiline rows={3} label="Notes" name="notes" size="small" fullWidth
+                defaultValue={editingInterview.notes ?? ""} placeholder="Meeting link, interviewer name, prep notes…"
+                slotProps={{ htmlInput: { maxLength: 4000 } }} />
+            </Stack>
           ) : null}
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setEditingInterview(null); setError(null); }} disabled={saving}>Cancel</Button>
@@ -329,7 +321,7 @@ export function InterviewsCrudTable({ interviews, applications }: InterviewsCrud
         <DialogTitle>Delete Interview?</DialogTitle>
         <DialogContent>
           Delete <strong>{deleteInterview?.roundLabel}</strong>?
-          {error ? <p className="error-text">{error}</p> : null}
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setDeleteInterview(null); setError(null); }} disabled={deleting}>Cancel</Button>

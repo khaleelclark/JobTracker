@@ -13,8 +13,10 @@ import {
   Divider,
   FormControlLabel,
   IconButton,
+  Stack,
   TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -167,7 +169,7 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
   const pendingFilename = pendingPath?.split("/").pop() ?? pendingPath;
 
   return (
-    <Box className="stack-md">
+    <Stack spacing={1.5}>
 
       {/* Active database */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, p: 1.2, border: "1px solid rgba(15,74,134,0.18)", borderRadius: "12px", background: "rgba(15,74,134,0.04)" }}>
@@ -200,9 +202,9 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
       </Box>
 
       {copyStatus === "done" && copyPath && (
-        <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>
-          Copy saved to <span style={{ fontFamily: "monospace" }}>{copyPath}</span>
-        </p>
+        <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>
+          Copy saved to <Box component="span" sx={{ fontFamily: "monospace" }}>{copyPath}</Box>
+        </Typography>
       )}
 
       <Divider><Chip label="Switch database" size="small" /></Divider>
@@ -325,8 +327,8 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
         </Box>
       )}
 
-      {errorMsg && <p style={{ fontSize: "0.8rem", color: "var(--danger)", margin: 0 }}>{errorMsg}</p>}
-      {status === "restarting" && <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>Container is restarting — page will reload automatically.</p>}
+      {errorMsg && <Typography variant="body2" color="error" sx={{ fontSize: "0.8rem" }}>{errorMsg}</Typography>}
+      {status === "restarting" && <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>Container is restarting — page will reload automatically.</Typography>}
 
       {/* Delete dialog */}
       <Dialog open={showDeleteModal} onClose={() => { if (deleteStatus === "idle" || deleteStatus === "error") setShowDeleteModal(false); }} maxWidth="xs" fullWidth>
@@ -341,8 +343,8 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
               control={<Checkbox checked={deleteChecked} onChange={(e) => setDeleteChecked(e.target.checked)} disabled={deleteStatus !== "idle" && deleteStatus !== "error"} size="small" />}
               label={<span style={{ fontSize: "0.875rem" }}>I understand <strong>{currentFilename}</strong> will be deleted forever</span>}
             />
-            {deleteError && <p style={{ fontSize: "0.8rem", color: "var(--danger)", margin: 0 }}>{deleteError}</p>}
-            {deleteStatus === "restarting" && <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>Container is restarting…</p>}
+            {deleteError && <Typography variant="body2" color="error" sx={{ fontSize: "0.8rem" }}>{deleteError}</Typography>}
+            {deleteStatus === "restarting" && <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>Container is restarting…</Typography>}
           </Box>
         </DialogContent>
         <DialogActions>
@@ -356,6 +358,6 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Stack>
   );
 }

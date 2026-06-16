@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { EmailLogCreateForm } from "@/components/forms/EmailLogCreateForm";
@@ -39,11 +43,12 @@ export function ApplicationCommunicationSection({
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   return (
-    <div className="card table-shell stack-md">
-      <div className="section-head">
-        <h2 className="no-margin">Recent Communication</h2>
+    <Paper sx={{ transition: "box-shadow 220ms ease, transform 220ms ease", "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" } }}>
+      <Stack spacing={1.5}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+        <Typography variant="h2">Recent Communication</Typography>
         <Button onClick={() => setIsFormOpen((current) => !current)}>+ Add Communication</Button>
-      </div>
+      </Box>
 
       {isFormOpen ? (
         <Dialog
@@ -84,6 +89,7 @@ export function ApplicationCommunicationSection({
       ) : null}
 
       <EmailLogsCrudTable applications={applications} emails={communicationLogs} />
-    </div>
+      </Stack>
+    </Paper>
   );
 }
