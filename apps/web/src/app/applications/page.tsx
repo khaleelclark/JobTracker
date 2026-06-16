@@ -78,8 +78,6 @@ export default async function ApplicationsPage({
     compensations: uniqueValues(applications.map(a => a.compensation)),
   };
 
-  const totalCols = Object.keys(summary).length + 1;
-
   return (
     <Stack spacing={3}>
       <Box>
@@ -90,7 +88,13 @@ export default async function ApplicationsPage({
       </Box>
 
       {/* Metric cards */}
-      <Box sx={{ display: "grid", gap: 1, gridTemplateColumns: `repeat(${totalCols}, 1fr)` }}>
+      <Box
+        sx={{
+          display: "grid",
+          gap: 1,
+          gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))",
+        }}
+      >
         <Card
           component={Link}
           href="/applications"
@@ -100,6 +104,10 @@ export default async function ApplicationsPage({
             border: "1px solid rgba(15, 74, 134, 0.18)",
             background: "rgba(255, 255, 255, 0.82)",
             cursor: "pointer",
+            aspectRatio: "3 / 2",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
             transition: "transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease",
             "&:hover": { transform: "translateY(-3px) scale(1.03)", boxShadow: 7, borderColor: "rgba(15, 74, 134, 0.35)" },
           }}
@@ -120,6 +128,10 @@ export default async function ApplicationsPage({
               border: "1px solid rgba(15, 74, 134, 0.18)",
               background: "rgba(255, 255, 255, 0.82)",
               cursor: "pointer",
+              aspectRatio: "3 / 2",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
               transition: "transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease",
               "&:hover": { transform: "translateY(-3px) scale(1.03)", boxShadow: 7, borderColor: "rgba(15, 74, 134, 0.35)" },
             }}

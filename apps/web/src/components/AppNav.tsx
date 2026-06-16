@@ -63,9 +63,9 @@ export function AppNav({ dbLabel: _dbLabel }: { dbLabel: string | null }) {
             component="nav"
             aria-label="Main"
             sx={{
-              display: { xs: "none", sm: "flex" },
+              display: { xs: "none", md: "flex" },
               gap: 0.5,
-              flexWrap: "wrap",
+              flexWrap: "nowrap",
             }}
           >
             {LINKS.map(link => {
@@ -109,7 +109,7 @@ export function AppNav({ dbLabel: _dbLabel }: { dbLabel: string | null }) {
           <IconButton
             aria-label={drawerOpen ? "Close menu" : "Open menu"}
             onClick={() => setDrawerOpen(v => !v)}
-            sx={{ display: { xs: "flex", sm: "none" }, ml: "auto" }}
+            sx={{ display: { xs: "flex", md: "none" }, ml: "auto" }}
           >
             {drawerOpen ? <CloseIcon /> : <MenuIcon />}
           </IconButton>
@@ -122,7 +122,7 @@ export function AppNav({ dbLabel: _dbLabel }: { dbLabel: string | null }) {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         sx={{
-          display: { xs: "block", sm: "none" },
+          display: { xs: "block", md: "none" },
           "& .MuiDrawer-paper": {
             top: "56px",
             background: "rgba(248, 252, 255, 0.97)",

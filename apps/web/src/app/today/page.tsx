@@ -30,7 +30,7 @@ function addDays(date: Date, days: number) {
 }
 
 function pluralize(count: number, singular: string, plural = `${singular}s`) {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return toTitleCaseLabel(count === 1 ? singular : plural);
 }
 
 const CARD_HOVER_SX = {
