@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import {
   Autocomplete,
+  Box,
   Button,
   Chip,
   Dialog,
@@ -239,10 +240,18 @@ export function ResumeLibrary({ resumes, applications }: ResumeLibraryProps) {
         <DialogContent>
           {previewResume ? (
             <Stack spacing={2}>
-              <iframe
+              <Box
+                component="iframe"
                 title={`Preview ${previewResume.name}`}
                 src={`/api/resumes/${previewResume.id}/preview`}
-                className="resume-preview-frame"
+                sx={{
+                  width: "100%",
+                  height: "min(68vh, 760px)",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: "10px",
+                  background: "#ffffff",
+                }}
               />
               <Divider />
               <Stack spacing={1}>

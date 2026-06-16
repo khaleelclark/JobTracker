@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Sora, IBM_Plex_Sans } from "next/font/google";
-import "./globals.css";
 import path from "node:path";
 import { AppNav } from "@/components/AppNav";
 import { MuiProvider } from "@/components/MuiProvider";
@@ -38,7 +37,20 @@ export default function RootLayout({
       <body>
         <AppRouterCacheProvider>
           <MuiProvider>
-            <div className="bg-layer" aria-hidden />
+            <Box
+              aria-hidden
+              sx={{
+                position: "fixed",
+                inset: 0,
+                pointerEvents: "none",
+                backgroundImage: "linear-gradient(to right, rgba(15, 118, 110, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 118, 110, 0.03) 1px, transparent 1px)",
+                backgroundSize: "42px 42px",
+                opacity: 0.65,
+                zIndex: -1,
+                animation: "gridDrift 30s linear infinite",
+                "@media (prefers-reduced-motion: reduce)": { animation: "none" },
+              }}
+            />
             <AppNav dbLabel={dbLabel} />
             <Box
               component="main"

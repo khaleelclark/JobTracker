@@ -39,7 +39,7 @@ export default function NumberSpinner({
               px: 0,
               bgcolor: "rgba(15, 74, 134, 0.08)",
               "&:not(.Mui-disabled)": {
-                color: "var(--brand-strong)",
+                color: "primary.main",
               },
               "&:hover": {
                 bgcolor: "rgba(15, 74, 134, 0.16)",

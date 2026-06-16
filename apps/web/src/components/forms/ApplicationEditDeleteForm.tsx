@@ -185,7 +185,7 @@ export function ApplicationEditDeleteForm({ application, resumes, autocompleteOp
           <TextField label="Careers Page (optional)" name="careersPageUrl" size="small" fullWidth
             defaultValue={application.careersPageUrl ?? ""}
             slotProps={{ htmlInput: { maxLength: 1000, list: "edit-ac-careers-page" } }} />
-          <TextField select label="Status" name="genericStatus" defaultValue={application.genericStatus} size="small" fullWidth>
+          <TextField key={application.genericStatus} select label="Status" name="genericStatus" defaultValue={application.genericStatus} size="small" fullWidth>
             {STATUS_OPTIONS.map(s => <MenuItem key={s} value={s}>{toTitleCaseLabel(s)}</MenuItem>)}
           </TextField>
           <TextField label="Applied Date" name="appliedAt" type="date" size="small" fullWidth

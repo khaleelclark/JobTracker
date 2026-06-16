@@ -92,7 +92,7 @@ export default async function ApplicationsPage({
         sx={{
           display: "grid",
           gap: 1,
-          gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
         }}
       >
         <Card
@@ -104,7 +104,7 @@ export default async function ApplicationsPage({
             border: "1px solid rgba(15, 74, 134, 0.18)",
             background: "rgba(255, 255, 255, 0.82)",
             cursor: "pointer",
-            aspectRatio: "3 / 2",
+            minHeight: 96,
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -128,7 +128,7 @@ export default async function ApplicationsPage({
               border: "1px solid rgba(15, 74, 134, 0.18)",
               background: "rgba(255, 255, 255, 0.82)",
               cursor: "pointer",
-              aspectRatio: "3 / 2",
+              minHeight: 96,
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",

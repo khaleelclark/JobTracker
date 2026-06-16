@@ -134,6 +134,12 @@ export function MuiProvider({ children }: PropsWithChildren) {
             styleOverrides: {
               "*, *::before, *::after": { boxSizing: "border-box" },
               "html, body": { margin: 0, minHeight: "100%" },
+              body: {
+                fontFamily: FONT_BODY,
+                color: "#132130",
+                background: "radial-gradient(circle at 5% -10%, #e9d5ff 0%, transparent 34%), radial-gradient(circle at 95% 5%, #b0cfc0 0%, transparent 34%), linear-gradient(165deg, #f8fafc 0%, #ebf6ff 48%, #f8fbff 100%)",
+                position: "relative",
+              },
               a: { color: "inherit" },
               p: { margin: 0 },
             },
@@ -218,6 +224,14 @@ export function MuiProvider({ children }: PropsWithChildren) {
                 padding: "1rem",
                 background: "rgba(255, 255, 255, 0.9)",
                 overflow: "hidden",
+              },
+            },
+          },
+
+          MuiPopover: {
+            styleOverrides: {
+              paper: {
+                background: "#ffffff",
               },
             },
           },
@@ -405,9 +419,6 @@ export function MuiProvider({ children }: PropsWithChildren) {
           "@keyframes gridDrift": {
             from: { backgroundPosition: "0 0" },
             to: { backgroundPosition: "42px 42px" },
-          },
-          "@media (prefers-reduced-motion: reduce)": {
-            ".page-shell, .bg-layer": { animation: "none", transition: "none" },
           },
         }}
       />
