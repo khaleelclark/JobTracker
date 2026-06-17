@@ -4,16 +4,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { prisma } from "@/lib/db";
 import { ApplicationCommunicationSection } from "@/components/ApplicationCommunicationSection";
 import { ApplicationEditDeleteForm } from "@/components/forms/ApplicationEditDeleteForm";
 import { ActivitySection } from "@/components/ActivitySection";
 import { InterviewsSection } from "@/components/InterviewsSection";
-import { ApplicationResumeLinksManager } from "@/components/ApplicationResumeLinksManager";
+import { ApplicationResumesSection } from "@/components/ApplicationResumesSection";
 import { ApplicationDetailTabs } from "@/components/ApplicationDetailTabs";
 import { ApplicationHeader } from "@/components/ApplicationHeader";
 
@@ -164,21 +162,13 @@ export default async function ApplicationDetailPage({ params }: ApplicationDetai
           />
         }
         resumes={
-          <Paper
-            sx={{
-              transition: "box-shadow 220ms ease, transform 220ms ease",
-              "&:hover": { boxShadow: "0 24px 56px rgba(13, 34, 66, 0.15)", transform: "translateY(-2px)" },
-            }}
-          >
-            <Stack spacing={1.5}>
-              <Typography variant="h2">Resumes</Typography>
-              <ApplicationResumeLinksManager
-                applicationId={application.id}
-                linkedResumes={application.resumes.map(entry => ({ resumeId: entry.resumeId, name: entry.resume.name }))}
-                allResumes={resumes}
-              />
-            </Stack>
-          </Paper>
+          <ApplicationResumesSection
+            applicationId={application.id}
+            companyName={application.companyName}
+            roleTitle={application.roleTitle}
+            linkedResumes={application.resumes.map(entry => ({ resumeId: entry.resumeId, name: entry.resume.name }))}
+            allResumes={resumes}
+          />
         }
       />
     </Stack>

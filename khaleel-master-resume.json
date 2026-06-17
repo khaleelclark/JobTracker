@@ -195,9 +195,9 @@
             "Triaged and resolved 50+ daily investor inquiries within SLA targets, escalating complex issues to product and engineering teams.",
             "Conducted direct 1-on-1 investor sessions via phone and Zoom, providing personalized support on account setup, troubleshooting, and platform navigation for high-net-worth, accredited-only clientele.",
             "Concurrently managed 25+ active complex investor workflows including ownership transfers and CRE transaction support while maintaining continuous queue coverage across the broader investor base.",
-            "Translated user pain points into prioritized, actionable product feedback, bridging investor experience and platform reliability across product, engineering, and content teams.",
-            "Led a 3-person cross-functional initiative over 2 months using agile sprint cycles to identify and resolve systemic platform friction points, presenting findings and status updates during twice-weekly standups and contributing as a regular speaker during weekly office hours.",
-            "Drove multi-team product improvements through structured issue analysis: findings directly resulted in a UI change from the product team, ticket routing updates from the ops team, and help center revisions from the content team, reducing inbound ticket volume."
+            "Translated user issues into structured feedback that improved platform reliability and workflow design.",
+            "Led a cross-functional initiative to identify and resolve platform friction points using iterative analysis and sprint cycles.",
+            "Identified system issues that led to UI, routing, and help center improvements across teams."
           ]
         },
         {
@@ -254,8 +254,8 @@
           "end_date": "Present",
           "bullets": [
             "Eliminated a fully manual workflow, saving the guild 120+ hours of administrative labor annually through end-to-end automation.",
-            "Gathered and translated business requirements into structured system workflows across dashboards, user management, and administrative tooling.",
-            "Designed and implemented responsive React interfaces: dashboards, leaderboards, profiles, and admin tooling, built from reusable components with React hooks managing shared application state.",
+            "Defined system workflows for dashboards, user management, and admin tooling based on active user feedback.",
+            "Built React dashboards, leaderboards, profiles, and admin tooling using reusable components and shared state management.",
             "Implemented role-based access and authentication workflows to ensure secure and controlled system usage.",
             "Managed development iteratively, prioritizing features based on active user feedback and community needs.",
             "Architected and launched an open-source guild management platform with 52 active users and growing, currently being adopted by external guilds, demonstrating real-world product viability and community traction beyond the original use case.",
@@ -284,13 +284,14 @@
           "start_date": "Mar 2026",
           "end_date": "Present",
           "bullets": [
-            "Designed a structured Prisma schema tracking the full job-search lifecycle: applications, interviews, follow-ups, emails, events, and reflections as a local-first SQLite database with no external data exposure.",
+            "Built a Prisma schema modeling the full job-search lifecycle (applications, interviews, follow-ups, emails, events, reflections) in a local-first SQLite system",
             "Built a master skills inventory system with canonical skill tracking and resume-skill linking, enabling structured comparison between tailored resumes and a single source-of-truth skills record.",
             "Structured the codebase as a pnpm workspaces monorepo with three packages: web app, MCP server, and shared types, enforcing clean separation between UI, API, and validation layers.",
-            "Defined shared Zod schemas in a dedicated package consumed across both the web app and MCP server, ensuring type-safe validation at every system boundary without duplication.",
-            "Exposed read-only MCP tool endpoints covering: applications, interviews, reflections, email logs, follow-ups, resumes, and skills with bearer token protection and SSE transport as a structured API surface for AI agent consumption.",
-            "Implemented MCP-integrated resume generation tools allowing GPT to retrieve a master resume JSON, apply role-specific tailoring, and render a formatted PDF via headless Chromium, fully automating a previously manual process.",
-            "Implemented automated SQLite backup with scheduled pruning of backups older than 30 days, ensuring data durability without manual maintenance overhead."
+            "Created shared Zod schemas used across web and MCP server for consistent type-safe validation.",
+            "Built read-only MCP endpoints for applications, interviews, resumes, and related data with authenticated access.",
+            "automatically generates tailored resumes and exports PDFs via headless Chromium",
+            "Implemented automated SQLite backup with scheduled pruning of backups older than 30 days, ensuring data durability without manual maintenance overhead.",
+            "Wrote full deployment and operational documentation covering runtime, scheduling, and troubleshooting."
           ]
         },
         {
@@ -300,14 +301,14 @@
           "start_date": "Feb 2026",
           "end_date": "Present",
           "bullets": [
-            "Designed KPI logic to analyze operational disruption patterns and performance trends.",
+            "Defined KPI logic to measure operational disruption patterns and performance trends.",
             "Integrated three independent live data sources: FAA (airspace restrictions), ADSB.lol (real-time traffic snapshots), and AirLabs (airline delays, cancellations, and diversions) into a unified SQLite data model for cross-source analysis.",
             "Wrote an automated test suite using pytest covering data parsing and scoring logic, enabling safe iteration on collection and analysis code without manual validation.",
             "Deployed a cron-based automated collection pipeline running every 10 minutes, using flock to prevent overlapping runs and shell script wrappers to ensure consistent execution in production.",
             "Framed the project around a testable analytical question (whether MCO underperforms DEN when normalized for traffic volume) and built the dashboard KPIs and visualizations to directly answer it.",
             "Implemented custom API throttling logic with persistent state tracking to respect rate limits across collection windows, preventing quota exhaustion without sacrificing data freshness.",
-            "Designed and deployed the full application on a self-hosted Linux environment, configuring process management, scheduled collection, and a reverse-proxy-ready server architecture for production reliability.",
-            "Authored comprehensive technical documentation covering the full deployment lifecycle - runtime model, environment configuration, database initialization, cron setup, and a structured operational troubleshooting guide."
+            "Deployed the application on a self-hosted Linux environment with scheduled pipelines and reverse-proxy-ready architecture.",
+            "Wrote full deployment and operational documentation covering runtime, scheduling, and troubleshooting."
           ]
         },
         {
@@ -318,7 +319,7 @@
           "end_date": "Present",
           "bullets": [
             "Self-hosted on Raspberry Pi, configured port-forwarding, DNS records, SSL certificates, and firewall rules to securely expose the site to the internet",
-            "Designed and developed a responsive portfolio with an emphasis on visual hierarchy, layout consistency, and user experience.",
+            "Built a responsive portfolio using React and TypeScript with reusable components and maintainable structure.",
             "Created reusable UI components and flexible page layouts to enable efficient iteration and future content updates.",
             "Monitored and analyzed incoming traffic to identify access patterns and potential security issues"
           ]

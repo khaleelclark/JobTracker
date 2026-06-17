@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import {
   Autocomplete,
   Box,
@@ -16,7 +16,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
+import { ResumeCreateForm } from "@/components/forms/ResumeCreateForm";
 import { toTitleCaseLabel, todayDateInputValue } from "@/lib/format";
 
 const STATUS_OPTIONS = [
@@ -57,6 +59,13 @@ export function ApplicationCreateForm({ resumes, autocompleteOptions }: Applicat
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedResumes, setSelectedResumes] = useState<ResumeOption[]>([]);
+  const [isAddResumeOpen, setIsAddResumeOpen] = useState(false);
+  const [newlyCreatedResumes, setNewlyCreatedResumes] = useState<ResumeOption[]>([]);
+
+  const resumeOptions = useMemo(() => {
+    const existingIds = new Set(resumes.map(r => r.id));
+    return [...resumes, ...newlyCreatedResumes.filter(r => !existingIds.has(r.id))];
+  }, [resumes, newlyCreatedResumes]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -170,16 +179,22 @@ export function ApplicationCreateForm({ resumes, autocompleteOptions }: Applicat
               placeholder="Paste role posting details (requirements, responsibilities, compensation…)"
               slotProps={{ htmlInput: { maxLength: 50000 } }} />
 
-            <Autocomplete
-              multiple
-              options={resumes}
-              getOptionLabel={o => o.name}
-              value={selectedResumes}
-              onChange={(_, val) => setSelectedResumes(val)}
-              isOptionEqualToValue={(o, v) => o.id === v.id}
-              renderOption={(props, option) => <li {...props} key={option.id}>{option.name}</li>}
-              renderInput={params => <TextField {...params} label="Linked Resumes" size="small" />}
-            />
+            <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+              <Autocomplete
+                multiple
+                fullWidth
+                options={resumeOptions}
+                getOptionLabel={o => o.name}
+                value={selectedResumes}
+                onChange={(_, val) => setSelectedResumes(val)}
+                isOptionEqualToValue={(o, v) => o.id === v.id}
+                renderOption={(props, option) => <li {...props} key={option.id}>{option.name}</li>}
+                renderInput={params => <TextField {...params} label="Linked Resumes" size="small" />}
+              />
+              <Button onClick={() => setIsAddResumeOpen(true)} sx={{ flexShrink: 0, mt: 0.25 }}>
+                + Add Resume
+              </Button>
+            </Box>
             {selectedResumes.map(r => (
               <input key={r.id} type="hidden" name="linkedResumeIds" value={r.id} />
             ))}
@@ -205,6 +220,34 @@ export function ApplicationCreateForm({ resumes, autocompleteOptions }: Applicat
 
         <DialogActions>
           <Button onClick={handleClose} disabled={submitting}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={isAddResumeOpen}
+        onClose={(_event, reason) => { if (reason === "backdropClick") return; setIsAddResumeOpen(false); }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
+          Add Resume
+          <IconButton size="small" aria-label="Close" onClick={() => setIsAddResumeOpen(false)}>
+            <CloseIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <ResumeCreateForm
+            applications={[]}
+            hideHeader
+            onSaved={resume => {
+              setNewlyCreatedResumes(current => [...current, resume]);
+              setSelectedResumes(current => [...current, resume]);
+              setIsAddResumeOpen(false);
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsAddResumeOpen(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
     </>
