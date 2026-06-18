@@ -15,6 +15,7 @@ interface ApplicationStatusUpdatedDetail {
 }
 
 const STATUS_SX: Record<string, { bgcolor: string; color: string }> = {
+  in_process:   { bgcolor: "rgba(124, 58, 237, 0.14)", color: "#6d28d9" },
   applied:      { bgcolor: "rgba(15, 118, 110, 0.14)", color: "#0f766e" },
   under_review: { bgcolor: "rgba(217, 119, 6, 0.16)",  color: "#92400e" },
   interviewing: { bgcolor: "rgba(14, 116, 144, 0.14)", color: "#0e7490" },

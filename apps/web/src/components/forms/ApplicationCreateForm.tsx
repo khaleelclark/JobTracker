@@ -22,7 +22,7 @@ import { ResumeCreateForm } from "@/components/forms/ResumeCreateForm";
 import { toTitleCaseLabel, todayDateInputValue } from "@/lib/format";
 
 const STATUS_OPTIONS = [
-  "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived",
+  "in_process", "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived",
 ] as const;
 
 interface ResumeOption { id: string; name: string; }

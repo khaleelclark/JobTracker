@@ -65,9 +65,14 @@ export function ApplicationTable({
   const [showArchived, setShowArchived] = useState(initialStatusFilter === "archived" || initialStatusFilter === "rejected");
 
   const hiddenCount = applications.filter((a) => a.genericStatus === "archived" || a.genericStatus === "rejected").length;
-  const visibleApplications = showArchived
+  const visibleApplications = (showArchived
     ? applications
-    : applications.filter((a) => a.genericStatus !== "archived" && a.genericStatus !== "rejected");
+    : applications.filter((a) => a.genericStatus !== "archived" && a.genericStatus !== "rejected")
+  ).sort((a, b) => {
+    if (a.genericStatus === "in_process" && b.genericStatus !== "in_process") return -1;
+    if (b.genericStatus === "in_process" && a.genericStatus !== "in_process") return 1;
+    return 0;
+  });
 
   async function handleDuplicate(application: ApplicationRow) {
     const response = await fetch(`/api/applications/${application.id}/duplicate`, {

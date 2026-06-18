@@ -3,6 +3,7 @@ import { Sora, IBM_Plex_Sans } from "next/font/google";
 import path from "node:path";
 import { AppNav } from "@/components/AppNav";
 import { MuiProvider } from "@/components/MuiProvider";
+import { TimezoneSync } from "@/components/TimezoneSync";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import Box from "@mui/material/Box";
 
@@ -51,6 +52,7 @@ export default function RootLayout({
                 "@media (prefers-reduced-motion: reduce)": { animation: "none" },
               }}
             />
+            <TimezoneSync />
             <AppNav dbLabel={dbLabel} />
             <Box
               component="main"

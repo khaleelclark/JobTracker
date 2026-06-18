@@ -1,4 +1,5 @@
 export const GENERIC_APPLICATION_STATUSES = [
+  "in_process",
   "applied",
   "under_review",
   "interviewing",

@@ -21,7 +21,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import { cleanPostingText, toTitleCaseLabel } from "@/lib/format";
 
 const STATUS_OPTIONS = [
-  "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived",
+  "in_process", "applied", "under_review", "interviewing", "offered", "rejected", "withdrawn", "archived",
 ] as const;
 
 interface ApplicationEditDeleteFormProps {

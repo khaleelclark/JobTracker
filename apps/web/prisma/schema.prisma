@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum GenericStatus {
+  in_process
   applied
   under_review
   interviewing
