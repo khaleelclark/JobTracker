@@ -78,7 +78,6 @@ model Application {
   postingDetails String?             @map("posting_details")
   compensation   String?
   genericStatus  GenericStatus       @map("generic_status")
-  preciseStatus  String?             @map("precise_status")
   roleFamily     String?             @map("role_family")
   roleLevel      String?             @map("role_level")
   appliedAt      DateTime            @map("applied_at")

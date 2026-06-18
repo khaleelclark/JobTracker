@@ -53,7 +53,6 @@ export async function POST(request: Request) {
       postingDetails: parsed.data.postingDetails,
       compensation: parsed.data.compensation,
       genericStatus: parsed.data.genericStatus,
-      preciseStatus: parsed.data.preciseStatus,
       roleFamily: parsed.data.roleFamily,
       roleLevel: parsed.data.roleLevel,
       appliedAt: parsed.data.appliedAt,

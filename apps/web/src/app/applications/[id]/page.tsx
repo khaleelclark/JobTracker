@@ -93,7 +93,6 @@ export default async function ApplicationDetailPage({ params }: ApplicationDetai
               postingDetails: application.postingDetails,
               compensation: application.compensation,
               genericStatus: application.genericStatus,
-              preciseStatus: application.preciseStatus,
               roleFamily: application.roleFamily,
               roleLevel: application.roleLevel,
               appliedAtIso: application.appliedAt.toISOString(),

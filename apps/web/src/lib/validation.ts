@@ -18,7 +18,6 @@ export const createApplicationSchema = z.object({
   postingDetails: z.string().max(50000).optional().nullable(),
   compensation: z.string().max(300).optional().nullable(),
   genericStatus: z.enum(GENERIC_APPLICATION_STATUSES),
-  preciseStatus: z.string().max(200).optional().nullable(),
   roleFamily: z.string().max(120).optional().nullable(),
   roleLevel: z.string().max(120).optional().nullable(),
   appliedAt: z.coerce.date(),

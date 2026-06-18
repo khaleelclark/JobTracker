@@ -83,7 +83,6 @@ export function ApplicationCreateForm({ resumes, autocompleteOptions }: Applicat
       postingDetails: String(data.get("postingDetails") ?? "").trim() || null,
       compensation: String(data.get("compensation") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
-      preciseStatus: String(data.get("preciseStatus") ?? "").trim() || null,
       roleFamily: String(data.get("roleFamily") ?? "").trim() || null,
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
@@ -170,10 +169,6 @@ export function ApplicationCreateForm({ resumes, autocompleteOptions }: Applicat
                 slotProps={{ htmlInput: { maxLength: 300, list: "ac-compensation" } }}
                 placeholder="$70,000 - $100,000 + bonus" />
             </Box>
-
-            <TextField label="Precise Status" name="preciseStatus" size="small" fullWidth
-              placeholder="Recruiter screen completed"
-              slotProps={{ htmlInput: { maxLength: 200 } }} />
 
             <TextField multiline rows={6} label="Posting Details" name="postingDetails" size="small" fullWidth
               placeholder="Paste role posting details (requirements, responsibilities, compensation…)"

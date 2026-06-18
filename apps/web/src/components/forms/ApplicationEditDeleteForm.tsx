@@ -33,7 +33,6 @@ interface ApplicationEditDeleteFormProps {
     postingDetails: string | null;
     compensation: string | null;
     genericStatus: string;
-    preciseStatus: string | null;
     roleFamily: string | null;
     roleLevel: string | null;
     appliedAtIso: string;
@@ -100,7 +99,6 @@ export function ApplicationEditDeleteForm({ application, resumes, autocompleteOp
       postingDetails: (() => { const v = String(data.get("postingDetails") ?? "").trim(); return v ? cleanPostingText(v) : null; })(),
       compensation: String(data.get("compensation") ?? "").trim() || null,
       genericStatus: String(data.get("genericStatus") ?? "applied"),
-      preciseStatus: String(data.get("preciseStatus") ?? "").trim() || null,
       roleFamily: String(data.get("roleFamily") ?? "").trim() || null,
       roleLevel: String(data.get("roleLevel") ?? "").trim() || null,
       appliedAt: toIsoFromDateInput(String(data.get("appliedAt") ?? "")),
@@ -200,10 +198,6 @@ export function ApplicationEditDeleteForm({ application, resumes, autocompleteOp
             defaultValue={application.compensation ?? ""}
             slotProps={{ htmlInput: { maxLength: 300, list: "edit-ac-compensation" } }} />
         </Box>
-
-        <TextField label="Precise Status" name="preciseStatus" size="small" fullWidth
-          defaultValue={application.preciseStatus ?? ""}
-          slotProps={{ htmlInput: { maxLength: 200 } }} />
 
         <TextField multiline rows={6} label="Posting Details" name="postingDetails" size="small" fullWidth
           defaultValue={application.postingDetails ?? ""}
