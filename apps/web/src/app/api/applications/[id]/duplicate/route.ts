@@ -27,7 +27,6 @@ export async function POST(_: Request, context: RouteContext) {
       postingDetails: source.postingDetails,
       compensation: source.compensation,
       genericStatus: source.genericStatus,
-      preciseStatus: source.preciseStatus,
       roleFamily: source.roleFamily,
       roleLevel: source.roleLevel,
       appliedAt: source.appliedAt,

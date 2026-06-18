@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { cookies } from "next/headers";
 import Link from "next/link";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -17,16 +18,15 @@ import { toTitleCaseLabel } from "@/lib/format";
 import { GENERIC_APPLICATION_STATUSES } from "@job-tracker/shared";
 import { LocalDate } from "@/components/LocalDate";
 
-function startOfDay(date: Date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
+function localDayBounds(utcOffsetMinutes: number): { todayStart: Date; tomorrowStart: Date } {
+  const now = new Date();
+  // Shift now by the client's UTC offset to get their local wall-clock time as a UTC instant
+  const localNow = new Date(now.getTime() - utcOffsetMinutes * 60_000);
+  const localDateStr = localNow.toISOString().slice(0, 10); // "YYYY-MM-DD" in client's local date
+  // Midnight in the client's timezone = UTC midnight + offset
+  const todayStart = new Date(new Date(`${localDateStr}T00:00:00Z`).getTime() + utcOffsetMinutes * 60_000);
+  const tomorrowStart = new Date(todayStart.getTime() + 86_400_000);
+  return { todayStart, tomorrowStart };
 }
 
 function pluralize(count: number, singular: string, plural = `${singular}s`) {
@@ -42,9 +42,11 @@ const CARD_HOVER_SX = {
 };
 
 export default async function TodayPage() {
+  const cookieStore = await cookies();
+  const tzCookie = cookieStore.get("tz_offset");
+  const utcOffsetMinutes = tzCookie ? parseInt(tzCookie.value, 10) : new Date().getTimezoneOffset();
+  const { todayStart, tomorrowStart } = localDayBounds(utcOffsetMinutes);
   const now = new Date();
-  const todayStart = startOfDay(now);
-  const tomorrowStart = addDays(todayStart, 1);
 
   const [
     interviews,
@@ -310,7 +312,7 @@ export default async function TodayPage() {
             <Typography variant="h2">Recent Activity</Typography>
             <Box
               sx={{
-                maxHeight: 447,
+                maxHeight: 511,
                 overflowY: "auto",
                 scrollbarWidth: "none",
                 "&::-webkit-scrollbar": { display: "none" },

@@ -7,8 +7,13 @@ import SaveIcon from "@mui/icons-material/Save";
 
 interface ApplicationOption { id: string; companyName: string; roleTitle: string; }
 
+interface CreatedResume { id: string; name: string; }
+
 interface ResumeCreateFormProps {
   applications: ApplicationOption[];
+  defaultApplication?: ApplicationOption;
+  hideHeader?: boolean;
+  onSaved?: (resume: CreatedResume) => void;
 }
 
 function readFileAsBase64(file: File): Promise<string> {
@@ -25,13 +30,15 @@ function readFileAsBase64(file: File): Promise<string> {
   });
 }
 
-export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
+export function ResumeCreateForm({ applications, defaultApplication, hideHeader, onSaved }: ResumeCreateFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedApplications, setSelectedApplications] = useState<ApplicationOption[]>([]);
+  const [selectedApplications, setSelectedApplications] = useState<ApplicationOption[]>(
+    defaultApplication ? [defaultApplication] : [],
+  );
 
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     setSelectedFile(event.target.files?.[0] ?? null);
@@ -61,14 +68,15 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const body = (await response.json().catch(() => ({}))) as { resume?: CreatedResume; error?: unknown };
       if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: unknown };
         throw new Error(typeof body.error === "string" ? body.error : "Unable to save resume");
       }
       form.reset();
       setSelectedFile(null);
-      setSelectedApplications([]);
+      setSelectedApplications(defaultApplication ? [defaultApplication] : []);
       setSuccess("Resume saved.");
+      if (body.resume) onSaved?.(body.resume);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -87,12 +95,14 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
       }}
     >
       <Stack spacing={2}>
-        <Box>
-          <Typography variant="h2">Add Resume</Typography>
-          <Typography variant="body2" color="text.secondary" mt={0.5}>
-            Upload a resume file and link it to applications.
-          </Typography>
-        </Box>
+        {!hideHeader && (
+          <Box>
+            <Typography variant="h2">Add Resume</Typography>
+            <Typography variant="body2" color="text.secondary" mt={0.5}>
+              Upload a resume file and link it to applications.
+            </Typography>
+          </Box>
+        )}
 
         <TextField label="Display Name" name="name" required size="small" fullWidth
           placeholder="Resume - Product - Jan 2026"
@@ -106,16 +116,18 @@ export function ResumeCreateForm({ applications }: ResumeCreateFormProps) {
             style={{ font: "inherit", fontSize: "0.9rem" }} />
         </Box>
 
-        <Autocomplete
-          multiple
-          options={applications}
-          getOptionLabel={o => `${o.companyName} - ${o.roleTitle}`}
-          value={selectedApplications}
-          onChange={(_, val) => setSelectedApplications(val)}
-          isOptionEqualToValue={(o, v) => o.id === v.id}
-          renderOption={(props, option) => <li {...props} key={option.id}>{option.companyName} - {option.roleTitle}</li>}
-          renderInput={params => <TextField {...params} label="Link to Applications" size="small" />}
-        />
+        {applications.length > 0 && (
+          <Autocomplete
+            multiple
+            options={applications}
+            getOptionLabel={o => `${o.companyName} - ${o.roleTitle}`}
+            value={selectedApplications}
+            onChange={(_, val) => setSelectedApplications(val)}
+            isOptionEqualToValue={(o, v) => o.id === v.id}
+            renderOption={(props, option) => <li {...props} key={option.id}>{option.companyName} - {option.roleTitle}</li>}
+            renderInput={params => <TextField {...params} label="Link to Applications" size="small" />}
+          />
+        )}
 
         <TextField multiline rows={5} label="Extracted Text (optional)" name="extractedText" size="small" fullWidth
           placeholder="Optional extracted text for search context"

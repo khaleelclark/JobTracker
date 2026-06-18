@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GENERIC_APPLICATION_STATUSES } from "@job-tracker/shared";
 
 const experienceYearsSchema = z
   .number()
@@ -16,16 +17,7 @@ export const createApplicationSchema = z.object({
   careersPageUrl: z.string().url().max(1000).optional().nullable(),
   postingDetails: z.string().max(50000).optional().nullable(),
   compensation: z.string().max(300).optional().nullable(),
-  genericStatus: z.enum([
-    "applied",
-    "under_review",
-    "interviewing",
-    "offered",
-    "rejected",
-    "withdrawn",
-    "archived",
-  ]),
-  preciseStatus: z.string().max(200).optional().nullable(),
+  genericStatus: z.enum(GENERIC_APPLICATION_STATUSES),
   roleFamily: z.string().max(120).optional().nullable(),
   roleLevel: z.string().max(120).optional().nullable(),
   appliedAt: z.coerce.date(),
@@ -196,17 +188,7 @@ export const goalsProfileSchema = z.object({
 
 export const listApplicationsQuerySchema = z.object({
   query: z.string().max(200).optional(),
-  genericStatus: z
-    .enum([
-      "applied",
-      "under_review",
-      "interviewing",
-      "offered",
-      "rejected",
-      "withdrawn",
-      "archived",
-    ])
-    .optional(),
+  genericStatus: z.enum(GENERIC_APPLICATION_STATUSES).optional(),
   limit: z.number().int().min(1).max(100).default(50),
 });
 
