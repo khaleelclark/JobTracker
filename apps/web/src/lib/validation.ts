@@ -23,7 +23,12 @@ export const createApplicationSchema = z.object({
   appliedAt: z.coerce.date(),
   notes: z.string().max(4000).optional().nullable(),
   coverLetter: z.string().max(20000).optional().nullable(),
+  starred: z.boolean().default(false),
   linkedResumeIds: z.array(z.string().uuid()).default([]),
+});
+
+export const starApplicationSchema = z.object({
+  starred: z.boolean(),
 });
 
 export const updateApplicationSchema = createApplicationSchema;

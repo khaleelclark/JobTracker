@@ -85,6 +85,7 @@ model Application {
   updatedAt      DateTime            @updatedAt @map("updated_at")
   notes          String?
   coverLetter    String?             @map("cover_letter")
+  starred        Boolean             @default(false)
   resumes        ApplicationResume[]
   interviews     Interview[]
   emailLogs      EmailLog[]

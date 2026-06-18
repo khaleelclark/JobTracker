@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   DataGrid,
   GridColDef,
@@ -22,6 +22,8 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { ApplicationCreateForm } from "@/components/forms/ApplicationCreateForm";
 import { STATUS_SX } from "@/components/ApplicationStatusPill";
 import { toTitleCaseLabel } from "@/lib/format";
@@ -32,6 +34,7 @@ interface ApplicationRow {
   roleTitle: string;
   genericStatus: string;
   appliedAt: string;
+  starred: boolean;
 }
 
 interface ApplicationAutocompleteOptions {
@@ -63,16 +66,31 @@ export function ApplicationTable({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
   const [showArchived, setShowArchived] = useState(initialStatusFilter === "archived" || initialStatusFilter === "rejected");
+  const [showStarredOnly, setShowStarredOnly] = useState(false);
+  const [starredMap, setStarredMap] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(applications.map(a => [a.id, a.starred])),
+  );
 
   const hiddenCount = applications.filter((a) => a.genericStatus === "archived" || a.genericStatus === "rejected").length;
+  const starredCount = applications.filter((a) => starredMap[a.id]).length;
   const visibleApplications = (showArchived
     ? applications
     : applications.filter((a) => a.genericStatus !== "archived" && a.genericStatus !== "rejected")
-  ).sort((a, b) => {
+  ).filter((a) => !showStarredOnly || starredMap[a.id]).sort((a, b) => {
     if (a.genericStatus === "in_process" && b.genericStatus !== "in_process") return -1;
     if (b.genericStatus === "in_process" && a.genericStatus !== "in_process") return 1;
     return 0;
   });
+
+  const handleToggleStar = useCallback(async (application: ApplicationRow) => {
+    const newStarred = !starredMap[application.id];
+    setStarredMap(prev => ({ ...prev, [application.id]: newStarred }));
+    await fetch(`/api/applications/${application.id}/starred`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ starred: newStarred }),
+    });
+  }, [starredMap]);
 
   async function handleDuplicate(application: ApplicationRow) {
     const response = await fetch(`/api/applications/${application.id}/duplicate`, {
@@ -162,11 +180,12 @@ export function ApplicationTable({
         headerName: "Actions",
         sortable: false,
         filterable: false,
-        width: isMobile ? 112 : 136,
+        width: isMobile ? 136 : 164,
         headerAlign: "center",
         align: "center",
         renderCell: (params: GridRenderCellParams<ApplicationRow>) => {
           const label = `${params.row.companyName} ${params.row.roleTitle}`;
+          const isStarred = starredMap[params.row.id] ?? false;
           return (
             <Box
               sx={{
@@ -178,6 +197,15 @@ export function ApplicationTable({
                 gap: 0.5,
               }}
             >
+              <IconButton
+                size={isMobile ? "small" : "medium"}
+                aria-label={isStarred ? `Unstar application ${label}` : `Star application ${label}`}
+                title={isStarred ? "Unstar" : "Star"}
+                onClick={(e) => { e.stopPropagation(); void handleToggleStar(params.row); }}
+                sx={{ color: isStarred ? "#C9970A" : "action.disabled" }}
+              >
+                {isStarred ? <StarIcon sx={{ fontSize: "1rem" }} /> : <StarBorderIcon sx={{ fontSize: "1rem" }} />}
+              </IconButton>
               <IconButton
                 size={isMobile ? "small" : "medium"}
                 aria-label={`Duplicate application ${label}`}
@@ -206,7 +234,7 @@ export function ApplicationTable({
         },
       },
     ],
-    [isMobile],
+    [isMobile, starredMap, handleToggleStar],
   );
   const paginationModel: GridPaginationModel = isMobile
     ? { pageSize: 5, page: 0 }
@@ -246,7 +274,21 @@ export function ApplicationTable({
   const header = (
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
       <Typography variant="h2">{title}</Typography>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+        {starredCount > 0 && (
+          <Button
+            size="small"
+            variant={showStarredOnly ? "contained" : "text"}
+            startIcon={<StarIcon sx={{ fontSize: "0.9rem !important" }} />}
+            onClick={() => setShowStarredOnly((v) => !v)}
+            sx={showStarredOnly
+              ? { backgroundColor: "#C9970A", color: "#fff", "&:hover": { backgroundColor: "#A87C08" } }
+              : { color: "#C9970A", "&:hover": { color: "#A87C08", backgroundColor: "rgba(201,151,10,0.06)" } }
+            }
+          >
+            {showStarredOnly ? "All Applications" : `Starred (${starredCount})`}
+          </Button>
+        )}
         {hiddenCount > 0 && (
           <Button size="small" variant="text" onClick={() => setShowArchived((v) => !v)}>
             {showArchived ? "Hide Archived & Rejected" : `Show Archived & Rejected (${hiddenCount})`}
