@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   // Only push schema if this is a new (non-existent) database file
   if (!fs.existsSync(dbPath)) {
     const schemaPath = path.join(process.cwd(), "prisma", "schema.prisma");
-    const cmd = `npx prisma db push --skip-generate --accept-data-loss --schema "${schemaPath}"`;
+    const cmd = `npx prisma migrate deploy --schema "${schemaPath}"`;
     const result = spawnSync(cmd, { env: { ...process.env, DATABASE_URL: newUrl }, stdio: "pipe", cwd: process.cwd(), shell: true });
     if (result.status !== 0) {
       const msg = result.stderr?.toString() || result.stdout?.toString() || "Unknown error";
