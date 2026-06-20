@@ -39,6 +39,12 @@ function nullableTrimmedText(value: FormDataEntryValue | null): string | null {
   return text.length > 0 ? text : null;
 }
 
+function toDatetimeLocalValue(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableProps) {
   const router = useRouter();
   const theme = useTheme();
@@ -84,6 +90,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
 
     const data = new FormData(event.currentTarget);
     const targetMode = String(data.get("targetMode") ?? "application");
+    const createdAtRaw = String(data.get("createdAt") ?? "").trim();
     const payload: Record<string, unknown> = {
       channel: String(data.get("channel") ?? "email"),
       direction: String(data.get("direction") ?? "inbound"),
@@ -91,6 +98,7 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
       subject: String(data.get("subject") ?? "").trim(),
       body: String(data.get("body") ?? "").trim(),
       notes: nullableTrimmedText(data.get("notes")),
+      ...(createdAtRaw ? { createdAt: new Date(createdAtRaw).toISOString() } : {}),
     };
     if (targetMode === "company") {
       payload.companyName = String(data.get("companyName") ?? "").trim();
@@ -503,6 +511,10 @@ export function EmailLogsCrudTable({ emails, applications }: EmailLogsCrudTableP
 
               <TextField multiline rows={3} label="Notes (optional)" name="notes" size="small" fullWidth
                 defaultValue={editingEmail.notes ?? ""} slotProps={{ htmlInput: { maxLength: 4000 } }} />
+
+              <TextField label="Date &amp; Time" name="createdAt" type="datetime-local" size="small" fullWidth
+                defaultValue={toDatetimeLocalValue(editingEmail.createdAtIso)}
+                slotProps={{ inputLabel: { shrink: true } }} />
             </Stack>
           ) : null}
           {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}

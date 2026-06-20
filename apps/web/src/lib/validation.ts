@@ -49,6 +49,7 @@ const emailLogPayloadSchema = z.object({
   subject: z.string().min(1).max(300),
   body: z.string().min(1).max(12000),
   notes: z.string().max(4000).optional().nullable(),
+  createdAt: z.string().datetime().optional(),
 });
 
 export const createEmailLogSchema = emailLogPayloadSchema

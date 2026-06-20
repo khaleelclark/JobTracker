@@ -82,6 +82,12 @@ export function ApplicationEditDeleteForm({ application, resumes, autocompleteOp
     resumes.filter(r => application.linkedResumeIds.includes(r.id)),
   );
 
+  const linkedResumeIdsKey = application.linkedResumeIds.slice().sort().join(",");
+  useEffect(() => {
+    setSelectedResumes(resumes.filter(r => application.linkedResumeIds.includes(r.id)));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedResumeIdsKey]);
+
   async function handleToggleStar() {
     const newStarred = !starred;
     setStarred(newStarred);
