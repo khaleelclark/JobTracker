@@ -1,7 +1,12 @@
 import path from "node:path";
+import fs from "node:fs/promises";
+import os from "node:os";
 import { z } from "zod";
 import { generateResumePdf } from "../lib/resumePdf";
-import { resolveGeneratedResumeDir } from "../lib/paths";
+import { emailPdf } from "../lib/emailPdf";
+
+const RESUME_TO = "alaska81424@gmail.com";
+const RESUME_FROM = "khaleelzindel@gmail.com";
 
 const inputSchema = z.object({
   resume: z.record(z.unknown()),
@@ -14,18 +19,40 @@ export async function generateResume(input: unknown) {
     return { error: "invalid_input", details: parsed.error.flatten() };
   }
 
-  const outputDir = resolveGeneratedResumeDir();
   const rawName = parsed.data.file_name ?? defaultFileName(parsed.data.resume);
   const fileName = ensurePdfExtension(sanitizeFileName(rawName));
-  const outputPdfPath = path.join(outputDir, fileName);
 
-  const result = await generateResumePdf(parsed.data.resume, { outputPdfPath });
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "resume-email-"));
+  const tmpPdfPath = path.join(tmpDir, fileName);
+
+  try {
+    await generateResumePdf(parsed.data.resume, { outputPdfPath: tmpPdfPath });
+
+    try {
+      await emailPdf({
+        pdfPath: tmpPdfPath,
+        fileName,
+        to: RESUME_TO,
+        from: RESUME_FROM,
+      });
+    } catch (emailError) {
+      const message =
+        emailError instanceof Error ? emailError.message : String(emailError);
+      return {
+        ok: false,
+        email_failed: true,
+        error: `PDF was generated but could not be emailed: ${message}`,
+        file_name: fileName,
+      };
+    }
+  } finally {
+    await fs.rm(tmpDir, { force: true, recursive: true });
+  }
 
   return {
     ok: true,
+    emailed_to: RESUME_TO,
     file_name: fileName,
-    pdf_path: result.pdfPath,
-    output_directory: outputDir,
   };
 }
 
