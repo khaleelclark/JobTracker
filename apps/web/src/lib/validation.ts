@@ -23,7 +23,12 @@ export const createApplicationSchema = z.object({
   appliedAt: z.coerce.date(),
   notes: z.string().max(4000).optional().nullable(),
   coverLetter: z.string().max(20000).optional().nullable(),
+  starred: z.boolean().default(false),
   linkedResumeIds: z.array(z.string().uuid()).default([]),
+});
+
+export const starApplicationSchema = z.object({
+  starred: z.boolean(),
 });
 
 export const updateApplicationSchema = createApplicationSchema;
@@ -44,6 +49,7 @@ const emailLogPayloadSchema = z.object({
   subject: z.string().min(1).max(300),
   body: z.string().min(1).max(12000),
   notes: z.string().max(4000).optional().nullable(),
+  createdAt: z.string().datetime().optional(),
 });
 
 export const createEmailLogSchema = emailLogPayloadSchema

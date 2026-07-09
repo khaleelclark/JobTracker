@@ -18,6 +18,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { cleanPostingText, toTitleCaseLabel } from "@/lib/format";
 
 const STATUS_OPTIONS = [
@@ -38,6 +40,7 @@ interface ApplicationEditDeleteFormProps {
     appliedAtIso: string;
     notes: string | null;
     coverLetter: string | null;
+    starred: boolean;
     linkedResumeIds: string[];
   };
   resumes: Array<{ id: string; name: string }>;
@@ -74,9 +77,26 @@ export function ApplicationEditDeleteForm({ application, resumes, autocompleteOp
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [starred, setStarred] = useState(application.starred);
   const [selectedResumes, setSelectedResumes] = useState(
     resumes.filter(r => application.linkedResumeIds.includes(r.id)),
   );
+
+  const linkedResumeIdsKey = application.linkedResumeIds.slice().sort().join(",");
+  useEffect(() => {
+    setSelectedResumes(resumes.filter(r => application.linkedResumeIds.includes(r.id)));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedResumeIdsKey]);
+
+  async function handleToggleStar() {
+    const newStarred = !starred;
+    setStarred(newStarred);
+    await fetch(`/api/applications/${application.id}/starred`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ starred: newStarred }),
+    });
+  }
 
   useEffect(() => {
     if (!success) return;
@@ -164,7 +184,22 @@ export function ApplicationEditDeleteForm({ application, resumes, autocompleteOp
       }}
     >
       <Stack spacing={2}>
-        <Typography variant="h2">Edit Application</Typography>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+          <Typography variant="h2">Edit Application</Typography>
+          <Button
+            type="button"
+            size="small"
+            variant={starred ? "contained" : "outlined"}
+            startIcon={starred ? <StarIcon sx={{ fontSize: "0.9rem !important" }} /> : <StarBorderIcon sx={{ fontSize: "0.9rem !important" }} />}
+            onClick={() => void handleToggleStar()}
+            sx={starred
+              ? { backgroundColor: "#C9970A", color: "#fff", "&:hover": { backgroundColor: "#A87C08" }, border: "none" }
+              : { borderColor: "#C9970A", color: "#C9970A", "&:hover": { borderColor: "#A87C08", color: "#A87C08", backgroundColor: "rgba(201,151,10,0.06)" } }
+            }
+          >
+            {starred ? "Starred" : "Star"}
+          </Button>
+        </Box>
 
         <datalist id="edit-ac-company">{autocompleteOptions.companies.map(v => <option key={v} value={v} />)}</datalist>
         <datalist id="edit-ac-role-title">{autocompleteOptions.roleTitles.map(v => <option key={v} value={v} />)}</datalist>

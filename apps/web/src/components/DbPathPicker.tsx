@@ -23,6 +23,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import AddIcon from "@mui/icons-material/Add";
+import UploadIcon from "@mui/icons-material/Upload";
 
 type FileEntry = { name: string; path: string; isDir: boolean; size: number | null };
 type BrowseResult = { dir: string; parent: string | null; files: FileEntry[] };
@@ -53,7 +54,11 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "done" | "error">("idle");
   const [copyPath, setCopyPath] = useState<string | null>(null);
 
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "restarting">("idle");
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTargetPath, setDeleteTargetPath] = useState<string>("");
   const [deleteChecked, setDeleteChecked] = useState(false);
   const [deleteStatus, setDeleteStatus] = useState<"idle" | "deleting" | "restarting" | "error">("idle");
   const [deleteError, setDeleteError] = useState("");
@@ -139,6 +144,25 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
     setCopyStatus("done");
   }
 
+  function openDeleteModal(targetPath: string) {
+    setDeleteTargetPath(targetPath);
+    setDeleteChecked(false);
+    setDeleteStatus("idle");
+    setDeleteError("");
+    setShowDeleteModal(true);
+  }
+
+  async function handleUpload(file: File) {
+    setUploadStatus("uploading");
+    setErrorMsg("");
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/db-path/upload", { method: "POST", body: form });
+    const data = (await res.json()) as { path?: string; url?: string; restarting?: boolean; error?: string };
+    if (!res.ok) { setErrorMsg(data.error ?? "Upload failed"); setUploadStatus("idle"); return; }
+    data.restarting ? setUploadStatus("restarting") : window.location.reload();
+  }
+
   async function handleDelete() {
     if (!deleteChecked) return;
     setDeleteStatus("deleting");
@@ -146,16 +170,20 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
     const res = await fetch("/api/db-path/manage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", path: currentPath }),
+      body: JSON.stringify({ action: "delete", path: deleteTargetPath }),
     });
     const data = (await res.json()) as { deleted?: boolean; restarting?: boolean; error?: string };
     if (!res.ok) { setDeleteError(data.error ?? "Delete failed"); setDeleteStatus("error"); return; }
-    if (data.restarting) setDeleteStatus("restarting");
-    else { setShowDeleteModal(false); window.location.reload(); }
+    if (data.restarting) { setDeleteStatus("restarting"); }
+    else {
+      setShowDeleteModal(false);
+      if (deleteTargetPath === pendingPath) setPendingPath(null);
+      else window.location.reload();
+    }
   }
 
   useEffect(() => {
-    if (status !== "restarting" && deleteStatus !== "restarting") return;
+    if (status !== "restarting" && deleteStatus !== "restarting" && uploadStatus !== "restarting") return;
     const interval = setInterval(async () => {
       try {
         const res = await fetch("/api/health");
@@ -163,13 +191,22 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
       } catch { /* still restarting */ }
     }, 1000);
     return () => clearInterval(interval);
-  }, [status, deleteStatus]);
+  }, [status, deleteStatus, uploadStatus]);
 
-  const busy = status === "switching" || status === "restarting";
+  const busy = status === "switching" || status === "restarting" || uploadStatus === "uploading" || uploadStatus === "restarting";
   const pendingFilename = pendingPath?.split("/").pop() ?? pendingPath;
 
   return (
     <Stack spacing={1.5}>
+
+      {/* Hidden file input for import */}
+      <input
+        ref={uploadInputRef}
+        type="file"
+        accept=".sqlite,.db"
+        style={{ display: "none" }}
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleUpload(f); e.target.value = ""; }}
+      />
 
       {/* Active database */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, p: 1.2, border: "1px solid rgba(15,74,134,0.18)", borderRadius: "12px", background: "rgba(15,74,134,0.04)" }}>
@@ -194,7 +231,7 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton size="small" onClick={() => { setDeleteChecked(false); setDeleteStatus("idle"); setDeleteError(""); setShowDeleteModal(true); }} sx={{ color: "error.main" }}>
+            <IconButton size="small" onClick={() => openDeleteModal(currentPath)} sx={{ color: "error.main" }}>
               <DeleteIcon sx={{ fontSize: "1rem" }} />
             </IconButton>
           </Tooltip>
@@ -217,6 +254,14 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
           </Button>
           <Button startIcon={<AddIcon />} onClick={openNew} disabled={busy} sx={{ flex: 1, border: "1px solid rgba(19, 33, 48, 0.14) !important", justifyContent: "center" }}>
             Create New
+          </Button>
+          <Button
+            startIcon={<UploadIcon />}
+            onClick={() => uploadInputRef.current?.click()}
+            disabled={busy}
+            sx={{ flex: 1, border: "1px solid rgba(19, 33, 48, 0.14) !important", justifyContent: "center" }}
+          >
+            {uploadStatus === "uploading" ? "Uploading…" : uploadStatus === "restarting" ? "Restarting…" : "Import"}
           </Button>
         </Box>
       )}
@@ -315,6 +360,11 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
           </Box>
           <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
             <Button onClick={() => setPendingPath(null)} size="small" disabled={busy}>Cancel</Button>
+            <Tooltip title="Delete this database file">
+              <IconButton size="small" onClick={() => openDeleteModal(pendingPath)} disabled={busy} sx={{ color: "error.main" }}>
+                <DeleteIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
+            </Tooltip>
             <Button
               onClick={() => void handleSwitch(pendingPath)}
               disabled={busy}
@@ -328,20 +378,20 @@ export function DbPathPicker({ currentUrl }: { currentUrl: string }) {
       )}
 
       {errorMsg && <Typography variant="body2" color="error" sx={{ fontSize: "0.8rem" }}>{errorMsg}</Typography>}
-      {status === "restarting" && <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>Container is restarting — page will reload automatically.</Typography>}
+      {(status === "restarting" || uploadStatus === "restarting") && <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>Container is restarting — page will reload automatically.</Typography>}
 
       {/* Delete dialog */}
       <Dialog open={showDeleteModal} onClose={() => { if (deleteStatus === "idle" || deleteStatus === "error") setShowDeleteModal(false); }} maxWidth="xs" fullWidth>
         <DialogTitle>Delete Database?</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Box sx={{ fontFamily: "monospace", fontSize: "0.8rem", wordBreak: "break-all" }}>{currentPath}</Box>
+            <Box sx={{ fontFamily: "monospace", fontSize: "0.8rem", wordBreak: "break-all" }}>{deleteTargetPath}</Box>
             <Box sx={{ p: 1.2, borderRadius: "8px", background: "rgba(185,28,28,0.07)", border: "1px solid rgba(185,28,28,0.2)", fontSize: "0.85rem", color: "error.main" }}>
               ⚠ All data in this database will be permanently deleted and cannot be undone.
             </Box>
             <FormControlLabel
               control={<Checkbox checked={deleteChecked} onChange={(e) => setDeleteChecked(e.target.checked)} disabled={deleteStatus !== "idle" && deleteStatus !== "error"} size="small" />}
-              label={<span style={{ fontSize: "0.875rem" }}>I understand <strong>{currentFilename}</strong> will be deleted forever</span>}
+              label={<span style={{ fontSize: "0.875rem" }}>I understand <strong>{deleteTargetPath.split("/").pop()}</strong> will be deleted forever</span>}
             />
             {deleteError && <Typography variant="body2" color="error" sx={{ fontSize: "0.8rem" }}>{deleteError}</Typography>}
             {deleteStatus === "restarting" && <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>Container is restarting…</Typography>}

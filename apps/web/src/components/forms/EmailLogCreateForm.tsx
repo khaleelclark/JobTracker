@@ -72,6 +72,7 @@ export function EmailLogCreateForm({ applications, defaultApplicationId, compact
     const data = new FormData(form);
     const selectedApplicationIds = data.getAll("applicationIds").map(v => String(v).trim()).filter(v => v.length > 0);
 
+    const createdAtRaw = String(data.get("createdAt") ?? "").trim();
     const payload: Record<string, unknown> = {
       channel: String(data.get("channel") ?? "email"),
       direction: String(data.get("direction") ?? "inbound"),
@@ -79,6 +80,7 @@ export function EmailLogCreateForm({ applications, defaultApplicationId, compact
       subject: String(data.get("subject") ?? "").trim(),
       body: String(data.get("body") ?? "").trim(),
       notes: nullableTrimmedText(data.get("notes")),
+      ...(createdAtRaw ? { createdAt: new Date(createdAtRaw).toISOString() } : {}),
     };
     if (targetMode === "application") payload.applicationId = String(data.get("applicationId") ?? "").trim();
     else if (targetMode === "applications") payload.applicationIds = selectedApplicationIds;
@@ -195,6 +197,9 @@ export function EmailLogCreateForm({ applications, defaultApplicationId, compact
         <TextField multiline rows={3} label="Notes (optional)" name="notes" size="small" fullWidth
           placeholder="Add context like sentiment, intent, or follow-up reminders"
           slotProps={{ htmlInput: { maxLength: 4000 } }} />
+
+        <TextField label="Date &amp; Time (optional — defaults to now)" name="createdAt" type="datetime-local" size="small" fullWidth
+          slotProps={{ inputLabel: { shrink: true } }} />
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
           <Button

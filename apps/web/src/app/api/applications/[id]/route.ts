@@ -58,6 +58,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         appliedAt: parsed.data.appliedAt,
         notes: parsed.data.notes,
         coverLetter: parsed.data.coverLetter,
+        starred: parsed.data.starred,
         resumes: {
           deleteMany: {},
           create: parsed.data.linkedResumeIds.map((resumeId) => ({

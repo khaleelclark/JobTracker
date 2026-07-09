@@ -98,6 +98,7 @@ export default async function ApplicationDetailPage({ params }: ApplicationDetai
               appliedAtIso: application.appliedAt.toISOString(),
               notes: application.notes,
               coverLetter: application.coverLetter,
+              starred: application.starred,
               linkedResumeIds: application.resumes.map(entry => entry.resumeId),
             }}
             resumes={resumes}
