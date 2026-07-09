@@ -17,7 +17,13 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then((res) => { if (!res.ok) process.exit(1); }).catch(() => process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then((res) => { if (!res.ok) process.exit(1); }).catch(() => process.exit(1))",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -53,7 +59,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "7331:7331"
+      - "7332:7331"
     volumes:
       - job-tracker-data:/data
       - "${RESUME_OUTPUT_DIR:-${HOME}/Documents/Job App Resumes}:/resumes"
