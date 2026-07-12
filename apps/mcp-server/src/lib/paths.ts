@@ -21,16 +21,27 @@ function resolveDataDir(): string {
   return path.join(os.homedir(), ".local", "share", APP_DIR_NAME);
 }
 
-export function resolveDatabaseUrl(): string {
+export function resolveActiveDatabaseUrl(): string | null {
+  const dataDir = resolveDataDir();
   const activeDatabasePath = path.join(resolveDataDir(), "active-db.txt");
   try {
     const activeDatabaseUrl = fs.readFileSync(activeDatabasePath, "utf8").trim();
-    if (activeDatabaseUrl.startsWith("file:") && activeDatabaseUrl.length > "file:".length) {
-      return activeDatabaseUrl;
-    }
+    if (!activeDatabaseUrl.startsWith("file:") || activeDatabaseUrl.length <= "file:".length) return null;
+    const databasePath = activeDatabaseUrl.slice("file:".length);
+    if (!path.isAbsolute(databasePath)) return null;
+    const resolved = path.resolve(databasePath);
+    const relative = path.relative(dataDir, resolved);
+    if (relative === "" || relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return null;
+    return `file:${resolved.replace(/\\/g, "/")}`;
   } catch (error) {
-    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) return null;
   }
+  return null;
+}
+
+export function resolveDatabaseUrl(): string {
+  const activeDatabaseUrl = resolveActiveDatabaseUrl();
+  if (activeDatabaseUrl) return activeDatabaseUrl;
 
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;

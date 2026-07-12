@@ -2,15 +2,11 @@ import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { resetPrismaClient } from "@/lib/db";
-
-const DATA_DIR = process.env.JOBTRACKER_DATA_DIR
-  ? path.resolve(process.env.JOBTRACKER_DATA_DIR)
-  : fs.existsSync("/data")
-    ? "/data"
-    : path.dirname(process.env.DATABASE_URL?.replace(/^file:/, "") ?? process.env.HOME ?? process.cwd());
+import { DATA_DIR, migrateDatabase, publishDatabaseSelection, withDatabaseSelectionLock } from "@/lib/databaseSelection";
 
 function inDataDir(p: string): boolean {
-  return path.resolve(p).startsWith(DATA_DIR);
+  const relative = path.relative(DATA_DIR, path.resolve(p));
+  return relative !== "" && relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
 }
 
 export async function POST(req: Request) {
@@ -42,22 +38,22 @@ export async function POST(req: Request) {
     const activeUrl = `file:${targetPath}`;
     const isActive = process.env.DATABASE_URL === activeUrl;
 
-    if (isActive) {
-      const prodUrl = `file:${path.join(DATA_DIR, "job-tracker.sqlite")}`;
-      const configPath = path.join(DATA_DIR, "active-db.txt");
-      fs.writeFileSync(configPath, prodUrl, "utf-8");
-      process.env.DATABASE_URL = prodUrl;
-      resetPrismaClient();
-    }
+    return withDatabaseSelectionLock(() => {
+      if (isActive) {
+        const defaultPath = path.join(DATA_DIR, "job-tracker.sqlite");
+        const migrationError = migrateDatabase(defaultPath);
+        if (migrationError) {
+          return NextResponse.json({ error: `Schema migration failed: ${migrationError}` }, { status: 500 });
+        }
+        process.env.DATABASE_URL = publishDatabaseSelection(defaultPath);
+        resetPrismaClient();
+      }
 
-    fs.unlinkSync(targetPath);
+      fs.unlinkSync(targetPath);
 
-    if (isActive && process.env.NODE_ENV === "production") {
-      setTimeout(() => process.exit(0), 500);
-      return NextResponse.json({ deleted: true, restarting: true });
-    }
-
-    return NextResponse.json({ deleted: true, restarting: false });
+      if (isActive && process.env.NODE_ENV === "production") setTimeout(() => process.exit(0), 500);
+      return NextResponse.json({ deleted: true, restarting: isActive && process.env.NODE_ENV === "production" });
+    });
   }
 
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });

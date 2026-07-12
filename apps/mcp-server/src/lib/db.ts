@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { resolveDatabaseUrl } from "./paths";
+import { resolveActiveDatabaseUrl, resolveDatabaseUrl } from "./paths";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -7,7 +7,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function getClient(): PrismaClient {
-  const databaseUrl = resolveDatabaseUrl();
+  const databaseUrl = resolveActiveDatabaseUrl()
+    ?? globalForPrisma.prismaDatabaseUrl
+    ?? resolveDatabaseUrl();
 
   if (!globalForPrisma.prisma || globalForPrisma.prismaDatabaseUrl !== databaseUrl) {
     const previousClient = globalForPrisma.prisma;

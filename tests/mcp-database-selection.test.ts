@@ -36,6 +36,16 @@ test("MCP follows the database selected by the web UI", async () => {
   process.env.JOBTRACKER_DATA_DIR = tempDir;
   process.env.DATABASE_URL = sqliteFileUrl(firstPath);
 
+  const selectionModuleUrl = pathToFileURL(path.resolve("apps/web/src/lib/databaseSelection.ts")).href;
+  const selection = await import(`${selectionModuleUrl}?test=${Date.now()}`) as {
+    publishDatabaseSelection: (databasePath: string) => string;
+    resolveDatabasePath: (databasePath: string) => string;
+  };
+  assert.throws(() => selection.resolveDatabasePath("relative.sqlite"), /absolute/);
+  assert.throws(() => selection.resolveDatabasePath(path.join(os.tmpdir(), "outside.sqlite")), /data directory/);
+  assert.equal(selection.publishDatabaseSelection(firstPath), sqliteFileUrl(firstPath));
+  assert.equal(await fs.readFile(activeDatabasePath, "utf8"), sqliteFileUrl(firstPath));
+
   const dbModuleUrl = pathToFileURL(path.resolve("apps/mcp-server/src/lib/db.ts")).href;
   const { prisma } = await import(`${dbModuleUrl}?test=${Date.now()}`) as {
     prisma: PrismaClient;
@@ -45,10 +55,22 @@ test("MCP follows the database selected by the web UI", async () => {
     const fallbackRows = await prisma.$queryRawUnsafe<Array<{ value: string }>>("SELECT value FROM marker");
     assert.equal(fallbackRows[0]?.value, "first");
 
+    await fs.writeFile(activeDatabasePath, "file:relative.sqlite", "utf8");
+    const relativeRows = await prisma.$queryRawUnsafe<Array<{ value: string }>>("SELECT value FROM marker");
+    assert.equal(relativeRows[0]?.value, "first");
+
+    await fs.writeFile(activeDatabasePath, sqliteFileUrl(path.join(os.tmpdir(), "outside.sqlite")), "utf8");
+    const outsideRows = await prisma.$queryRawUnsafe<Array<{ value: string }>>("SELECT value FROM marker");
+    assert.equal(outsideRows[0]?.value, "first");
+
     await fs.writeFile(activeDatabasePath, sqliteFileUrl(secondPath), "utf8");
 
     const selectedRows = await prisma.$queryRawUnsafe<Array<{ value: string }>>("SELECT value FROM marker");
     assert.equal(selectedRows[0]?.value, "second");
+
+    await fs.writeFile(activeDatabasePath, "file:", "utf8");
+    const malformedRows = await prisma.$queryRawUnsafe<Array<{ value: string }>>("SELECT value FROM marker");
+    assert.equal(malformedRows[0]?.value, "second");
   } finally {
     await prisma.$disconnect();
     if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
