@@ -32,7 +32,12 @@ test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}" || {
   exit 1
 }
 
-docker compose up -d --build web mcp
+if ! docker compose up -d --build web mcp; then
+  docker compose ps || true
+  docker compose logs --tail=100 web mcp || true
+  echo "Deployment build or startup failed"
+  exit 1
+fi
 
 for attempt in $(seq 1 "${HEALTH_ATTEMPTS}"); do
   echo "Health-check attempt ${attempt}/${HEALTH_ATTEMPTS}"

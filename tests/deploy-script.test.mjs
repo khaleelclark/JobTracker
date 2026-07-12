@@ -42,6 +42,7 @@ git() {
 }
 docker() {
   printf '%s\\n' "docker $*" >> "${log}"
+  if [ "$SCENARIO" = "compose_failure" ] && [ "$1 $2 \${3:-}" = "compose up -d" ]; then return 1; fi
   return 0
 }
 curl() {
@@ -103,6 +104,19 @@ test("failed health reports Compose status and logs", async () => {
     assert.match(run.result.stdout, /health checks failed/);
     assert.match(run.commands, /docker compose ps/);
     assert.match(run.commands, /docker compose logs --tail=100 web mcp/);
+  } finally {
+    await fs.rm(run.root, { recursive: true, force: true });
+  }
+});
+
+test("Compose build or startup failure reports status and logs", async () => {
+  const run = await runScenario("compose_failure");
+  try {
+    assert.equal(run.result.status, 1);
+    assert.match(run.result.stdout, /build or startup failed/);
+    assert.match(run.commands, /docker compose ps/);
+    assert.match(run.commands, /docker compose logs --tail=100 web mcp/);
+    assert.doesNotMatch(run.commands, /curl /);
   } finally {
     await fs.rm(run.root, { recursive: true, force: true });
   }
