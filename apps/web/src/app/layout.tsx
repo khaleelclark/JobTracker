@@ -44,12 +44,18 @@ export default function RootLayout({
                 position: "fixed",
                 inset: 0,
                 pointerEvents: "none",
-                backgroundImage: "linear-gradient(to right, rgba(15, 118, 110, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 118, 110, 0.03) 1px, transparent 1px)",
-                backgroundSize: "42px 42px",
-                opacity: 0.65,
-                zIndex: -1,
-                animation: "gridDrift 30s linear infinite",
-                "@media (prefers-reduced-motion: reduce)": { animation: "none" },
+                background: "radial-gradient(circle at 5% -10%, #e9d5ff 0%, transparent 34%), radial-gradient(circle at 95% 5%, #b0cfc0 0%, transparent 34%), linear-gradient(165deg, #f8fafc 0%, #ebf6ff 48%, #f8fbff 100%)",
+                zIndex: 0,
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  inset: 0,
+                  backgroundImage: "linear-gradient(to right, rgba(15, 118, 110, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 118, 110, 0.03) 1px, transparent 1px)",
+                  backgroundSize: "42px 42px",
+                  opacity: 0.65,
+                  animation: "gridDrift 30s linear infinite",
+                },
+                "@media (prefers-reduced-motion: reduce)": { "&::after": { animation: "none" } },
               }}
             />
             <TimezoneSync />
@@ -57,6 +63,8 @@ export default function RootLayout({
             <Box
               component="main"
               sx={{
+                position: "relative",
+                zIndex: 1,
                 width: "min(1220px, 100%)",
                 mx: "auto",
                 px: { xs: "0.8rem", sm: "1.2rem" },
