@@ -1,0 +1,99 @@
+name: CI and Deploy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: job-tracker-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out tested commit
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @job-tracker/web exec prisma generate
+
+      - name: Run test suite
+        run: pnpm test
+
+      - name: Type-check MCP server
+        run: pnpm --filter @job-tracker/mcp-server build
+
+      - name: Build web application
+        run: pnpm --filter @job-tracker/web build
+
+  deploy:
+    name: Deploy local Docker services
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: [self-hosted, linux, x64, job-tracker]
+    timeout-minutes: 30
+    concurrency:
+      group: job-tracker-production
+      cancel-in-progress: false
+    steps:
+      - name: Deploy tested main commit
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          exec 9>/tmp/job-tracker-deploy.lock
+          flock -n 9 || { echo "Another JobTracker deployment is running"; exit 1; }
+
+          cd /home/phoenix/khaleel/job-tracker
+          test -z "$(git status --porcelain)" || {
+            echo "Deployment checkout is dirty; refusing to overwrite local state"
+            git status --short
+            exit 1
+          }
+
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${EXPECTED_SHA}" || {
+            echo "origin/main does not match the tested commit ${EXPECTED_SHA}"
+            exit 1
+          }
+          git pull --ff-only origin main
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+
+          docker compose up -d --build web mcp
+
+          for attempt in $(seq 1 30); do
+            echo "Health-check attempt ${attempt}/30"
+            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health >/dev/null \
+              && curl --fail --silent --show-error http://127.0.0.1:7332/health >/dev/null; then
+              docker compose ps
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker compose ps
+          docker compose logs --tail=100 web mcp
+          echo "Deployment health checks failed"
+          exit 1
