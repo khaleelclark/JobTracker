@@ -39,7 +39,8 @@ test("generic status includes under_review across schema/constants/validation/mc
 
   assert.match(prismaSchema, /enum GenericStatus[\s\S]*under_review/);
   assert.match(sharedConstants, /GENERIC_APPLICATION_STATUSES[\s\S]*"under_review"/);
-  assert.match(webValidation, /genericStatus[\s\S]*"under_review"/);
+  assert.match(webValidation, /import\s*{\s*GENERIC_APPLICATION_STATUSES\s*}\s*from\s*"@job-tracker\/shared"/);
+  assert.match(webValidation, /genericStatus:\s*z\.enum\(GENERIC_APPLICATION_STATUSES\)/);
   assert.match(mcpSearch, /generic_status[\s\S]*"under_review"/);
 });
 
@@ -48,18 +49,19 @@ test("application status displays use title-case formatter", () => {
   const appCreate = read("apps/web/src/components/forms/ApplicationCreateForm.tsx");
   const appEdit = read("apps/web/src/components/forms/ApplicationEditDeleteForm.tsx");
   const statusPill = read("apps/web/src/components/ApplicationStatusPill.tsx");
+  const appHeader = read("apps/web/src/components/ApplicationHeader.tsx");
   const appDetail = read("apps/web/src/app/applications/[id]/page.tsx");
   const today = read("apps/web/src/app/today/page.tsx");
-  const globals = read("apps/web/src/app/globals.css");
 
   assert.match(appTable, /toTitleCaseLabel\(application\.genericStatus\)/);
-  assert.match(appCreate, /toTitleCaseLabel\(status\)/);
-  assert.match(appEdit, /toTitleCaseLabel\(status\)/);
-  // Detail page delegates status display to ApplicationStatusPill
-  assert.match(appDetail, /ApplicationStatusPill/);
+  assert.match(appCreate, /toTitleCaseLabel\([a-zA-Z_$][\w$]*\)/);
+  assert.match(appEdit, /toTitleCaseLabel\([a-zA-Z_$][\w$]*\)/);
+  // Detail page delegates status display through ApplicationHeader.
+  assert.match(appDetail, /ApplicationHeader/);
+  assert.match(appHeader, /ApplicationStatusPill/);
   assert.match(statusPill, /toTitleCaseLabel\(status\)/);
-  assert.match(today, /toTitleCaseLabel\(application\.genericStatus\)/);
-  assert.match(globals, /\.status-under_review/);
+  assert.match(today, /toTitleCaseLabel\([a-zA-Z_$][\w$]*\.genericStatus\)/);
+  assert.match(statusPill, /STATUS_SX[\s\S]*under_review:/);
 });
 
 test("mcp full-context tool is available with warning metadata", () => {
