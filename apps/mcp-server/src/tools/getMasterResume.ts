@@ -28,13 +28,26 @@ export async function getMasterResume(input: unknown) {
   const masterResumePath = await resolveMasterResumePath(parsed.data.owner);
 
   const text = await fs.readFile(masterResumePath, "utf8");
-  const masterResume = JSON.parse(text) as unknown;
+  const parsedResume = JSON.parse(text) as unknown;
+  const masterResume = unwrapMasterResume(parsedResume);
 
   return {
     owner: parsed.data.owner ?? "default",
     path: masterResumePath,
     master_resume: masterResume,
   };
+}
+
+function unwrapMasterResume(value: unknown): unknown {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "master_resume" in value
+  ) {
+    return (value as { master_resume: unknown }).master_resume;
+  }
+
+  return value;
 }
 
 async function resolveMasterResumePath(owner: string | undefined): Promise<string> {
