@@ -7,16 +7,16 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const expectedSha = "1234567890abcdef1234567890abcdef12345678";
 
-test("full failed deployment restores data and prior Compose release", async () => {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "job-tracker-deploy-rollback-"));
+async function runScenario(scenario) {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), `job-tracker-deploy-${scenario}-`));
   const deploy = path.join(root, "deploy");
   const source = path.join(root, "source");
   const volume = path.join(root, "volume");
   const log = path.join(root, "commands.log");
   const state = path.join(root, "health.state");
   const harness = path.join(root, "harness.sh");
-  const expectedSha = "1234567890abcdef1234567890abcdef12345678";
 
   await fs.mkdir(path.join(volume, "backups"), { recursive: true });
   await fs.mkdir(deploy, { recursive: true });
@@ -26,6 +26,8 @@ test("full failed deployment restores data and prior Compose release", async () 
   await fs.writeFile(path.join(deploy, "docker-compose.yml"), "name: previous-compose\n");
   await fs.writeFile(path.join(source, "docker-compose.yml"), "name: candidate-compose\n");
   await fs.writeFile(path.join(deploy, ".env"), "TEST_ONLY=1\n");
+  await fs.writeFile(path.join(deploy, "khaleel-master-resume.json"), "{}\n");
+  await fs.writeFile(path.join(deploy, "patrick-master-resume.json"), "{}\n");
   await fs.writeFile(state, "healthy");
 
   await fs.writeFile(harness, `#!/usr/bin/env bash
@@ -35,6 +37,7 @@ export SOURCE_CHECKOUT="${source}"
 export EXPECTED_SHA="${expectedSha}"
 export HEALTH_ATTEMPTS=1
 export HEALTH_DELAY_SECONDS=0
+SCENARIO="${scenario}"
 
 flock() { return 0; }
 sleep() { return 0; }
@@ -44,8 +47,16 @@ git() {
     "fetch origin") return 0 ;;
     "rev-parse origin/main") printf '%s\\n' "${expectedSha}" ;;
     "rev-parse HEAD")
-      if [ "$PWD" = "${source}" ]; then printf '%s\\n' "${expectedSha}"; else printf '%s\\n' "previous-sha"; fi ;;
-    "pull --ff-only") touch "${root}/unexpected-pull" ;;
+      if [ "$PWD" = "${source}" ]; then
+        printf '%s\\n' "${expectedSha}"
+      elif [ -f "${root}/pulled" ]; then
+        if [ "$SCENARIO" = "sha_mismatch" ]; then echo wrong-sha; else printf '%s\\n' "${expectedSha}"; fi
+      else
+        echo previous-sha
+      fi ;;
+    "pull --ff-only")
+      if [ "$SCENARIO" = "pull_failure" ]; then return 1; fi
+      touch "${root}/pulled" ;;
     *) echo "unexpected git command: $*" >&2; return 2 ;;
   esac
 }
@@ -83,8 +94,11 @@ docker() {
   if [ "$1" = "compose" ]; then
     if [[ "$*" = *" up "* ]] && [[ "$*" = *"${source}/docker-compose.yml"* ]]; then
       printf '%s' candidate-migrated > "${volume}/job-tracker.sqlite"
-      printf '%s' unhealthy > "${state}"
+      if [ "$SCENARIO" = "candidate_health_failure" ]; then printf '%s' unhealthy > "${state}"; else printf '%s' healthy > "${state}"; fi
     elif [[ "$*" = *" up "* ]] && [[ "$*" = *"${deploy}/docker-compose.yml"* ]]; then
+      if [ "$SCENARIO" = "stable_recreate_failure" ]; then return 1; fi
+      printf '%s' healthy > "${state}"
+    elif [[ "$*" = *" up "* ]] && [[ "$*" = *"job-tracker-rollback"* ]]; then
       printf '%s' healthy > "${state}"
     fi
     return 0
@@ -96,19 +110,38 @@ docker() {
 source "${path.join(repoRoot, "scripts/deploy.sh")}"
 `, { mode: 0o700 });
 
-  try {
-    const result = spawnSync("bash", [harness], { encoding: "utf8" });
-    assert.equal(result.status, 1, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
-    assert.equal(await fs.readFile(path.join(volume, "job-tracker.sqlite"), "utf8"), "original-database");
-    assert.equal(await fs.readFile(path.join(volume, "volume-sentinel"), "utf8"), "preserved");
-    await assert.rejects(fs.access(path.join(root, "unexpected-pull")));
+  const result = spawnSync("bash", [harness], { encoding: "utf8" });
+  const commands = await fs.readFile(log, "utf8");
+  return { root, deploy, source, volume, result, commands };
+}
 
-    const commands = await fs.readFile(log, "utf8");
-    assert.match(commands, new RegExp(`${source}/docker-compose\\.yml.*up -d --no-build`));
-    assert.match(commands, new RegExp(`${deploy}/docker-compose\\.yml.*up -d --no-build`));
-    assert.match(commands, /image tag sha256:previous-web job-tracker-web:latest/);
-    assert.match(commands, /image tag sha256:previous-mcp job-tracker-mcp:latest/);
+for (const scenario of ["candidate_health_failure", "pull_failure", "sha_mismatch", "stable_recreate_failure"]) {
+  test(`failed deployment restores prior release: ${scenario}`, async () => {
+    const run = await runScenario(scenario);
+    try {
+      assert.equal(run.result.status, 1, `stdout:\n${run.result.stdout}\nstderr:\n${run.result.stderr}`);
+      assert.equal(await fs.readFile(path.join(run.volume, "job-tracker.sqlite"), "utf8"), "original-database");
+      assert.equal(await fs.readFile(path.join(run.volume, "volume-sentinel"), "utf8"), "preserved");
+      assert.match(run.commands, new RegExp(`${run.source}/docker-compose\\.yml.*up -d --no-build`));
+      assert.match(run.commands, /job-tracker-rollback\.[^/]*\/docker-compose\.yml.*up -d --no-build/);
+      assert.match(run.commands, /image tag sha256:previous-web job-tracker-web:latest/);
+      assert.match(run.commands, /image tag sha256:previous-mcp job-tracker-mcp:latest/);
+    } finally {
+      await fs.rm(run.root, { recursive: true, force: true });
+    }
+  });
+}
+
+test("successful deployment finishes on the stable checkout Compose definition", async () => {
+  const run = await runScenario("success");
+  try {
+    assert.equal(run.result.status, 0, `stdout:\n${run.result.stdout}\nstderr:\n${run.result.stderr}`);
+    assert.equal(await fs.readFile(path.join(run.volume, "job-tracker.sqlite"), "utf8"), "candidate-migrated");
+    assert.equal(await fs.readFile(path.join(run.volume, "volume-sentinel"), "utf8"), "preserved");
+    assert.match(run.commands, new RegExp(`${run.source}/docker-compose\\.yml.*up -d --no-build`));
+    assert.match(run.commands, new RegExp(`${run.deploy}/docker-compose\\.yml.*up -d --no-build`));
+    assert.doesNotMatch(run.commands, /image tag sha256:previous-web job-tracker-web:latest/);
   } finally {
-    await fs.rm(root, { recursive: true, force: true });
+    await fs.rm(run.root, { recursive: true, force: true });
   }
 });

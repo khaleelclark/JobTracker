@@ -32,6 +32,12 @@ candidate_compose() {
 
 previous_compose() {
   docker compose --project-name "${compose_project}" \
+    --project-directory "${rollback_root}" \
+    -f "${rollback_root}/docker-compose.yml" "$@"
+}
+
+stable_compose() {
+  docker compose --project-name "${compose_project}" \
     --project-directory "${DEPLOY_CHECKOUT}" \
     -f "${DEPLOY_CHECKOUT}/docker-compose.yml" "$@"
 }
@@ -99,6 +105,7 @@ rollback() {
 
 cleanup() {
   if [ "${created_env_link:-0}" = "1" ]; then rm -f "${SOURCE_CHECKOUT}/.env"; fi
+  if [ "${remove_rollback_root:-0}" = "1" ]; then rm -rf "${rollback_root}"; fi
 }
 
 if [ "${DEPLOY_LIB_ONLY:-0}" = "1" ]; then return 0; fi
@@ -129,6 +136,14 @@ data_volume="$(docker inspect job-tracker-web --format '{{range .Mounts}}{{if eq
 test -n "${compose_project}" || { echo "Unable to identify the Compose project"; exit 1; }
 test -n "${data_volume}" || { echo "Unable to identify the JobTracker data volume"; exit 1; }
 
+rollback_root="$(mktemp -d /tmp/job-tracker-rollback.XXXXXX)"
+remove_rollback_root=1
+trap cleanup EXIT
+cp "${DEPLOY_CHECKOUT}/docker-compose.yml" "${rollback_root}/docker-compose.yml"
+cp "${DEPLOY_CHECKOUT}/.env" "${rollback_root}/.env"
+cp "${DEPLOY_CHECKOUT}/khaleel-master-resume.json" "${rollback_root}/khaleel-master-resume.json"
+cp "${DEPLOY_CHECKOUT}/patrick-master-resume.json" "${rollback_root}/patrick-master-resume.json"
+
 cd "${SOURCE_CHECKOUT}"
 test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}" || {
   echo "Runner checkout does not match the tested commit ${EXPECTED_SHA}"
@@ -139,7 +154,6 @@ if [ ! -e "${SOURCE_CHECKOUT}/.env" ]; then
   ln -s "${DEPLOY_CHECKOUT}/.env" "${SOURCE_CHECKOUT}/.env"
   created_env_link=1
 fi
-trap cleanup EXIT
 
 short_sha="${EXPECTED_SHA:0:12}"
 candidate_web_image="job-tracker-web:candidate-${short_sha}"
@@ -148,6 +162,7 @@ docker build --target web-runtime -t "${candidate_web_image}" .
 docker build --target mcp-runtime -t "${candidate_mcp_image}" .
 
 backup_ready=0
+remove_rollback_root=0
 deployment_started=1
 trap 'if [ "${deployment_started:-0}" = "1" ]; then rollback; fi' ERR
 previous_compose stop web mcp
@@ -196,10 +211,18 @@ if ! wait_for_health; then
   exit 1
 fi
 
-deployment_started=0
-trap - ERR
 cd "${DEPLOY_CHECKOUT}"
 git pull --ff-only origin main
 test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
-candidate_compose ps
+stable_compose up -d --no-build --force-recreate web mcp
+if ! wait_for_health; then
+  rollback
+  deployment_started=0
+  exit 1
+fi
+
+deployment_started=0
+trap - ERR
+remove_rollback_root=1
+stable_compose ps
 echo "Deployed ${EXPECTED_SHA}; previous release was ${previous_sha}; backup retained at ${backup_dir}"
