@@ -183,10 +183,11 @@ evidence.
 - Before handoff, run the checks proportionate to the change. For normal
   product changes this includes the full test suite, web production
   build, MCP TypeScript build, and `git diff --check`.
-- Deployment automation must be fail-safe: deploy only a tested `main`
+- Deployment automation must fail closed: deploy only the tested `main`
   commit, require a clean fast-forward-only deployment checkout, serialize
   deployments, preserve the named data volume, and verify both service
-  health endpoints after recreation.
+  health endpoints after recreation. On failure, report status and logs and
+  exit nonzero without claiming or attempting automatic rollback.
 - Never place self-hosted runner credentials, runner work directories,
   `.env`, database files, generated resumes, or deployment secrets inside
   the repository.

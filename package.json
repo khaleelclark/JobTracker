@@ -19,8 +19,8 @@
     "test:mcp": "node --import tsx --test tests/mcp-full-context.test.ts",
     "test:mcp-db-selection": "node --import tsx --test tests/mcp-database-selection.test.ts",
     "test:database-selection-safety": "cd apps/web && TSX_TSCONFIG=tsconfig.json node --import tsx --test ../../tests/database-selection-safety.test.ts",
-    "test:deploy-rollback": "node --test tests/deploy-rollback.test.mjs",
-    "test": "pnpm test:invariants && pnpm test:crud && pnpm test:api && pnpm test:mcp && pnpm test:mcp-db-selection && pnpm test:database-selection-safety && pnpm test:deploy-rollback"
+    "test:deploy-script": "node --test tests/deploy-script.test.mjs",
+    "test": "pnpm test:invariants && pnpm test:crud && pnpm test:api && pnpm test:mcp && pnpm test:mcp-db-selection && pnpm test:database-selection-safety && pnpm test:deploy-script"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
