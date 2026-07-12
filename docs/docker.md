@@ -52,7 +52,7 @@ The named volume `job-tracker-data` stores:
 
 ## Notes
 
-- Compose forces `DATABASE_URL=file:/data/job-tracker.sqlite` so the containers do not depend on a host-specific path from `.env`.
+- Both containers use `/data/job-tracker.sqlite` by default. When a database is selected or imported in Settings, the web UI records that selection in `/data/active-db.txt`; both web and MCP honor it from the shared volume, and MCP follows later changes without a rebuild.
 - The MCP container waits for the web container to become healthy before starting.
 - The web container starts from Next standalone output with `node /app/apps/web/server.js`.
 - `config/ngrok.yml` is only an optional helper example for users who choose ngrok.

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -21,6 +22,16 @@ function resolveDataDir(): string {
 }
 
 export function resolveDatabaseUrl(): string {
+  const activeDatabasePath = path.join(resolveDataDir(), "active-db.txt");
+  try {
+    const activeDatabaseUrl = fs.readFileSync(activeDatabasePath, "utf8").trim();
+    if (activeDatabaseUrl.startsWith("file:") && activeDatabaseUrl.length > "file:".length) {
+      return activeDatabaseUrl;
+    }
+  } catch (error) {
+    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+  }
+
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
   }

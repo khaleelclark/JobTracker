@@ -30,6 +30,8 @@ fi
 active_db_file="${data_dir}/active-db.txt"
 if [ -f "${active_db_file}" ]; then
   export DATABASE_URL="$(cat "${active_db_file}")"
+else
+  export DATABASE_URL="file:${data_dir}/job-tracker.sqlite"
 fi
 
 PRISMA=/app/apps/web/node_modules/.bin/prisma
