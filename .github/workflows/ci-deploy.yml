@@ -19,16 +19,16 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out tested commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: 10.0.0
           run_install: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: pnpm
@@ -48,6 +48,9 @@ jobs:
       - name: Build web application
         run: pnpm --filter @job-tracker/web build
 
+      - name: Lint GitHub Actions workflow
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
+
   deploy:
     name: Deploy local Docker services
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -58,42 +61,10 @@ jobs:
       group: job-tracker-production
       cancel-in-progress: false
     steps:
-      - name: Deploy tested main commit
+      - name: Check out tested commit
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Deploy tested main commit with rollback
         env:
           EXPECTED_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          exec 9>/tmp/job-tracker-deploy.lock
-          flock -n 9 || { echo "Another JobTracker deployment is running"; exit 1; }
-
-          cd /home/phoenix/khaleel/job-tracker
-          test -z "$(git status --porcelain)" || {
-            echo "Deployment checkout is dirty; refusing to overwrite local state"
-            git status --short
-            exit 1
-          }
-
-          git fetch origin main
-          test "$(git rev-parse origin/main)" = "${EXPECTED_SHA}" || {
-            echo "origin/main does not match the tested commit ${EXPECTED_SHA}"
-            exit 1
-          }
-          git pull --ff-only origin main
-          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
-
-          docker compose up -d --build web mcp
-
-          for attempt in $(seq 1 30); do
-            echo "Health-check attempt ${attempt}/30"
-            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health >/dev/null \
-              && curl --fail --silent --show-error http://127.0.0.1:7332/health >/dev/null; then
-              docker compose ps
-              exit 0
-            fi
-            sleep 2
-          done
-
-          docker compose ps
-          docker compose logs --tail=100 web mcp
-          echo "Deployment health checks failed"
-          exit 1
+        run: ./scripts/deploy.sh
