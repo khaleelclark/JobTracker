@@ -2,19 +2,20 @@ import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { resetPrismaClient } from "@/lib/db";
-import { DATA_DIR, migrateDatabase, publishDatabaseSelection, withDatabaseSelectionLock } from "@/lib/databaseSelection";
-
-function inDataDir(p: string): boolean {
-  const relative = path.relative(DATA_DIR, path.resolve(p));
-  return relative !== "" && relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
-}
+import { defaultDatabasePath, migrateDatabase, publishDatabaseSelection, resolveDatabasePath, withDatabaseSelectionLock } from "@/lib/databaseSelection";
 
 export async function POST(req: Request) {
   const body = (await req.json()) as { action?: string; path?: string };
-  const { action, path: targetPath } = body;
+  const { action, path: rawTargetPath } = body;
 
-  if (!targetPath || !inDataDir(targetPath)) {
+  if (!rawTargetPath) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
+  }
+  let targetPath: string;
+  try {
+    targetPath = resolveDatabasePath(rawTargetPath);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid path" }, { status: 400 });
   }
 
   if (action === "copy") {
@@ -31,16 +32,25 @@ export async function POST(req: Request) {
   }
 
   if (action === "delete") {
-    if (!fs.existsSync(targetPath)) {
-      return NextResponse.json({ error: "File not found" }, { status: 404 });
-    }
-
-    const activeUrl = `file:${targetPath}`;
-    const isActive = process.env.DATABASE_URL === activeUrl;
-
     return withDatabaseSelectionLock(() => {
+      if (!fs.existsSync(targetPath)) {
+        return NextResponse.json({ error: "File not found" }, { status: 404 });
+      }
+      let activePath: string | null = null;
+      try {
+        activePath = process.env.DATABASE_URL?.startsWith("file:")
+          ? resolveDatabasePath(process.env.DATABASE_URL.slice("file:".length))
+          : null;
+      } catch {
+        activePath = null;
+      }
+      const isActive = activePath === targetPath;
+      const defaultPath = defaultDatabasePath();
+
       if (isActive) {
-        const defaultPath = path.join(DATA_DIR, "job-tracker.sqlite");
+        if (targetPath === defaultPath) {
+          return NextResponse.json({ error: "The active default database cannot be deleted" }, { status: 400 });
+        }
         const migrationError = migrateDatabase(defaultPath);
         if (migrationError) {
           return NextResponse.json({ error: `Schema migration failed: ${migrationError}` }, { status: 500 });

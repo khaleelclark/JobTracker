@@ -13,16 +13,25 @@ export async function GET(req: Request) {
   const rawDir = searchParams.get("dir") ?? DATA_DIR;
 
   const resolved = path.resolve(rawDir);
-  if (!resolved.startsWith(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  const canonicalDataDir = fs.realpathSync(DATA_DIR);
+  let canonicalResolved: string;
+  try {
+    canonicalResolved = fs.realpathSync(resolved);
+  } catch {
+    return NextResponse.json({ error: "Cannot read directory" }, { status: 500 });
+  }
+  const relative = path.relative(canonicalDataDir, canonicalResolved);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
   try {
-    const entries = fs.readdirSync(resolved, { withFileTypes: true });
+    const entries = fs.readdirSync(canonicalResolved, { withFileTypes: true });
     const files = entries
-      .filter((e) => e.isDirectory() || e.name.endsWith(".sqlite") || e.name.endsWith(".db"))
+      .filter((e) => !e.isSymbolicLink() && (e.isDirectory() || (e.isFile() && (e.name.endsWith(".sqlite") || e.name.endsWith(".db")))))
       .map((e) => {
-        const fullPath = path.join(resolved, e.name);
+        const fullPath = path.join(canonicalResolved, e.name);
         return {
           name: e.name,
           path: fullPath,
@@ -36,8 +45,8 @@ export async function GET(req: Request) {
       });
 
     return NextResponse.json({
-      dir: resolved,
-      parent: resolved !== DATA_DIR ? path.dirname(resolved) : null,
+      dir: canonicalResolved,
+      parent: canonicalResolved !== canonicalDataDir ? path.dirname(canonicalResolved) : null,
       files,
     });
   } catch {

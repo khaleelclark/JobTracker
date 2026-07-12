@@ -30,9 +30,12 @@ export function resolveActiveDatabaseUrl(): string | null {
     const databasePath = activeDatabaseUrl.slice("file:".length);
     if (!path.isAbsolute(databasePath)) return null;
     const resolved = path.resolve(databasePath);
-    const relative = path.relative(dataDir, resolved);
+    if (!fs.existsSync(resolved) || fs.lstatSync(resolved).isSymbolicLink()) return null;
+    const canonicalDataDir = fs.realpathSync(dataDir);
+    const canonicalDatabasePath = fs.realpathSync(resolved);
+    const relative = path.relative(canonicalDataDir, canonicalDatabasePath);
     if (relative === "" || relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return null;
-    return `file:${resolved.replace(/\\/g, "/")}`;
+    return `file:${canonicalDatabasePath.replace(/\\/g, "/")}`;
   } catch (error) {
     if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) return null;
   }

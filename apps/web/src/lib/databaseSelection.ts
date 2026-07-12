@@ -10,14 +10,38 @@ const globalSelectionLock = globalThis as typeof globalThis & {
   databaseSelectionQueue?: Promise<void>;
 };
 
+function isContained(dataDir: string, candidate: string): boolean {
+  const relative = path.relative(dataDir, candidate);
+  return relative !== "" && relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+}
+
 export function resolveDatabasePath(candidate: string): string {
   if (!path.isAbsolute(candidate)) throw new Error("Database path must be absolute");
   const resolved = path.resolve(candidate);
-  const relative = path.relative(DATA_DIR, resolved);
-  if (relative === "" || relative.startsWith(`..${path.sep}`) || relative === ".." || path.isAbsolute(relative)) {
+  if (!isContained(path.resolve(DATA_DIR), resolved)) {
     throw new Error("Database path must be inside the application data directory");
   }
-  return resolved;
+
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  const canonicalDataDir = fs.realpathSync(DATA_DIR);
+  if (fs.existsSync(resolved)) {
+    if (fs.lstatSync(resolved).isSymbolicLink()) throw new Error("Database path cannot be a symbolic link");
+    const canonicalCandidate = fs.realpathSync(resolved);
+    if (!isContained(canonicalDataDir, canonicalCandidate)) {
+      throw new Error("Database path must be inside the application data directory");
+    }
+    return canonicalCandidate;
+  }
+
+  const canonicalParent = fs.realpathSync(path.dirname(resolved));
+  if (!isContained(canonicalDataDir, canonicalParent) && canonicalParent !== canonicalDataDir) {
+    throw new Error("Database path must be inside the application data directory");
+  }
+  return path.join(canonicalParent, path.basename(resolved));
+}
+
+export function defaultDatabasePath(): string {
+  return resolveDatabasePath(path.join(DATA_DIR, "job-tracker.sqlite"));
 }
 
 export function databaseUrl(databasePath: string): string {

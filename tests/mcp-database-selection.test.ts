@@ -28,9 +28,14 @@ test("MCP follows the database selected by the web UI", async () => {
   const firstPath = path.join(tempDir, "first.sqlite");
   const secondPath = path.join(tempDir, "second.sqlite");
   const activeDatabasePath = path.join(tempDir, "active-db.txt");
+  const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "job-tracker-mcp-outside-"));
+  const outsidePath = path.join(outsideDir, "outside.sqlite");
+  const symlinkPath = path.join(tempDir, "linked.sqlite");
 
   await createMarkerDatabase(firstPath, "first");
   await createMarkerDatabase(secondPath, "second");
+  await createMarkerDatabase(outsidePath, "outside");
+  await fs.symlink(outsidePath, symlinkPath);
 
   process.env.NODE_ENV = "test";
   process.env.JOBTRACKER_DATA_DIR = tempDir;
@@ -43,6 +48,7 @@ test("MCP follows the database selected by the web UI", async () => {
   };
   assert.throws(() => selection.resolveDatabasePath("relative.sqlite"), /absolute/);
   assert.throws(() => selection.resolveDatabasePath(path.join(os.tmpdir(), "outside.sqlite")), /data directory/);
+  assert.throws(() => selection.resolveDatabasePath(symlinkPath), /symbolic link/);
   assert.equal(selection.publishDatabaseSelection(firstPath), sqliteFileUrl(firstPath));
   assert.equal(await fs.readFile(activeDatabasePath, "utf8"), sqliteFileUrl(firstPath));
 
@@ -63,6 +69,10 @@ test("MCP follows the database selected by the web UI", async () => {
     const outsideRows = await prisma.$queryRawUnsafe<Array<{ value: string }>>("SELECT value FROM marker");
     assert.equal(outsideRows[0]?.value, "first");
 
+    await fs.writeFile(activeDatabasePath, sqliteFileUrl(symlinkPath), "utf8");
+    const symlinkRows = await prisma.$queryRawUnsafe<Array<{ value: string }>>("SELECT value FROM marker");
+    assert.equal(symlinkRows[0]?.value, "first");
+
     await fs.writeFile(activeDatabasePath, sqliteFileUrl(secondPath), "utf8");
 
     const selectedRows = await prisma.$queryRawUnsafe<Array<{ value: string }>>("SELECT value FROM marker");
@@ -80,5 +90,6 @@ test("MCP follows the database selected by the web UI", async () => {
     if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
     else process.env.DATABASE_URL = previousDatabaseUrl;
     await fs.rm(tempDir, { recursive: true, force: true });
+    await fs.rm(outsideDir, { recursive: true, force: true });
   }
 });
