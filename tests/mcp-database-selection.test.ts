@@ -31,11 +31,14 @@ test("MCP follows the database selected by the web UI", async () => {
   const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "job-tracker-mcp-outside-"));
   const outsidePath = path.join(outsideDir, "outside.sqlite");
   const symlinkPath = path.join(tempDir, "linked.sqlite");
+  const danglingTargetPath = path.join(outsideDir, "not-created.sqlite");
+  const danglingSymlinkPath = path.join(tempDir, "dangling.sqlite");
 
   await createMarkerDatabase(firstPath, "first");
   await createMarkerDatabase(secondPath, "second");
   await createMarkerDatabase(outsidePath, "outside");
   await fs.symlink(outsidePath, symlinkPath);
+  await fs.symlink(danglingTargetPath, danglingSymlinkPath);
 
   process.env.NODE_ENV = "test";
   process.env.JOBTRACKER_DATA_DIR = tempDir;
@@ -49,6 +52,8 @@ test("MCP follows the database selected by the web UI", async () => {
   assert.throws(() => selection.resolveDatabasePath("relative.sqlite"), /absolute/);
   assert.throws(() => selection.resolveDatabasePath(path.join(os.tmpdir(), "outside.sqlite")), /data directory/);
   assert.throws(() => selection.resolveDatabasePath(symlinkPath), /symbolic link/);
+  assert.throws(() => selection.resolveDatabasePath(danglingSymlinkPath), /symbolic link/);
+  await assert.rejects(fs.access(danglingTargetPath));
   assert.equal(selection.publishDatabaseSelection(firstPath), sqliteFileUrl(firstPath));
   assert.equal(await fs.readFile(activeDatabasePath, "utf8"), sqliteFileUrl(firstPath));
 

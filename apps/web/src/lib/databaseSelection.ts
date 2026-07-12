@@ -24,8 +24,16 @@ export function resolveDatabasePath(candidate: string): string {
 
   fs.mkdirSync(DATA_DIR, { recursive: true });
   const canonicalDataDir = fs.realpathSync(DATA_DIR);
-  if (fs.existsSync(resolved)) {
-    if (fs.lstatSync(resolved).isSymbolicLink()) throw new Error("Database path cannot be a symbolic link");
+  let leafExists = false;
+  try {
+    const leaf = fs.lstatSync(resolved);
+    if (leaf.isSymbolicLink()) throw new Error("Database path cannot be a symbolic link");
+    leafExists = true;
+  } catch (error) {
+    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+  }
+
+  if (leafExists) {
     const canonicalCandidate = fs.realpathSync(resolved);
     if (!isContained(canonicalDataDir, canonicalCandidate)) {
       throw new Error("Database path must be inside the application data directory");

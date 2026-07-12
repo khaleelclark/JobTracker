@@ -14,12 +14,15 @@ test("active default database cannot be deleted through canonical or aliased pat
   const defaultPath = path.join(tempDir, "job-tracker.sqlite");
   const outsidePath = path.join(outsideDir, "outside.sqlite");
   const symlinkPath = path.join(tempDir, "linked.sqlite");
+  const danglingTargetPath = path.join(outsideDir, "not-created.sqlite");
+  const danglingSymlinkPath = path.join(tempDir, "dangling.sqlite");
   const originalContents = Buffer.from("original database contents");
 
   try {
     await fs.writeFile(defaultPath, originalContents);
     await fs.writeFile(outsidePath, "outside");
     await fs.symlink(outsidePath, symlinkPath);
+    await fs.symlink(danglingTargetPath, danglingSymlinkPath);
     await fs.mkdir(path.join(tempDir, "sub"));
     process.env.NODE_ENV = "test";
     process.env.JOBTRACKER_DATA_DIR = tempDir;
@@ -43,6 +46,19 @@ test("active default database cannot be deleted through canonical or aliased pat
       resolveDatabasePath: (candidate: string) => string;
     };
     assert.throws(() => resolveDatabasePath(symlinkPath), /symbolic link/);
+    assert.throws(() => resolveDatabasePath(danglingSymlinkPath), /symbolic link/);
+
+    const selectionRouteUrl = `${pathToFileURL(path.resolve("src/app/api/db-path/route.ts")).href}?test=${Date.now()}`;
+    const { POST: selectDatabase } = await import(selectionRouteUrl) as {
+      POST: (request: Request) => Promise<Response>;
+    };
+    const response = await selectDatabase(new Request("http://localhost/api/db-path", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: danglingSymlinkPath }),
+    }));
+    assert.equal(response.status, 400);
+    await assert.rejects(fs.access(danglingTargetPath));
   } finally {
     if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = previousNodeEnv;
