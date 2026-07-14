@@ -257,7 +257,7 @@
       "name": "Project Experience",
       "items": [
         {
-          "title": "Ponderosa Coding-Agent Workbench",
+          "title": "Ponderosa (AI Agent Workbench)",
           "sub_title": "TypeScript, React, MUI, Fastify, SQLite, Drizzle, Server-Sent Events, pnpm workspaces, systemd, PWA, Vitest",
           "position": "Founder, AI Engineering & Product Lead",
           "start_date": "Jul 2026",
