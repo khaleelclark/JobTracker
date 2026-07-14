@@ -92,7 +92,13 @@
             "pnpm",
             "Swagger",
             "Asana",
-            "Jenkins"
+            "Jenkins",
+            "AI code review",
+            "PR review",
+            "Acceptance criteria definition",
+            "Release verification",
+            "Technical roadmap planning",
+            "Multi-workstream coordination"
           ]
         },
         {
@@ -124,8 +130,7 @@
             "Event-Driven Architecture",
             "Agent orchestration",
             "AI-assisted software development",
-            "Prompt engineering",
-            "AI code review"
+            "Prompt engineering"
           ]
         },
         {
@@ -145,7 +150,13 @@
             "Competitive Analysis",
             "Persona Development",
             "User Story Creation with Acceptance Criteria",
-            "Usability Testing"
+            "Usability Testing",
+            "AI engineering",
+            "Product direction",
+            "Systems thinking",
+            "Technical decision-making",
+            "Iterative feedback loops",
+            "Experiment design"
           ]
         },
         {
