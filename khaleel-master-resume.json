@@ -41,7 +41,10 @@
             "Pandas",
             "Plotly",
             "NumPy",
-            "Zod"
+            "Zod",
+            "Fastify",
+            "Vitest",
+            "React Query"
           ]
         },
         {
@@ -70,7 +73,11 @@
             "Zendesk",
             "Amazon Connect",
             "Office 365",
-            "Google Workspace"
+            "Google Workspace",
+            "systemd",
+            "Server-Sent Events (SSE)",
+            "Progressive Web Apps (PWA)",
+            "pnpm workspaces"
           ]
         },
         {
@@ -114,7 +121,11 @@
             "Workflow Automation",
             "ETL Pipelines",
             "Data Transformation",
-            "Event-Driven Architecture"
+            "Event-Driven Architecture",
+            "Agent orchestration",
+            "AI-assisted software development",
+            "Prompt engineering",
+            "AI code review"
           ]
         },
         {
@@ -245,6 +256,23 @@
     {
       "name": "Project Experience",
       "items": [
+        {
+          "title": "Ponderosa Coding-Agent Workbench",
+          "sub_title": "TypeScript, React, MUI, Fastify, SQLite, Drizzle, Server-Sent Events, pnpm workspaces, systemd, PWA, Vitest",
+          "position": "Founder, AI Engineering & Product Lead",
+          "start_date": "Jul 2026",
+          "end_date": "Present",
+          "bullets": [
+            "Founded and directed development of a self-hosted coding-agent workbench inspired by the goal of coding from a phone, turning an old high-performance PC into a Linux host for portable AI-assisted development.",
+            "Led AI-generated implementation through prompt engineering, architectural direction, PR review, acceptance criteria, and iterative pushback across multiple concurrent coding-agent workstreams.",
+            "Shaped the system into a TypeScript pnpm-workspaces monorepo with a React/MUI PWA, Fastify server, and shared packages for engine adapters, thread persistence, and cross-app DTO contracts.",
+            "Directed the design of an engine adapter layer that normalizes Codex CLI JSONL and Claude Code stream events into a shared AgentEvent contract, keeping engine-specific logic isolated from the rest of the system.",
+            "Defined an append-only event-log architecture with rebuildable SQLite/Drizzle projections for messages, tasks, artifacts, sessions, and agent lineage, emphasizing recoverability and auditability.",
+            "Explored multi-agent orchestration viability through token-efficiency experiments, repeated agent-run tests, delegated workstreams, structured review loops, and manager-style coordination of AI contributors.",
+            "Guided live SSE streaming, replay, cancellation, session resume, delegated child-agent workflows, and structured task/artifact views that separate human chat from commands, file changes, and test output.",
+            "Created deployment and verification criteria covering systemd operation, HTTPS/Tailscale PWA access, backup/restore, rollback, and release gates for security, reliability, mobile UX, and recovery."
+          ]
+        },
         {
           "title": "Wynncraft Guild Website",
           "link": "https://novus.dpdns.org/",
