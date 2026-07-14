@@ -137,7 +137,7 @@ export function MuiProvider({ children }: PropsWithChildren) {
               body: {
                 fontFamily: FONT_BODY,
                 color: "#132130",
-                background: "radial-gradient(circle at 5% -10%, #e9d5ff 0%, transparent 34%), radial-gradient(circle at 95% 5%, #b0cfc0 0%, transparent 34%), linear-gradient(165deg, #f8fafc 0%, #ebf6ff 48%, #f8fbff 100%)",
+                background: "#f8fafc",
                 position: "relative",
               },
               a: { color: "inherit" },

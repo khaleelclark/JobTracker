@@ -160,6 +160,17 @@ test("mcp get_master_resume reads owner-specific managed master resume", async (
       }),
       "utf8",
     );
+    await fs.writeFile(
+      path.join(masterResumeDir, "Wrapped.json"),
+      JSON.stringify({
+        owner: "Wrapped",
+        master_resume: {
+          name: "Wrapped Resume",
+          sections: [],
+        },
+      }),
+      "utf8",
+    );
 
     const { getMasterResume } = await importGetMasterResumeTool();
     const defaultResult = await getMasterResume({});
@@ -176,6 +187,11 @@ test("mcp get_master_resume reads owner-specific managed master resume", async (
     assert.equal(managedResult.owner, "Alex");
     assert.match(String(managedResult.path ?? ""), /Alex\.json$/);
     assert.equal((managedResult.master_resume as { name?: string }).name, "Alex Resume");
+
+    const wrappedResult = await getMasterResume({ owner: "Wrapped" });
+    assert.equal(wrappedResult.owner, "Wrapped");
+    assert.equal((wrappedResult.master_resume as { name?: string }).name, "Wrapped Resume");
+    assert.equal("master_resume" in (wrappedResult.master_resume as object), false);
   } finally {
     delete process.env.JOBTRACKER_DATA_DIR;
     await fs.rm(tempDir, { recursive: true, force: true });

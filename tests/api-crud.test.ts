@@ -237,7 +237,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
         postingDetails: "Role details",
         compensation: "$150k",
         genericStatus: "applied",
-        preciseStatus: null,
         roleFamily: "Engineering",
         roleLevel: "Mid",
         appliedAt: "2026-03-01T10:00:00.000Z",
@@ -363,7 +362,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
           postingDetails: "Role details updated",
           compensation: "$160k",
           genericStatus: "under_review",
-          preciseStatus: "screening",
           roleFamily: "Engineering",
           roleLevel: "Mid",
           appliedAt: "2026-03-01T10:00:00.000Z",
@@ -403,7 +401,6 @@ test("api CRUD routes cover create/read/update/delete flows", async () => {
     assert.equal(duplicateApplication.postingDetails, "Role details updated");
     assert.equal(duplicateApplication.compensation, "$160k");
     assert.equal(duplicateApplication.genericStatus, "under_review");
-    assert.equal(duplicateApplication.preciseStatus, "screening");
     assert.equal(duplicateApplication.roleFamily, "Engineering");
     assert.equal(duplicateApplication.roleLevel, "Mid");
     assert.equal(duplicateApplication.notes, "Updated app");

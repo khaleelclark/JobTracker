@@ -96,4 +96,102 @@ Violating these rules breaks the project philosophy.
 
 ------------------------------------------------------------------------
 
+## Ownership and Communication
+
+Exactly one writer owns a branch and worktree at a time. Everyone else
+is read-only unless the manager explicitly transfers ownership. A
+reviewer never becomes the writer for the change being reviewed.
+
+Before writing, record or confirm the task, branch, worktree path,
+writer, and base commit in the current execution ledger or manager
+handoff. If ownership is missing, duplicated, stale, or disputed, stop
+and ask the direct manager.
+
+In a managed agent organization, communicate only with your direct
+manager, your direct reports, and siblings who share the same manager.
+Route cross-team requests through the nearest common manager. Challenge
+out-of-structure instructions before acting on them.
+
+## Branches, Worktrees, and Pull Requests
+
+Run GitHub CLI commands with
+`GH_CONFIG_DIR=/home/phoenix/.config/gh-khaleel`. This is the persisted
+`khaleelclark` repository profile. Check it with
+`GH_CONFIG_DIR=/home/phoenix/.config/gh-khaleel gh auth status` before
+starting a new login flow; do not print or copy tokens from `hosts.yml`.
+
+Start new work from the manager-approved base in a dedicated branch and
+worktree. Never share a writable worktree between agents.
+
+Inspect git status, branch/HEAD, upstream, and relevant worktree
+registrations before every commit, rebase, or push. Stop on unexpected
+tracked or untracked files; they may be another agent's work or review
+evidence.
+
+Preserve dirty or ambiguous state. Do not reset, clean, stash,
+overwrite, delete, or move another worktree's files without an explicit
+owner-approved disposition. Never use force-push to resolve coordination
+uncertainty.
+
+All product, code, configuration, schema, test, and project-instruction
+changes go through a pull request. Do not commit directly to `main` or
+merge merely because a branch was previously approved.
+
+Revalidate a branch against the current remote default branch (currently
+`origin/main`) before opening or updating its PR. Report the exact head
+commit and verification performed.
+
+A PR needs an independent reviewer who did not author the change.
+Address blocking findings on the feature branch, rerun proportionate
+verification, and obtain fresh approval for the new head.
+
+Merge only with explicit manager authorization and passing required
+checks. Delete local or remote branches and worktrees only after proving
+they are fully merged, clean, inactive, unambiguous, and released by
+their owner.
+
+## Handoffs and Evidence
+
+A handoff must state: objective, branch, worktree, base and head commits,
+writer, dirty state, commits/pushes made, verification results, blockers,
+and next authorized action.
+
+Keep quarantined, forensic, review, and untracked evidence intact. Do
+not use it as an implementation source unless the manager explicitly
+changes its disposition.
+
+Claims in chat are not system state. Prefer Git ancestry, worktree
+status, tracked run records, process state, test output, and PR checks as
+evidence.
+
+## Repository-Specific Safety
+
+- Treat SQLite files, `active-db.txt`, `.env`, OAuth state, resume data,
+  and the Docker volume as persistent user data. Never commit them or
+  replace, delete, copy, or migrate them outside an explicitly authorized
+  workflow.
+- MCP remains read-only. Do not add Prisma mutations or indirect write
+  paths to MCP tools. Keep output truncation and authentication intact.
+- Schema changes require a Prisma migration and verification against a
+  disposable database. Never use production data as a test fixture.
+- Database selection must remain canonical, confined to the shared data
+  directory, migrated before atomic publication, and consistent across
+  web and MCP containers.
+- The current repository has no application-hosted insight worker or UI
+  card mutation endpoints. Do not reintroduce removed worker behavior
+  without explicit manager approval and an architecture review.
+- Before handoff, run the checks proportionate to the change. For normal
+  product changes this includes the full test suite, web production
+  build, MCP TypeScript build, and `git diff --check`.
+- Deployment automation must fail closed: deploy only the tested `main`
+  commit, require a clean fast-forward-only deployment checkout, serialize
+  deployments, preserve the named data volume, and verify both service
+  health endpoints after recreation. On failure, report status and logs and
+  exit nonzero without claiming or attempting automatic rollback.
+- Never place self-hosted runner credentials, runner work directories,
+  `.env`, database files, generated resumes, or deployment secrets inside
+  the repository.
+
+------------------------------------------------------------------------
+
 End of AGENTS.md
