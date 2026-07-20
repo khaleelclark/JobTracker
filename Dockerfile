@@ -59,7 +59,7 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/apps/mcp-server/node_modules /app/apps/mcp-server/node_modules
 COPY --from=build /app/apps/mcp-server/src /app/apps/mcp-server/src
 COPY --from=build /app/apps/mcp-server/package.json /app/apps/mcp-server/package.json
-COPY --from=build /app/khaleel-master-resume.json /app/khaleel-master-resume.json
+COPY --from=build /app/kyle-master-resume.json /app/kyle-master-resume.json
 COPY --from=build /app/patrick-master-resume.json /app/patrick-master-resume.json
 COPY --from=build /app/docker/entrypoint-mcp.sh /app/docker/entrypoint-mcp.sh
 

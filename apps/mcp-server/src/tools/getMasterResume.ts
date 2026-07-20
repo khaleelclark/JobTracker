@@ -8,7 +8,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, "../../../..");
 const MASTER_RESUME_PATH =
-  process.env.MASTER_RESUME_PATH ?? path.join(PROJECT_ROOT, "khaleel-master-resume.json");
+  process.env.MASTER_RESUME_PATH ??
+  path.join(PROJECT_ROOT, "kyle-master-resume.json");
 
 const inputSchema = z.object({
   owner: z
@@ -39,24 +40,25 @@ export async function getMasterResume(input: unknown) {
 }
 
 function unwrapMasterResume(value: unknown): unknown {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "master_resume" in value
-  ) {
+  if (typeof value === "object" && value !== null && "master_resume" in value) {
     return (value as { master_resume: unknown }).master_resume;
   }
 
   return value;
 }
 
-async function resolveMasterResumePath(owner: string | undefined): Promise<string> {
+async function resolveMasterResumePath(
+  owner: string | undefined,
+): Promise<string> {
   if (!owner) {
     return MASTER_RESUME_PATH;
   }
 
   // Check project root for a bundled <name>-master-resume.json (e.g. patrick-master-resume.json)
-  const bundledPath = path.join(PROJECT_ROOT, `${owner.toLowerCase()}-master-resume.json`);
+  const bundledPath = path.join(
+    PROJECT_ROOT,
+    `${owner.toLowerCase()}-master-resume.json`,
+  );
   if (await fileExists(bundledPath)) {
     return bundledPath;
   }
